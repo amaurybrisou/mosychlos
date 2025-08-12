@@ -1,0 +1,124 @@
+# Git and version control
+.git
+.gitignore
+.github/
+
+# Python virtual environments and cache
+**/venv/
+**/env/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Cache directories (exclude runtime caches, not source code)
+mosychlos-cache/
+**/.cache/
+**/node_modules/.cache/
+**/.pytest_cache/
+**/__pycache__/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Build artifacts
+build/
+target/
+bin/
+obj/
+
+# Documentation
+docs/
+*.md
+README.md
+CHANGELOG.md
+LICENSE
+
+# Configuration and sensitive files (handled by docker-compose env)
+.env
+.env.local
+.env.*.local
+*.env
+OAI_CONFIG_LIST
+config_api_keys
+
+# Test files and coverage
+**/*_test.go
+**/*_test.py
+coverage.out
+.coverage
+.pytest_cache/
+
+# Large data directories
+mosychlos-data/
+data/
+logs/
+*.log
+
+# Docker related
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# OS generated files
+Thumbs.db
+.directory
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IPython
+profile_default/
+ipython_config.py
+
+# External services (completely separate Docker containers)
+external/
+
+# External dependencies source (we'll use the built binaries)
+external/finrobot/.git/
+external/finrobot/venv/
+external/finrobot/__pycache__/
+external/finrobot/.pytest_cache/
+external/finrobot/build/
+external/finrobot/dist/
+external/finrobot/*.egg-info/
+
+# Reports and generated files
+reports/
+*.pdf
+*.png
+*.jpg
+*.jpeg

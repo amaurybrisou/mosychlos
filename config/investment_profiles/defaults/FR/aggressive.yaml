@@ -1,0 +1,49 @@
+investment_style: 'growth'
+research_depth: 'advanced'
+risk_tolerance: 'aggressive'
+
+preferred_assets:
+  - 'equities'
+  - 'emerging_markets'
+  - 'venture_capital'
+  - 'private_equity'
+  - 'small_caps'
+  - 'real_assets'
+
+avoided_sectors:
+  # - 'tobacco'
+  # - 'weapons'
+  # fewer exclusions, but still aligned with ESG standards
+
+esg_criteria:
+  esg_importance: 'optional'
+  esg_focus:
+    - 'environmental'
+    - 'governance'
+  exclusion_criteria:
+    - 'tobacco'
+    - 'weapons'
+
+regional_context:
+  # Composes with LocalizationConfig
+  country: 'FR'
+  language: 'fr'
+  currency: 'EUR'
+  timezone: 'Europe/Paris'
+  date_format: 'DD/MM/YYYY'
+
+  # Investment-specific regional context
+  tax_optimized_accounts:
+    - 'PEA'
+    - 'Assurance_Vie'
+  local_priorities:
+    - 'high_growth_opportunities'
+    - 'innovation'
+    - 'long_term_wealth_creation'
+  regulatory_focus:
+    - 'mifid_ii'
+    - 'amf_compliance'
+  prefer_local_champions: false # less emphasis on home bias, open to global plays
+
+profile_version: '1.0'
+source: 'default_regional'

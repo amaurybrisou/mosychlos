@@ -1,0 +1,39 @@
+localization:
+  country: 'NL'
+  language: 'en'
+  currency: 'EUR'
+  timezone: 'Europe/Amsterdam'
+
+market_context:
+  primary_exchanges:
+    - 'Euronext Amsterdam'
+  major_indices:
+    - 'AEX'
+    - 'AMX'
+    - 'AScX'
+  investment_culture: 'Pragmatic, globally-oriented with strong international focus'
+  regulatory_focus: 'AFM regulation, ESMA compliance'
+  preferred_themes:
+    - 'International Trade'
+    - 'Technology Services'
+    - 'Consumer Goods'
+    - 'Sustainable Energy'
+
+tax_context:
+  primary_accounts:
+    - 'Investment Account'
+    - 'Pension (Pensioen)'
+    - 'Savings Account'
+    - 'ETF Portfolio'
+  optimization_strategies:
+    - 'Box 3 wealth tax optimization'
+    - 'Pension contribution strategies'
+    - 'Dividend tax treaties'
+    - 'Long-term investment benefits'
+
+strings:
+  currency_symbol: '€'
+  market_hours: '9:00 AM - 5:30 PM CET'
+  settlement_period: 'T+2'
+  analysis_focus: 'Dutch market strength with European and global diversification'
+  risk_disclaimer: 'Beleggen brengt risico\'s met zich mee. Resultaten uit het verleden bieden geen garantie voor de toekomst.'

@@ -1,0 +1,32 @@
+{{define "output_format"}}
+**Required Output Format:**
+
+## Investment Research Summary
+
+### Executive Summary
+[Key takeaways, overall sentiment, recommended actions]
+
+### Market Context
+[Current market conditions relevant to the user's region and investment profile]
+
+### Investment Opportunities
+[Specific investment recommendations with rationale]
+
+### Risk Considerations
+[Key risks and mitigation strategies]
+
+### Implementation Plan
+[Step-by-step approach to implementing recommendations]
+
+### Regional Considerations
+[Local regulations, taxes, and market-specific factors]
+
+**Note:** Provide actionable, research-backed recommendations that align with the user's investment profile, risk tolerance, and regional context.
+
+### Metadata
+- generated_at: [ISO datetime]
+- engine_version: {{.EngineVersion}}
+- research_depth: {{.InvestmentProfile.ResearchDepth}}
+- region: {{.Localization.Country}}
+
+{{end}}

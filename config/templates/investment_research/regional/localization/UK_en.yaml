@@ -1,0 +1,40 @@
+localization:
+  country: 'UK'
+  language: 'en'
+  currency: 'GBP'
+  timezone: 'Europe/London'
+
+market_context:
+  primary_exchanges:
+    - 'London Stock Exchange'
+    - 'AIM'
+  major_indices:
+    - 'FTSE 100'
+    - 'FTSE 250'
+    - 'FTSE All-Share'
+  investment_culture: 'Conservative with focus on dividends and value investing'
+  regulatory_focus: 'FCA regulation, CREST settlement'
+  preferred_themes:
+    - 'Financial Services'
+    - 'Energy & Resources'
+    - 'Consumer Staples'
+    - 'Real Estate Investment'
+
+tax_context:
+  primary_accounts:
+    - 'ISA (Individual Savings Account)'
+    - 'SIPP (Self-Invested Personal Pension)'
+    - 'General Investment Account'
+    - 'Premium Bonds'
+  optimization_strategies:
+    - 'ISA allowance maximization'
+    - 'Pension contribution optimization'
+    - 'Capital gains tax management'
+    - 'Dividend tax efficiency'
+
+strings:
+  currency_symbol: '£'
+  market_hours: '8:00 AM - 4:30 PM GMT'
+  settlement_period: 'T+2'
+  analysis_focus: 'UK market opportunities with European and global exposure'
+  risk_disclaimer: 'Investment values can go down as well as up. Seek independent financial advice if unsure.'

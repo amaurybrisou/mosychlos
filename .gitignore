@@ -1,0 +1,20 @@
+config/config.yaml
+build/mosychlos
+./mosychlos
+mosychlos-data
+mosychlos-cache
+
+# Environment variables and API keys - NEVER commit these!
+.env
+.env.local
+.env.*.local
+*.env
+
+# API configuration files with keys
+OAI_CONFIG_LIST
+config_api_keys
+
+external/finrobot/
+services/finrobot-api/venv
+services/finrobot-api/__pycache__/
+services/finrobot-api/.cache/

@@ -1,0 +1,17 @@
+{{define "context"}}
+**User Context:**
+- Location: **{{.Localization.Country}}, {{.Localization.Region}}**
+- Currency: **{{.Localization.Currency}}**
+- Language: {{.Localization.Language}}
+- Timezone: {{.Localization.Timezone}}
+{{- if .UserProfile}}
+- Risk Tolerance: {{.UserProfile.RiskTolerance}}
+- Investment Goals: {{join .UserProfile.InvestmentGoals ", "}}
+- Time Horizon: {{.UserProfile.TimeHorizonYears}} years
+{{- end}}
+{{- if .InvestmentProfile}}
+- Investment Style: {{.InvestmentProfile.InvestmentStyle}}
+- Research Depth: {{.InvestmentProfile.ResearchDepth}}
+- Preferred Asset Classes: {{range .InvestmentProfile.AssetClasses}}{{.}}, {{end}}
+{{- end}}
+{{end}}

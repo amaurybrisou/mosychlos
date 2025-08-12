@@ -1,0 +1,39 @@
+localization:
+  country: 'AU'
+  language: 'en'
+  currency: 'AUD'
+  timezone: 'Australia/Sydney'
+
+market_context:
+  primary_exchanges:
+    - 'Australian Securities Exchange (ASX)'
+  major_indices:
+    - 'ASX 200'
+    - 'All Ordinaries'
+    - 'ASX Small Ordinaries'
+  investment_culture: 'Dividend-focused with strong resource and banking sectors'
+  regulatory_focus: 'ASIC regulation, ASX compliance'
+  preferred_themes:
+    - 'Mining & Resources'
+    - 'Banking & Financial Services'
+    - 'Real Estate Investment Trusts'
+    - 'Healthcare & Biotechnology'
+
+tax_context:
+  primary_accounts:
+    - 'Superannuation'
+    - 'Self-Managed Super Fund (SMSF)'
+    - 'Investment Account'
+    - 'Term Deposits'
+  optimization_strategies:
+    - 'Superannuation contribution strategies'
+    - 'Franking credit optimization'
+    - 'Capital gains tax discount (50%)'
+    - 'Negative gearing strategies'
+
+strings:
+  currency_symbol: 'A$'
+  market_hours: '10:00 AM - 4:00 PM AEST'
+  settlement_period: 'T+2'
+  analysis_focus: 'Australian market opportunities with Asia-Pacific exposure'
+  risk_disclaimer: 'Investments may go up or down in value. Consider seeking professional advice.'

@@ -1,0 +1,114 @@
+{
+  "$id": "https://mosychlos.io/schemas/allowed-asset-types-by-country.schema.json",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "title": "Allowed Asset Types by Country",
+  "type": "object",
+  "required": ["countries"],
+  "properties": {
+    "countries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/countryConfig"
+      }
+    }
+  },
+  "$defs": {
+    "countryCode": {
+      "type": "string",
+      "enum": ["FR", "US"],
+      "description": "ISO 3166-1 alpha-2 country code."
+    },
+    "assetType": {
+      "type": "string",
+      "enum": [
+        "equity",
+        "fixed_income",
+        "cash_equivalents",
+        "money_market_fund",
+        "mutual_fund",
+        "etf",
+        "real_estate",
+        "infrastructure",
+        "commodities",
+        "securitisation",
+        "private_equity",
+        "hedge_fund",
+        "cryptocurrency",
+        "collectibles"
+      ],
+      "description": "Normalized asset type for policy & allocation guards."
+    },
+    "countryPolicy": {
+      "type": "object",
+      "required": ["allowed", "optional", "restricted"],
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assetType" },
+          "description": "Asset types permitted for the target investor base."
+        },
+        "optional": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assetType" },
+          "description": "Permitted but typically off by default in retail profiles."
+        },
+        "restricted": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assetType" },
+          "description": "Require extra checks (eligibility, KID/KIID, AIF, pro investor)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "countryConfig": {
+      "type": "object",
+      "required": ["country", "policy"],
+      "properties": {
+        "country": { "$ref": "#/$defs/countryCode" },
+        "policy": { "$ref": "#/$defs/countryPolicy" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "countries": [
+        {
+          "country": "FR",
+          "policy": {
+            "allowed": [
+              "equity",
+              "fixed_income",
+              "cash_equivalents",
+              "money_market_fund",
+              "etf",
+              "real_estate",
+              "commodities",
+              "cryptocurrency"
+            ],
+            "optional": ["infrastructure", "securitisation", "private_equity"],
+            "restricted": ["hedge_fund", "collectibles"]
+          }
+        },
+        {
+          "country": "US",
+          "policy": {
+            "allowed": [
+              "equity",
+              "fixed_income",
+              "cash_equivalents",
+              "mutual_fund",
+              "etf",
+              "real_estate",
+              "commodities",
+              "cryptocurrency"
+            ],
+            "optional": ["infrastructure", "private_equity", "hedge_fund"],
+            "restricted": ["securitisation", "collectibles"]
+          }
+        }
+      ]
+    }
+  ]
+}

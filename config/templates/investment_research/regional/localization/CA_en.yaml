@@ -1,0 +1,43 @@
+localization:
+  country: 'CA'
+  language: 'en'
+  currency: 'CAD'
+  timezone: 'America/Toronto'
+
+market_context:
+  primary_exchanges:
+    - 'TSX (Toronto Stock Exchange)'
+    - 'TSX Venture'
+    - 'NYSE (for US exposure)'
+    - 'NASDAQ (for US exposure)'
+  major_indices:
+    - 'S&P/TSX Composite'
+    - 'S&P/TSX 60'
+    - 'S&P/TSX Small Cap'
+    - 'S&P/TSX Venture'
+  investment_culture: 'Resource-focused with growing tech sector and dividend emphasis'
+  regulatory_focus: 'Provincial securities regulation, CRA tax compliance'
+  preferred_themes:
+    - 'Natural Resources'
+    - 'Canadian Banking'
+    - 'Technology Growth'
+    - 'Dividend Growth'
+
+tax_context:
+  primary_accounts:
+    - 'TFSA (Tax-Free Savings Account)'
+    - 'RRSP (Registered Retirement Savings Plan)'
+    - 'Non-registered account'
+    - 'RESP (Registered Education Savings Plan)'
+  optimization_strategies:
+    - 'TFSA contribution maximization'
+    - 'RRSP tax deferral'
+    - 'Canadian dividend tax credit optimization'
+    - 'US withholding tax minimization'
+
+strings:
+  currency_symbol: 'C$'
+  market_hours: '9:30 AM - 4:00 PM EST'
+  settlement_period: 'T+2'
+  analysis_focus: 'Canadian market opportunities with US and global diversification'
+  risk_disclaimer: 'Past performance does not guarantee future results. Please consult with a qualified financial advisor.'

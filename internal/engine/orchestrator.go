@@ -1,0 +1,253 @@
+package engine
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/amaurybrisou/mosychlos/internal/config"
+	"github.com/amaurybrisou/mosychlos/internal/health"
+	"github.com/amaurybrisou/mosychlos/internal/llm"
+	"github.com/amaurybrisou/mosychlos/internal/tools"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
+	"github.com/amaurybrisou/mosychlos/pkg/cli"
+	"github.com/amaurybrisou/mosychlos/pkg/fs"
+	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/models"
+	"github.com/google/uuid"
+)
+
+// engineOrchestrator owns shared state (SharedBag), builds shared services, and wires engines via a Builder.
+type engineOrchestrator struct {
+	ID         uuid.UUID
+	StartDate  time.Time
+	cfg        *config.Config
+	engines    []models.Engine // if provided directly (option 1)
+	builder    Builder         // if you prefer DI inside orchestrator (option 2)
+	sharedBag  bag.SharedBag
+	filesystem fs.FS
+	aiClient   *llm.Client
+	tools      []models.Tool
+}
+
+func New(cfg *config.Config, engines []models.Engine) *engineOrchestrator {
+	return &engineOrchestrator{
+		ID:         uuid.New(),
+		StartDate:  time.Now(),
+		cfg:        cfg,
+		engines:    engines, // if empty, we'll fall back to a Builder
+		sharedBag:  bag.NewSharedBag(),
+		filesystem: fs.OS{},
+	}
+}
+
+// UseBuilder lets you choose to wire engines inside the orchestrator.
+func (o *engineOrchestrator) UseBuilder(b Builder) {
+	o.builder = b
+}
+
+func (o *engineOrchestrator) BatchManager() models.BatchManager {
+	return o.aiClient.BatchManager()
+}
+
+func (o *engineOrchestrator) Init(ctx context.Context) error {
+
+	o.sharedBag.Set(keys.KVerboseMode, o.cfg.Logging.Level)
+
+	// Set up tools and services
+	if err := initializeTools(o.cfg, o.sharedBag); err != nil {
+		return fmt.Errorf("failed to initialize tools: %w", err)
+	}
+
+	// Start health monitoring
+	healthMonitor := health.NewApplicationMonitor(o.sharedBag)
+	healthMonitor.StartPeriodicHealthCheck(15 * time.Second)
+
+	// Load portfolio data
+	err := loadPortfolioData(ctx, o.cfg, o.filesystem, o.sharedBag)
+	if err != nil {
+		return fmt.Errorf("failed to load portfolio data: %w", err)
+	}
+
+	// Load investment profile for regional analysis
+	err = loadInvestmentProfile(ctx, o.cfg, o.filesystem, o.sharedBag)
+	if err != nil {
+		return fmt.Errorf("failed to load investment profile: %w", err)
+	}
+
+	// Load LocalizationConfig
+	err = loadRegionalConfig(ctx, o.cfg, o.filesystem, o.sharedBag)
+	if err != nil {
+		return fmt.Errorf("failed to load localization config: %w", err)
+	}
+
+	// Load AI client
+	aiClient, err := loadAiClient(ctx, o.cfg, o.sharedBag)
+	if err != nil {
+		return fmt.Errorf("failed to load AI client: %w", err)
+	}
+	o.aiClient = aiClient
+
+	// Tools
+	err = tools.NewTools(o.cfg)
+	if err != nil {
+		return fmt.Errorf("failed to initialize tools: %w", err)
+	}
+
+	o.tools = tools.GetTools()
+
+	if len(o.engines) == 0 {
+		// Build a PromptBuilder if your engines need prompts
+		pm, err := loadPromptManager(ctx, o.cfg, o.filesystem, o.sharedBag)
+		if err != nil {
+			return fmt.Errorf("failed to create prompt manager: %w", err)
+		}
+
+		if o.builder == nil {
+			o.builder = DefaultRegistry()
+		}
+		engs, err := o.builder.Build(ctx, Deps{
+			Ctx:       ctx,
+			Config:    o.cfg,
+			SharedBag: o.sharedBag,
+			FS:        o.filesystem,
+			AI:        o.aiClient,
+			Prompts:   pm,
+			Tools:     o.tools,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to build engines: %w", err)
+		}
+		o.engines = engs
+	}
+
+	return nil
+}
+
+func (o *engineOrchestrator) ExecutePipeline(ctx context.Context) error {
+	if o.aiClient == nil {
+		return fmt.Errorf("orchestrator not initialized: aiClient is nil")
+	}
+
+	if len(o.engines) == 0 {
+		return fmt.Errorf("no engines configured")
+	}
+
+	// DumpSharedBag every 10s
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			o.DumpSharedBag()
+		}
+	}()
+
+	resultKeys := make([]keys.Key, len(o.engines))
+
+	for i, eng := range o.engines {
+		slog.Info("engine: start", "name", eng.Name())
+
+		if err := eng.Execute(ctx, o.aiClient, o.sharedBag); err != nil {
+			slog.Error("engine: failed", "name", eng.Name(), "err", err)
+			return err
+		}
+
+		if _, ok := o.sharedBag.Get(eng.ResultKey()); !ok {
+			return fmt.Errorf("missing result for engine: %s at key %s", eng.Name(), eng.ResultKey())
+		}
+
+		resultKeys[i] = eng.ResultKey()
+
+		slog.Info("engine: done", "name", eng.Name())
+	}
+
+	// Final bag dump after all engines complete to capture final results
+	slog.Info("Dumping final shared bag state after all engines completed")
+	o.DumpSharedBag()
+
+	return nil
+}
+
+func (o *engineOrchestrator) GenerateReports(ctx context.Context, reportType models.ReportType, formats []models.ReportFormat) {
+	if len(formats) > 0 {
+		// Non-interactive mode: use flags
+		err := cli.GenerateReportWithParams(ctx, o.cfg, o.sharedBag.Snapshot(), o.filesystem, reportType, formats)
+		if err != nil {
+			slog.Error("Failed to generate reports", "error", err)
+		}
+	} else {
+		// Interactive mode: use original function
+		err := cli.GenerateReport(ctx, o.cfg, o.sharedBag.Snapshot(), o.filesystem)
+		if err != nil {
+			slog.Error("Failed to generate reports", "error", err)
+		}
+	}
+}
+
+func (o *engineOrchestrator) GetResults(analysisType models.AnalysisType) (*string, error) {
+	switch analysisType {
+	case models.AnalysisRisk:
+		if riskResult, exists := o.sharedBag.Get(keys.KRiskAnalysisResult); exists {
+			switch result := riskResult.(type) {
+			case string:
+				return &result, nil
+			case map[string]any:
+				if jsonResult, err := json.Marshal(result); err == nil {
+					resultStr := string(jsonResult)
+					return &resultStr, nil
+				}
+			}
+		}
+		return nil, fmt.Errorf("no risk analysis results found in shared bag")
+	case models.AnalysisInvestmentResearch:
+		if investmentResult, exists := o.sharedBag.Get(keys.KInvestmentResearchResult); exists {
+			// Convert the structured result to JSON string for display
+			if result, ok := investmentResult.(models.InvestmentResearchResult); ok {
+				resultJSON, err := json.Marshal(result)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal investment research result: %w", err)
+				}
+				resultStr := string(resultJSON)
+				return &resultStr, nil
+			}
+		}
+		return nil, fmt.Errorf("no investment research results found in shared bag")
+	default:
+		return nil, fmt.Errorf("result extraction for analysis type %s not implemented", analysisType)
+	}
+}
+
+func (o *engineOrchestrator) GetID() uuid.UUID {
+	return o.ID
+}
+
+// DumpSharedBag dumps the bag content in mosychlos-data/bag/<run_id>.json
+func (o *engineOrchestrator) DumpSharedBag() {
+	path := fmt.Sprintf("%s/bag/%s_%s.json", o.cfg.DataDir, o.StartDate.Format("20060102_150405"), o.ID.String())
+	base := filepath.Dir(path)
+	err := o.filesystem.MkdirAll(base, os.ModePerm)
+	if err != nil {
+		slog.Error("Failed to create bag dump directory", "error", err)
+		return
+	}
+
+	dataBytes, err := json.Marshal(o.sharedBag)
+	if err != nil {
+		slog.Error("Failed to marshal bag content", "error", err)
+		return
+	}
+
+	err = o.filesystem.WriteFile(
+		filepath.Join(path),
+		dataBytes,
+		0644,
+	)
+	if err != nil {
+		slog.Error("Failed to open bag dump file", "error", err)
+		return
+	}
+}

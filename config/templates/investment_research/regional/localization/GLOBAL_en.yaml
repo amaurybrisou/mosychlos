@@ -1,0 +1,43 @@
+localization:
+  country: 'GLOBAL'
+  language: 'en'
+  currency: 'USD'
+  timezone: 'UTC'
+
+market_context:
+  primary_exchanges:
+    - 'NYSE'
+    - 'NASDAQ'
+    - 'LSE'
+    - 'TSE'
+  major_indices:
+    - 'S&P 500'
+    - 'MSCI World'
+    - 'FTSE Developed'
+    - 'MSCI Emerging Markets'
+  investment_culture: 'Globally diversified with balanced risk approach'
+  regulatory_focus: 'Multi-jurisdictional compliance and best practices'
+  preferred_themes:
+    - 'Global Technology'
+    - 'Healthcare Innovation'
+    - 'Sustainable Development'
+    - 'Emerging Markets Growth'
+
+tax_context:
+  primary_accounts:
+    - 'Investment Account'
+    - 'Retirement Account'
+    - 'Tax-Advantaged Account'
+    - 'International Portfolio'
+  optimization_strategies:
+    - 'Global tax efficiency'
+    - 'Currency hedging strategies'
+    - 'International diversification'
+    - 'Withholding tax optimization'
+
+strings:
+  currency_symbol: '$'
+  market_hours: '24/7 Global Markets'
+  settlement_period: 'T+2 (varies by market)'
+  analysis_focus: 'Global investment opportunities with regional considerations'
+  risk_disclaimer: 'International investing involves additional risks including currency fluctuations and political uncertainties.'

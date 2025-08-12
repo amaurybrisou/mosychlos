@@ -1,0 +1,42 @@
+localization:
+  country: 'US'
+  language: 'en'
+  currency: 'USD'
+  timezone: 'America/New_York'
+
+market_context:
+  primary_exchanges:
+    - 'NYSE'
+    - 'NASDAQ'
+    - 'AMEX'
+  major_indices:
+    - 'S&P 500'
+    - 'Dow Jones'
+    - 'NASDAQ Composite'
+    - 'Russell 2000'
+  investment_culture: 'Growth-focused with strong institutional participation'
+  regulatory_focus: 'SEC compliance, FINRA oversight'
+  preferred_themes:
+    - 'Technology Innovation'
+    - 'Healthcare Advancement'
+    - 'Consumer Discretionary'
+    - 'Financial Services'
+
+tax_context:
+  primary_accounts:
+    - '401(k)'
+    - 'Traditional IRA'
+    - 'Roth IRA'
+    - 'Taxable Brokerage'
+  optimization_strategies:
+    - 'Tax-loss harvesting'
+    - 'Asset location optimization'
+    - 'Roth conversion strategies'
+    - 'HSA maximization'
+
+strings:
+  currency_symbol: '$'
+  market_hours: '9:30 AM - 4:00 PM EST'
+  settlement_period: 'T+2'
+  analysis_focus: 'US market opportunities with global diversification'
+  risk_disclaimer: 'Past performance does not guarantee future results. Please consult with a qualified financial advisor.'

@@ -1,0 +1,41 @@
+localization:
+  country: 'JP'
+  language: 'en'
+  currency: 'JPY'
+  timezone: 'Asia/Tokyo'
+
+market_context:
+  primary_exchanges:
+    - 'Tokyo Stock Exchange (TSE)'
+    - 'JASDAQ'
+    - 'Mothers'
+  major_indices:
+    - 'Nikkei 225'
+    - 'TOPIX'
+    - 'JPX-Nikkei 400'
+  investment_culture: 'Conservative, long-term focused with corporate loyalty emphasis'
+  regulatory_focus: 'FSA regulation, J-SOX compliance'
+  preferred_themes:
+    - 'Technology & Electronics'
+    - 'Automotive Manufacturing'
+    - 'Robotics & Automation'
+    - 'Consumer Electronics'
+
+tax_context:
+  primary_accounts:
+    - 'NISA (Nippon Individual Savings Account)'
+    - 'Tsumitate NISA'
+    - 'iDeCo (Individual Defined Contribution)'
+    - 'General Securities Account'
+  optimization_strategies:
+    - 'NISA allowance maximization'
+    - 'iDeCo tax deduction optimization'
+    - 'Long-term capital gains benefits'
+    - 'Dividend tax optimization'
+
+strings:
+  currency_symbol: '¥'
+  market_hours: '9:00 AM - 3:00 PM JST'
+  settlement_period: 'T+2'
+  analysis_focus: 'Japanese market opportunities with Asian diversification'
+  risk_disclaimer: 'Investment in securities involves risks. Past performance does not guarantee future returns.'

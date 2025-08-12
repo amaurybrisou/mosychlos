@@ -1,0 +1,42 @@
+localization:
+  country: 'FR'
+  language: 'fr'
+  currency: 'EUR'
+  timezone: 'Europe/Paris'
+
+market_context:
+  primary_exchanges:
+    - 'Euronext Paris'
+    - 'Frankfurt'
+    - 'London Stock Exchange'
+  major_indices:
+    - 'CAC 40'
+    - 'CAC Next 20'
+    - 'SBF 120'
+    - 'Euro Stoxx 50'
+  investment_culture: 'Value-oriented with strong emphasis on dividends and ESG'
+  regulatory_focus: 'AMF oversight, MiFID II compliance'
+  preferred_themes:
+    - 'Sustainable Finance'
+    - 'European Integration'
+    - 'Luxury Goods'
+    - 'Renewable Energy'
+
+tax_context:
+  primary_accounts:
+    - "PEA (Plan d'Épargne en Actions)"
+    - 'Assurance-vie'
+    - 'Compte-titres ordinaire'
+    - "PER (Plan d'Épargne Retraite)"
+  optimization_strategies:
+    - 'PEA tax optimization'
+    - 'Assurance-vie euro/UC allocation'
+    - 'EU dividend withholding tax optimization'
+    - 'Capital gains tax deferral'
+
+strings:
+  currency_symbol: '€'
+  market_hours: '9:00 - 17:30 CET'
+  settlement_period: 'T+2'
+  analysis_focus: 'Opportunités du marché européen avec diversification mondiale'
+  risk_disclaimer: 'Les performances passées ne préjugent pas des performances futures. Consultez un conseiller financier qualifié.'

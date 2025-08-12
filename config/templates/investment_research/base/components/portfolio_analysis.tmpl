@@ -1,0 +1,20 @@
+{{define "portfolio_analysis"}}
+**Current Portfolio Analysis:**
+{{- if .Portfolio}}
+- Total Value: {{if .Portfolio.BaseCurrency}}{{.Portfolio.BaseCurrency}}{{else}}{{.Localization.Currency}}{{end}} {{printf "%.2f" .Portfolio.TotalValueUSD}}
+- Holdings Count: {{.Portfolio.HoldingsCount}}
+{{- if .Portfolio.Holdings}}
+- Asset Allocation:
+{{- range .Portfolio.Holdings}}
+  - {{.Symbol}}: {{printf "%.1f" .WeightPercent}}% ({{.AssetClass}})
+{{- end}}
+{{- end}}
+**Portfolio Gaps & Opportunities:**
+- Underrepresented asset classes
+- Geographic diversification needs
+- Sector concentration risks
+- Currency exposure imbalances
+{{- else}}
+**Portfolio Status:** No portfolio data available — focus on general investment research.
+{{- end}}
+{{end}}

@@ -1,0 +1,43 @@
+investment_style: 'balanced'
+research_depth: 'intermediate'
+risk_tolerance: 'moderate'
+
+preferred_assets:
+  - 'equities'
+  - 'bonds'
+  - 'alternatives'
+
+avoided_sectors:
+  - 'tobacco'
+  - 'weapons'
+
+esg_criteria:
+  esg_importance: 'moderate'
+  esg_focus:
+    - 'environmental'
+    - 'governance'
+  exclusion_criteria:
+    - 'tobacco'
+    - 'weapons'
+
+regional_context:
+  # Composes with LocalizationConfig
+  country: 'US'
+  language: 'en'
+  currency: 'USD'
+  timezone: 'America/New_York'
+  date_format: 'MM/DD/YYYY'
+
+  # Investment-specific regional context
+  tax_optimized_accounts:
+    - '401k'
+    - 'IRA'
+  local_priorities:
+    - 'balanced_growth'
+    - 'tax_optimization'
+  regulatory_focus:
+    - 'sec_rules'
+  prefer_local_champions: false
+
+profile_version: '1.0'
+source: 'default_regional'

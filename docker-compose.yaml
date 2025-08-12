@@ -1,0 +1,25 @@
+# docker-compose.yml - FinRobot API service only
+# Run mosychlos directly on host: go run ./cmd/mosychlos/*.go
+
+services:
+  finrobot:
+    build:
+      context: ./external/finrobot
+      dockerfile: ../../docker/finrobot/Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
+      - FMP_API_KEY=${FMP_API_KEY}
+      - SEC_API_KEY=${SEC_API_KEY}
+      - PORT=8080
+    volumes:
+      - ./mosychlos-data:/app/data
+      - ./mosychlos-data/reports:/app/reports
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped

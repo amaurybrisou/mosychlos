@@ -1,0 +1,314 @@
+# Mosychlos v2 Default Configuration
+# Copy this file to config.yaml and customize the values for your environment.
+
+# =============================================================================
+# CORE DIRECTORIES
+# =============================================================================
+
+# Base directory where the application persists data/cache artifacts
+# Must be an absolute path and writable by the application
+cache_dir: '/tmp/mosychlos/cache'
+
+# Base directory where the application stores portfolio data
+# Must be an absolute path and writable by the application
+data_dir: '/tmp/mosychlos/data'
+
+# Base directory where the application stores configuration files
+# Must be an absolute path and writable by the application
+config_dir: '/tmp/mosychlos/config'
+
+# =============================================================================
+# LOCALIZATION CONFIGURATION
+# =============================================================================
+
+# Centralized locale and location settings - applies to all components
+localization:
+  # ISO 3166-1 alpha-2 country code (required)
+  country: 'US'
+  # ISO 639-1 language code (required)
+  language: 'en'
+  # IANA timezone identifier (required)
+  timezone: 'America/New_York'
+  # ISO 4217 currency code (required)
+  currency: 'USD'
+  # Optional: State/province/region
+  region: 'New York'
+  # Optional: City for location-based services
+  city: 'New York City'
+
+# =============================================================================
+# LLM/AI CONFIGURATION
+# =============================================================================
+
+llm:
+  # AI provider: openai, claude, etc.
+  provider: 'openai'
+  # Model to use for completions (gpt-4o, gpt-4o-mini, o1-preview, o1-mini)
+  model: 'gpt-4o'
+  # API key - prefer environment variable OPENAI_API_KEY
+  api_key: '${OPENAI_API_KEY}'
+  # Optional base URL override for proxies
+  base_url: ''
+
+  # OpenAI-specific configuration parameters
+  openai:
+    # Token limit for responses (includes reasoning tokens for o-series models)
+    max_completion_tokens: 4096
+
+    # Sampling temperature (0-2): lower = more focused, higher = more creative
+    # Recommended: 0.1-0.2 for financial analysis
+    temperature: 0.1
+
+    # Reasoning effort for reasoning models (o1-series): minimal, low, medium, high
+    reasoning_effort: 'medium'
+
+    # Response verbosity: low, medium, high
+    verbosity: 'medium'
+
+    # Enable parallel function calls for better performance
+    parallel_tool_calls: true
+
+    # Service tier for request processing: auto, default, flex, priority
+    service_tier: 'auto'
+
+    # Optional: Penalties to control response behavior (-2.0 to 2.0)
+    presence_penalty: 0.0 # Avoid topic drift for financial analysis
+    frequency_penalty: 0.1 # Slightly reduce repetition
+
+    # Optional: Seed for reproducible outputs (useful for testing)
+    seed: 12345
+
+    # Optional: Cache key for performance optimization and user identification
+    # Improves cache hit rates and helps OpenAI detect/prevent abuse
+    # If not specified, portfolio hash will be used automatically
+    # for portfolio-based caching optimization
+    prompt_cache_key: 'financial_analysis'
+
+    # Web Search Configuration (uses OpenAI's Responses API)
+    # Enable real-time web search capability for up-to-date information
+    web_search: false
+
+    # Web search context size: low, medium (default), high
+    # Controls how much context window space to use for search results
+    web_search_context_size: 'medium'
+    # Note: User location for web search is derived from centralized localization config
+
+    rate_limit:
+      enabled: true
+      base_delay: 1s
+      max_delay: 30s
+      jitter_factor: 0.1
+      log_metrics: false
+    retry:
+      max_retries: 3
+      base_delay: 1s
+      max_delay: 30s
+      exponential_base: 2.0
+      jitter_factor: 0.1
+
+# =============================================================================
+# CLI CONFIGURATION
+# =============================================================================
+
+cli:
+  # Default portfolio path (can be overridden with flags)
+  portfolio: ''
+  # Default investment profile
+  profile: ''
+  # Default rebalancing tolerance percentage
+  tolerance: 5.0
+  # Enable context data by default
+  with_context: false
+  # Default providers to use
+  providers: []
+  # Note: Jurisdiction is derived from centralized localization.country
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+
+logging:
+  # Minimum log level: debug, info, warn, error
+  level: 'info'
+  # Output format: text (human-readable) or json (structured)
+  format: 'text'
+  # Add source code location to log entries
+  add_source: false
+  # Output destination (stdout, stderr, or file path)
+  output: 'stdout'
+
+# =============================================================================
+# FINANCIAL DATA TOOLS CONFIGURATION
+# =============================================================================
+
+tools:
+  # News API configuration for market news
+  newsapi:
+    api_key: '${NEWSAPI_API_KEY}'
+    base_url: 'https://newsapi.org/v2'
+    provider: 'newsapi'
+    # Note: locale is derived from centralized localization.language
+    cache_enable: true
+
+  # Federal Reserve Economic Data (FRED) configuration
+  fred:
+    api_key: '${FRED_API_KEY}'
+    # Note: country is derived from centralized localization.country
+    cache_enable: true
+    series:
+      gdp: 'GDP'
+      inflation: 'CPIAUCSL'
+      interest_rate: 'FEDFUNDS'
+      unemployment: 'UNRATE'
+      inflation_units: 'pc1'
+
+  # Financial Modeling Prep API configuration
+  fmp:
+    api_key: '${FMP_API_KEY}'
+    provider: 'fmp'
+    cache_dir: '/tmp/mosychlos/cache/fmp'
+    max_daily: 1000
+    cache_enable: true
+
+  # FMP Analyst Estimates configuration
+  fmp_analyst_estimates:
+    api_key: '${FMP_API_KEY}'
+    provider: 'fmp'
+    cache_dir: '/tmp/mosychlos/cache/fmp_estimates'
+    cache_enable: true
+    max_daily: 500
+
+  # Yahoo Finance data provider (no API key required)
+  yfinance:
+    base_url: 'https://query1.finance.yahoo.com'
+    cache_enable: true
+    max_daily: 2000
+    timeout: 30 # seconds
+    max_requests: 100
+
+  # FinRobot AI Analysis configuration
+  finrobot:
+    base_url: 'http://localhost'
+    port: 8080
+    cache_enable: true
+    timeout: 60 # seconds
+
+# =============================================================================
+# TRADING PLATFORM INTEGRATIONS
+# =============================================================================
+
+# Binance API configuration
+binance:
+  api_key: '${BINANCE_API_KEY}'
+  api_secret: '${BINANCE_API_SECRET}'
+  base_url: 'https://api.binance.com'
+  cache_enable: true
+
+# =============================================================================
+# JURISDICTION & COMPLIANCE CONFIGURATION
+# =============================================================================
+
+jurisdiction:
+  # Note: Country code is derived from centralized localization.country
+  # Path to custom compliance schema (optional)
+  custom_schema_path: ''
+  # Compliance rules for the jurisdiction
+  rules:
+    # Allowed asset types for this jurisdiction
+    allowed_asset_types:
+      - 'stock'
+      - 'etf'
+      - 'mutual_fund'
+      - 'bond_ig'
+      - 'bond_hy'
+      - 'bond_gov'
+      - 'bond_corp'
+      - 'reit'
+      - 'cash'
+      - 'cash_eq'
+      - 'money_market'
+    # Disallowed asset types
+    disallowed_asset_types:
+      - 'crypto'
+      - 'derivative_option'
+      - 'derivative_future'
+    # Allowed ETF domiciles
+    etf_domicile_allow:
+      - 'US'
+      - 'IE' # Ireland (UCITS)
+      - 'LU' # Luxembourg (UCITS)
+    # Blocked ETF domiciles
+    etf_domicile_block:
+      - 'CN' # China
+      - 'RU' # Russia
+    # Blocked tickers
+    ticker_blocklist:
+      - 'SBER' # Sanctioned Russian stocks
+      - 'GAZP'
+    # Ticker substitutions (local equivalent for blocked tickers)
+    ticker_substitutes:
+      'VTI': 'VTSAX' # Equivalent total market funds
+      'SPY': 'SWPPX' # Equivalent S&P 500 funds
+    # Maximum leverage allowed
+    max_leverage: 1
+    # Additional compliance notes
+    notes: 'US investor compliance rules - no leverage, standard asset types allowed'
+# Example French jurisdiction configuration
+# jurisdiction:
+#   country: "FR"
+#   rules:
+#     allowed_asset_types:
+#       - "stock"
+#       - "etf"
+#       - "bond_ig"
+#       - "bond_gov"
+#       - "reit"
+#       - "cash"
+#     disallowed_asset_types:
+#       - "crypto"
+#       - "derivative_option"
+#       - "derivative_future"
+#     etf_domicile_allow:
+#       - "FR"
+#       - "IE"
+#       - "LU"
+#       - "DE"
+#     etf_domicile_block:
+#       - "US"  # US-domiciled ETFs not accessible to EU residents
+#     ticker_substitutes:
+#       "SPY": "SP5E"     # S&P 500 EUR equivalent
+#       "VTI": "VWCE"     # World equity equivalent
+#     max_leverage: 1
+#     notes: "French/EU investor - UCITS ETFs only, no US-domiciled funds"
+
+# =============================================================================
+# REPORT CONFIGURATION
+# =============================================================================
+
+report:
+  # Directory for report output (relative to data_dir or absolute path)
+  output_dir: 'reports'
+  # Default report format: markdown, pdf, json
+  default_format: 'markdown'
+  # Include timestamp in report filenames
+  include_timestamp: true
+  # Default customer name for reports (optional)
+  default_customer_name: ''
+  # PDF engine for PDF generation: xelatex, lualatex
+  pdf_engine: 'xelatex'
+  # Enable unicode sanitization fallback for PDF generation
+  enable_pdf_unicode_sanitization: true
+  # Keep generated reports in archive
+  archive_reports: true
+  # Maximum number of archived reports (0 = unlimited)
+  max_archived_reports: 50
+# =============================================================================
+# ENVIRONMENT VARIABLES REFERENCE
+# =============================================================================
+
+# The following environment variables should be set:
+# - NEWSAPI_API_KEY: NewsAPI.org API key for market news
+# - FRED_API_KEY: Federal Reserve Economic Data API key
+# - FMP_API_KEY: Financial Modeling Prep API key
+# - BINANCE_API_KEY: Binance API key (if using Binance)
+# - BINANCE_API_SECRET: Binance API secret (if using Binance)

@@ -1,0 +1,32 @@
+investment_style: 'balanced'
+research_depth: 'basic'
+risk_tolerance: 'moderate'
+
+preferred_assets:
+  - 'equities'
+  - 'bonds'
+
+avoided_sectors: []
+
+esg_criteria:
+  esg_importance: 'low'
+  esg_focus: []
+  exclusion_criteria: []
+
+regional_context:
+  # Global fallback configuration
+  country: ''
+  language: 'en'
+  currency: 'USD'
+  timezone: 'UTC'
+  date_format: 'YYYY-MM-DD'
+
+  # Basic investment context
+  tax_optimized_accounts: []
+  local_priorities:
+    - 'balanced_growth'
+  regulatory_focus: []
+  prefer_local_champions: false
+
+profile_version: '1.0'
+source: 'default_global'

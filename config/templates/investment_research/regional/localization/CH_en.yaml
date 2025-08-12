@@ -1,0 +1,39 @@
+localization:
+  country: 'CH'
+  language: 'en'
+  currency: 'CHF'
+  timezone: 'Europe/Zurich'
+
+market_context:
+  primary_exchanges:
+    - 'SIX Swiss Exchange'
+  major_indices:
+    - 'SMI (Swiss Market Index)'
+    - 'SPI (Swiss Performance Index)'
+    - 'SMIM (Swiss Mid Cap)'
+  investment_culture: 'Conservative, quality-focused with emphasis on stability'
+  regulatory_focus: 'FINMA regulation, Swiss banking standards'
+  preferred_themes:
+    - 'Banking & Finance'
+    - 'Pharmaceuticals'
+    - 'Luxury Goods'
+    - 'Precision Manufacturing'
+
+tax_context:
+  primary_accounts:
+    - 'Securities Account (Wertschriftendepot)'
+    - 'Pillar 3a (Private Pension)'
+    - 'Pillar 3b (Flexible Savings)'
+    - 'Investment Funds'
+  optimization_strategies:
+    - 'Pillar 3a tax deduction optimization'
+    - 'Withholding tax reclaim strategies'
+    - 'Capital gains tax exemption (private wealth)'
+    - 'Cantonal tax optimization'
+
+strings:
+  currency_symbol: 'CHF'
+  market_hours: '9:00 AM - 5:30 PM CET'
+  settlement_period: 'T+2'
+  analysis_focus: 'Swiss market quality with global diversification focus'
+  risk_disclaimer: 'Investments involve risks. Past performance is no guarantee of future results.'

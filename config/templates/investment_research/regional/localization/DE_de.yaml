@@ -1,0 +1,41 @@
+localization:
+  country: 'DE'
+  language: 'de'
+  currency: 'EUR'
+  timezone: 'Europe/Berlin'
+
+market_context:
+  primary_exchanges:
+    - 'Frankfurter Wertpapierbörse (XETRA)'
+    - 'Düsseldorfer Börse'
+  major_indices:
+    - 'DAX'
+    - 'MDAX'
+    - 'TecDAX'
+    - 'SDAX'
+  investment_culture: 'Konservativ, stabilititätsorientiert mit starker Industriebasis'
+  regulatory_focus: 'BaFin-Regulierung, ESMA-Compliance'
+  preferred_themes:
+    - 'Industrielle Fertigung'
+    - 'Automobiltechnologie'
+    - 'Erneuerbare Energien'
+    - 'Chemie & Materialien'
+
+tax_context:
+  primary_accounts:
+    - 'Wertpapierdepot'
+    - 'Riester-Rente'
+    - 'Rürup-Rente'
+    - 'ETF-Sparplan'
+  optimization_strategies:
+    - 'Freibetrag-Optimierung'
+    - 'Verlustverrechnungsstrategien'
+    - 'Langfristige Haltedauer-Vorteile'
+    - 'Altersvorsorge-Steuererleichterungen'
+
+strings:
+  currency_symbol: '€'
+  market_hours: '9:00 - 17:30 MEZ'
+  settlement_period: 'T+2'
+  analysis_focus: 'Deutsche Marktstärke mit europäischer Diversifikation'
+  risk_disclaimer: 'Geldanlagen sind mit Risiken verbunden. Die Wertentwicklung in der Vergangenheit lässt keine Rückschlüsse auf künftige Erträge zu.'

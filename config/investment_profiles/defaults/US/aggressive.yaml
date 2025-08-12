@@ -1,0 +1,42 @@
+investment_style: 'growth'
+research_depth: 'advanced'
+risk_tolerance: 'aggressive'
+
+preferred_assets:
+  - 'growth_equities'
+  - 'tech_stocks'
+  - 'alternatives'
+
+avoided_sectors:
+  - 'tobacco'
+  - 'weapons'
+
+esg_criteria:
+  esg_importance: 'moderate'
+  esg_focus:
+    - 'governance'
+  exclusion_criteria: []
+
+regional_context:
+  # Composes with LocalizationConfig
+  country: 'US'
+  language: 'en'
+  currency: 'USD'
+  timezone: 'America/New_York'
+  date_format: 'MM/DD/YYYY'
+
+  # Investment-specific regional context
+  tax_optimized_accounts:
+    - '401k'
+    - 'IRA'
+    - 'Roth_IRA'
+  local_priorities:
+    - 'growth'
+    - 'tax_optimization'
+    - 'innovation'
+  regulatory_focus:
+    - 'sec_rules'
+  prefer_local_champions: false
+
+profile_version: '1.0'
+source: 'default_regional'

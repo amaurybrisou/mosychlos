@@ -1,0 +1,39 @@
+localization:
+  country: 'SG'
+  language: 'en'
+  currency: 'SGD'
+  timezone: 'Asia/Singapore'
+
+market_context:
+  primary_exchanges:
+    - 'Singapore Exchange (SGX)'
+  major_indices:
+    - 'Straits Times Index (STI)'
+    - 'MSCI Singapore'
+    - 'SGX All Share Index'
+  investment_culture: 'Growth-oriented with focus on Asia-Pacific opportunities'
+  regulatory_focus: 'MAS regulation, SGX compliance'
+  preferred_themes:
+    - 'Financial Services'
+    - 'Real Estate Investment Trusts'
+    - 'Technology & Innovation'
+    - 'Trade & Logistics'
+
+tax_context:
+  primary_accounts:
+    - 'Central Provident Fund (CPF)'
+    - 'Supplementary Retirement Scheme (SRS)'
+    - 'Investment Account'
+    - 'Unit Trusts'
+  optimization_strategies:
+    - 'CPF investment scheme optimization'
+    - 'SRS tax deduction strategies'
+    - 'Capital gains tax exemption'
+    - 'Dividend tax optimization'
+
+strings:
+  currency_symbol: 'S$'
+  market_hours: '9:00 AM - 5:00 PM SGT'
+  settlement_period: 'T+3'
+  analysis_focus: 'Singapore market gateway to Asia-Pacific opportunities'
+  risk_disclaimer: 'Investment involves risk and you may not get back the amount you invested.'

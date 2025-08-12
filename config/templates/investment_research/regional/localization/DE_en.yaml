@@ -1,0 +1,41 @@
+localization:
+  country: 'DE'
+  language: 'en'
+  currency: 'EUR'
+  timezone: 'Europe/Berlin'
+
+market_context:
+  primary_exchanges:
+    - 'Frankfurt Stock Exchange (XETRA)'
+    - 'Düsseldorf Stock Exchange'
+  major_indices:
+    - 'DAX'
+    - 'MDAX'
+    - 'TecDAX'
+    - 'SDAX'
+  investment_culture: 'Conservative, stability-focused with strong manufacturing base'
+  regulatory_focus: 'BaFin regulation, ESMA compliance'
+  preferred_themes:
+    - 'Industrial Manufacturing'
+    - 'Automotive Technology'
+    - 'Renewable Energy'
+    - 'Chemical & Materials'
+
+tax_context:
+  primary_accounts:
+    - 'Depot (Investment Account)'
+    - 'Riester-Rente'
+    - 'Rürup-Rente'
+    - 'ETF Sparplan'
+  optimization_strategies:
+    - 'Freibetrag optimization (tax allowance)'
+    - 'Loss offsetting strategies'
+    - 'Long-term holding benefits'
+    - 'Pension contribution tax relief'
+
+strings:
+  currency_symbol: '€'
+  market_hours: '9:00 AM - 5:30 PM CET'
+  settlement_period: 'T+2'
+  analysis_focus: 'German market strength with European diversification'
+  risk_disclaimer: 'Investments carry risk. Past performance is not indicative of future results.'

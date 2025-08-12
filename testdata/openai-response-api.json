@@ -1,0 +1,242 @@
+{
+  "id": "resp_68a42e36c5c0819492bd698859603a060d0f5f2abc0ca742",
+  "object": "response",
+  "created_at": 1755590198,
+  "status": "completed",
+  "background": false,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": null,
+  "max_output_tokens": 12000,
+  "max_tool_calls": null,
+  "model": "gpt-4o-mini-2024-07-18",
+  "output": [
+    {
+      "id": "fc_68a42e37d8bc81948a81052aee4e65830d0f5f2abc0ca742",
+      "type": "function_call",
+      "status": "completed",
+      "arguments": "{\"topics\":[\"crypto\",\"market volatility\",\"emerging markets\",\"venture capital\",\"private equity\"]}",
+      "call_id": "call_QiX6sr3zDkqz6N8ggA0v87B3",
+      "name": "news_api"
+    },
+    {
+      "id": "fc_68a42e3866108194bb5edee33e8c0d340d0f5f2abc0ca742",
+      "type": "function_call",
+      "status": "completed",
+      "arguments": "{\"tickers\":[\"PEPE\",\"BNB\"]}",
+      "call_id": "call_6cU6aaO0MI7WIRgvcBQJbk4X",
+      "name": "fmp"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "reasoning": {
+    "effort": null,
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": true,
+  "temperature": 0.1,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tools": [
+    {
+      "type": "function",
+      "description": "Fetches fundamental financial data for stocks including company profiles, financial metrics, sector information, and key ratios from Financial Modeling Prep API",
+      "name": "fmp",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "tickers": {
+            "description": "Array of stock ticker symbols to fetch fundamental data for (e.g., ['AAPL', 'GOOGL', 'MSFT']), not for cryptocurrencies",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "tickers"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "description": "Fetch current news headlines for given topics. Supports categories like business, technology, health, sports, etc.",
+      "name": "news_api",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "topics": {
+            "description": "News topics or categories to search for (e.g., 'business', 'technology', 'AAPL', 'Tesla')",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "topics"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "description": "Fetches macroeconomic indicators from the Federal Reserve Economic Data (FRED) API. Available data includes: Per Capita Personal Income (882), GDP (249), Unemployment Rate (158), Federal Funds Rate (115), and other economic series. Use specific series group IDs, dates, and regions to get accurate economic data. For most reliable results, use series_group=882 with frequency=a (annual) and dates between 2013-01-01 and 2024-01-01.",
+      "name": "fred",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "default": "2022-01-01",
+            "description": "The date you want to pull series group data from (YYYY-MM-DD format). Use dates between 2013-01-01 and 2023-01-01 for best results with annual frequency",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string"
+          },
+          "frequency": {
+            "default": "a",
+            "description": "The frequency of the data - annual is most reliable for series 882",
+            "enum": [
+              "a",
+              "q",
+              "m"
+            ],
+            "type": "string"
+          },
+          "region_type": {
+            "default": "state",
+            "description": "The region type for the data",
+            "enum": [
+              "state",
+              "msa",
+              "county"
+            ],
+            "type": "string"
+          },
+          "season": {
+            "default": "NSA",
+            "description": "Seasonal adjustment",
+            "enum": [
+              "SA",
+              "NSA"
+            ],
+            "type": "string"
+          },
+          "series_group": {
+            "default": "882",
+            "description": "The series group ID for FRED GeoFRED regional data. ONLY use '882' for Per Capita Personal Income - this is the only guaranteed working series group. Do not use any other values.",
+            "enum": [
+              "882"
+            ],
+            "type": "string"
+          },
+          "units": {
+            "default": "Dollars",
+            "description": "The units for the data",
+            "enum": [
+              "Dollars",
+              "Percent"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "frequency",
+          "region_type",
+          "season",
+          "series_group",
+          "units"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "description": "Retrieve real-time quotes and historical OHLCV price data for individual stocks and securities",
+      "name": "yfinance_stock_data",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "interval": {
+            "description": "Data interval. Defaults to '1d'.",
+            "enum": [
+              "1m",
+              "2m",
+              "5m",
+              "15m",
+              "30m",
+              "60m",
+              "90m",
+              "1h",
+              "1d",
+              "5d",
+              "1wk",
+              "1mo",
+              "3mo"
+            ],
+            "type": "string"
+          },
+          "period": {
+            "description": "Time period for historical data. Defaults to '1y'.",
+            "enum": [
+              "1d",
+              "5d",
+              "1mo",
+              "3mo",
+              "6mo",
+              "1y",
+              "2y",
+              "5y",
+              "10y",
+              "ytd",
+              "max"
+            ],
+            "type": "string"
+          },
+          "symbol": {
+            "description": "Stock symbol (e.g., 'AAPL', 'MSFT', 'SPY')",
+            "type": "string"
+          }
+        },
+        "required": [
+          "interval",
+          "period",
+          "symbol"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    }
+  ],
+  "top_logprobs": 0,
+  "top_p": 1.0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 1352,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 64,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1416
+  },
+  "user": null,
+  "metadata": {}
+}

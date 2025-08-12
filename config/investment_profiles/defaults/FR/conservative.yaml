@@ -1,0 +1,48 @@
+investment_style: 'income'
+research_depth: 'basic'
+risk_tolerance: 'conservative'
+
+preferred_assets:
+  - 'bonds'
+  - 'dividend_equities'
+  - 'real_estate'
+
+avoided_sectors:
+  - 'tobacco'
+  - 'weapons'
+  - 'fossil_fuels'
+
+esg_criteria:
+  esg_importance: 'important'
+  esg_focus:
+    - 'environmental'
+    - 'social'
+    - 'governance'
+  exclusion_criteria:
+    - 'fossil_fuels'
+    - 'tobacco'
+    - 'weapons'
+
+regional_context:
+  # Composes with LocalizationConfig
+  country: 'FR'
+  language: 'fr'
+  currency: 'EUR'
+  timezone: 'Europe/Paris'
+  date_format: 'DD/MM/YYYY'
+
+  # Investment-specific regional context
+  tax_optimized_accounts:
+    - 'PEA'
+    - 'Assurance_Vie'
+  local_priorities:
+    - 'tax_optimization'
+    - 'esg_compliance'
+    - 'capital_preservation'
+  regulatory_focus:
+    - 'mifid_ii'
+    - 'amf_compliance'
+  prefer_local_champions: true
+
+profile_version: '1.0'
+source: 'default_regional'
