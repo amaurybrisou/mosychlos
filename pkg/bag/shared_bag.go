@@ -2,6 +2,7 @@ package bag
 
 import (
 	"encoding/json"
+	"io"
 	"log/slog"
 	"sync"
 
@@ -119,14 +120,6 @@ func (sb *sharedBag) GetAs(k keys.Key, out any) bool {
 func (sb *sharedBag) Set(k keys.Key, v any) {
 	sb.mu.Lock()
 	defer sb.mu.Unlock()
-
-	// Check if verbose mode is enabled
-	if verbose, exists := sb.data[keys.KVerboseMode]; exists {
-		if verboseBool, ok := verbose.(bool); ok && verboseBool {
-			slog.Debug("Setting bag key", "key", k, "value", v)
-		}
-	}
-
 	sb.data[k] = v
 }
 
@@ -167,4 +160,17 @@ func (sb *sharedBag) MarshalJSON() ([]byte, error) {
 	defer sb.mu.RUnlock()
 
 	return json.Marshal(sb.data)
+}
+
+// LoadSharedBagFromJSON loads a SharedBag from a JSON file (io.Reader)
+func LoadSharedBagFromJSON(r io.Reader) (SharedBag, error) {
+	var m map[keys.Key]any
+	dec := json.NewDecoder(r)
+	if err := dec.Decode(&m); err != nil {
+		return nil, err
+	}
+	sb := &sharedBag{
+		data: m,
+	}
+	return sb, nil
 }

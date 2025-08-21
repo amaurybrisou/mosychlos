@@ -23,7 +23,7 @@ func TestNewRiskBatchEngine(t *testing.T) {
 		name        string
 		engineName  string
 		cfg         config.LLMConfig
-		constraints models.BatchToolConstraints
+		constraints models.BaseToolConstraints
 		wantName    string
 	}{
 		{
@@ -32,7 +32,7 @@ func TestNewRiskBatchEngine(t *testing.T) {
 			cfg: config.LLMConfig{
 				Model: config.LLMModelGPT4o,
 			},
-			constraints: models.BatchToolConstraints{
+			constraints: models.BaseToolConstraints{
 				Tools: []models.ToolDef{},
 			},
 			wantName: "custom-risk-engine",
@@ -43,7 +43,7 @@ func TestNewRiskBatchEngine(t *testing.T) {
 			cfg: config.LLMConfig{
 				Model: config.LLMModelGPT4oMini,
 			},
-			constraints: models.BatchToolConstraints{
+			constraints: models.BaseToolConstraints{
 				Tools: []models.ToolDef{},
 			},
 			wantName: "risk-batch-engine",
@@ -195,7 +195,7 @@ func TestRiskBatchEngineHooks_IterationHooks(t *testing.T) {
 	})
 
 	t.Run("PostIteration", func(t *testing.T) {
-		results := &models.Aggregated{
+		results := &models.BatchResult{
 			JobID:     "test-job",
 			Successes: 2,
 			Failures:  0,
@@ -302,8 +302,8 @@ func TestRiskBatchEngineHooks_ProcessResults(t *testing.T) {
 			t.Fatal("expected map[string]any in shared bag")
 		}
 
-		if resultMap[customID] != content {
-			t.Errorf("expected %s to be stored, got %v", content, resultMap[customID])
+		if resultMap["result"] != content {
+			t.Errorf("expected %s to be stored, got %v", content, resultMap["result"])
 		}
 	})
 }
@@ -322,13 +322,6 @@ func TestRiskBatchEngineHooks_InterfaceCompliance(t *testing.T) {
 
 	// Test interface compliance
 	var _ models.BatchEngineHooks = hooks
-}
-
-// Helper function to check if string contains substring
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || (len(s) > len(substr) &&
-		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-			findInString(s, substr))))
 }
 
 func findInString(s, substr string) bool {

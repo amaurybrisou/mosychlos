@@ -58,7 +58,7 @@ func (p *NewsApiTool) Key() keys.Key {
 }
 
 func (p *NewsApiTool) Description() string {
-	return "NewsAPI provider for fetching news articles"
+	return "Fetch current news headlines for given topics. Supports categories like business, technology, health, sports, etc."
 }
 
 func (p *NewsApiTool) Tags() []string {
@@ -68,11 +68,11 @@ func (p *NewsApiTool) Tags() []string {
 func (t *NewsApiTool) IsExternal() bool { return false }
 
 func (p *NewsApiTool) Definition() models.ToolDef {
-	return models.ToolDef{
-		Type: "function",
-		Function: models.FunctionDef{
-			Name:        "news_api",
-			Description: "Fetch current news headlines for given topics. Supports categories like business, technology, health, sports, etc.",
+	return &models.CustomToolDef{
+		Type: models.CustomToolDefType,
+		FunctionDef: models.FunctionDef{
+			Name:        p.Name(),
+			Description: p.Description(),
 			Parameters: map[string]any{
 				"type":                 "object",
 				"additionalProperties": false,

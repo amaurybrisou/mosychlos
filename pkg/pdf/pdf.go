@@ -41,6 +41,8 @@ func New(opts ...Option) *converter {
 }
 
 // Convert turns a markdown file into a PDF. Returns path to PDF.
+// The input markdown file is read and converted to PDF format using pandoc.
+// output path is the same as the input path with .pdf extension.
 func (c *converter) Convert(mdPath string) (string, error) {
 	if mdPath == "" {
 		return "", errors.New("pdf: empty markdown path")

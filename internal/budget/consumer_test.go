@@ -10,12 +10,12 @@ import (
 func TestNewToolConsumer(t *testing.T) {
 	cases := []struct {
 		name        string
-		constraints *models.BatchToolConstraints
+		constraints *models.BaseToolConstraints
 		expectNil   bool
 	}{
 		{
 			name: "valid constraints",
-			constraints: &models.BatchToolConstraints{
+			constraints: &models.BaseToolConstraints{
 				MaxCallsPerTool: map[keys.Key]int{
 					keys.Fred: 2,
 					keys.FMP:  3,
@@ -30,7 +30,7 @@ func TestNewToolConsumer(t *testing.T) {
 		},
 		{
 			name:        "empty constraints",
-			constraints: &models.BatchToolConstraints{},
+			constraints: &models.BaseToolConstraints{},
 			expectNil:   false,
 		},
 	}
@@ -52,7 +52,7 @@ func TestNewToolConsumer(t *testing.T) {
 }
 
 func TestHasCreditsFor(t *testing.T) {
-	constraints := &models.BatchToolConstraints{
+	constraints := &models.BaseToolConstraints{
 		MaxCallsPerTool: map[keys.Key]int{
 			keys.Fred: 2,
 			keys.FMP:  1,
@@ -94,7 +94,7 @@ func TestHasCreditsFor(t *testing.T) {
 }
 
 func TestIncrementCallCount(t *testing.T) {
-	constraints := &models.BatchToolConstraints{
+	constraints := &models.BaseToolConstraints{
 		MaxCallsPerTool: map[keys.Key]int{
 			keys.Fred: 2,
 		},
@@ -137,7 +137,7 @@ func TestIncrementCallCount(t *testing.T) {
 }
 
 func TestGetRemainingCredits(t *testing.T) {
-	constraints := &models.BatchToolConstraints{
+	constraints := &models.BaseToolConstraints{
 		MaxCallsPerTool: map[keys.Key]int{
 			keys.Fred: 3,
 			keys.FMP:  2,
@@ -177,7 +177,7 @@ func TestGetRemainingCredits(t *testing.T) {
 }
 
 func TestReset(t *testing.T) {
-	constraints := &models.BatchToolConstraints{
+	constraints := &models.BaseToolConstraints{
 		MaxCallsPerTool: map[keys.Key]int{
 			keys.Fred: 2,
 		},
@@ -204,7 +204,7 @@ func TestReset(t *testing.T) {
 }
 
 func TestGetConstraints(t *testing.T) {
-	constraints := &models.BatchToolConstraints{
+	constraints := &models.BaseToolConstraints{
 		MaxCallsPerTool: map[keys.Key]int{
 			keys.Fred: 2,
 		},

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	pkgopenai "github.com/amaurybrisou/mosychlos/pkg/openai"
 )
@@ -15,10 +16,18 @@ type ChatStrategy struct {
 	cli     *pkgopenai.Client
 	baseURL string
 	model   string
+
+	toolRegistry map[keys.Key]models.Tool
+	consumer     models.ToolConsumer
 }
 
 func NewChatStrategy(cli *pkgopenai.Client, baseURL, model string) *ChatStrategy {
-	return &ChatStrategy{cli: cli, baseURL: baseURL, model: model}
+	return &ChatStrategy{
+		cli:          cli,
+		baseURL:      baseURL,
+		model:        model,
+		toolRegistry: make(map[keys.Key]models.Tool),
+	}
 }
 
 func (s *ChatStrategy) Name() string { return "openai-chat" }
@@ -44,6 +53,9 @@ type chatResp struct {
 	} `json:"choices"`
 	Usage *models.Usage `json:"usage,omitempty"`
 }
+
+func (s *ChatStrategy) RegisterTool(t models.Tool)            { s.toolRegistry[t.Key()] = t }
+func (s *ChatStrategy) SetToolConsumer(c models.ToolConsumer) { s.consumer = c }
 
 func (s *ChatStrategy) Ask(ctx context.Context, req models.PromptRequest) (*models.LLMResponse, error) {
 	// messages in PromptRequest are already []map[string]any with {role, content}

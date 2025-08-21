@@ -81,9 +81,9 @@ func (t *FMPAnalystEstimatesProvider) IsExternal() bool { return false }
 
 // Definition returns the tool definition for AI systems
 func (p *FMPAnalystEstimatesProvider) Definition() models.ToolDef {
-	return models.ToolDef{
-		Type: "function",
-		Function: models.FunctionDef{
+	return &models.CustomToolDef{
+		Type: models.CustomToolDefType,
+		FunctionDef: models.FunctionDef{
 			Name:        p.Name(),
 			Description: p.Description(),
 			Parameters: map[string]any{

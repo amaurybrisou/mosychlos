@@ -10,20 +10,13 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/internal/tools"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/config"
 )
 
 // toolsCommand handles the tools command
-func toolsCommand(cmd *cobra.Command, args []string) {
-	// Load configuration
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		slog.Error("Failed to load configuration", "error", err)
-		os.Exit(1)
-	}
-
+func toolsCommand(cmd *cobra.Command, args []string, cfg *config.Config) error {
 	// Initialize shared bag for metrics tracking
 	sharedBag := bag.NewSharedBag()
 	tools.SetSharedBag(sharedBag)
@@ -31,18 +24,18 @@ func toolsCommand(cmd *cobra.Command, args []string) {
 	// Initialize tools
 	if err := tools.NewTools(cfg); err != nil {
 		slog.Error("Failed to initialize tools", "error", err)
-		os.Exit(1)
+		return err
 	}
 
 	// Get verbose flag
 	verbose, _ := cmd.Flags().GetBool("verbose")
 
 	// Display tools information
-	displayTools(verbose)
+	return displayTools(verbose)
 }
 
 // displayTools shows all available tools
-func displayTools(verbose bool) {
+func displayTools(verbose bool) error {
 	fmt.Println("📊 Mosychlos Financial Data Tools")
 	fmt.Println("=================================")
 	fmt.Println()
@@ -52,7 +45,7 @@ func displayTools(verbose bool) {
 	if len(allTools) == 0 {
 		fmt.Println("❌ No tools are currently registered.")
 		fmt.Println("   Check your configuration file and ensure tool API keys are set.")
-		return
+		return fmt.Errorf("no tools registered")
 	}
 
 	fmt.Printf("✅ %d tools are currently available:\n\n", len(allTools))
@@ -100,10 +93,12 @@ func displayTools(verbose bool) {
 	fmt.Println()
 	fmt.Println("💡 Use --verbose flag for detailed information about each tool")
 	fmt.Println("📖 See individual tool documentation for usage examples")
+
+	return nil
 }
 
 // CreateToolsCommand creates the tools command
-func CreateToolsCommand() *cobra.Command {
+func CreateToolsCommand(cfg *config.Config) *cobra.Command {
 	var toolsCmd = &cobra.Command{
 		Use:   "tools",
 		Short: "Display available financial data tools",
@@ -118,7 +113,9 @@ Tools provide access to various financial data sources including:
 Examples:
   mosychlos tools              # Show compact list of all tools
   mosychlos tools --verbose    # Show detailed information for each tool`,
-		Run: toolsCommand,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return toolsCommand(cmd, args, cfg)
+		},
 	}
 
 	// Add flags

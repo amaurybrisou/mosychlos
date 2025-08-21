@@ -13,7 +13,7 @@ import (
 
 type EngineConfig struct {
 	Name        string
-	Constraints BatchToolConstraints
+	Constraints ToolConstraints
 }
 
 // ToolConsumer manages tool execution with credit/limit tracking
@@ -43,7 +43,7 @@ type Engine interface {
 	Execute(ctx context.Context, client AiClient, sharedBag bag.SharedBag) error
 }
 
-type BatchToolConstraints struct {
+type BaseToolConstraints struct {
 	Tools           []ToolDef        // All tools that can be used
 	PreferredTools  []keys.Key       // Tools to inject first
 	RequiredTools   []keys.Key       // Tools that must be used
@@ -51,8 +51,8 @@ type BatchToolConstraints struct {
 	MinCallsPerTool map[keys.Key]int // Minimum calls required per tool
 }
 
-func DefaultToolConstraints() BatchToolConstraints {
-	return BatchToolConstraints{
+func DefaultToolConstraints() ToolConstraints {
+	return &BaseToolConstraints{
 		Tools:           []ToolDef{},
 		PreferredTools:  []keys.Key{},
 		RequiredTools:   []keys.Key{},
@@ -62,12 +62,12 @@ func DefaultToolConstraints() BatchToolConstraints {
 }
 
 // IsToolPreferred checks if a tool is in the preferred list
-func (tc *BatchToolConstraints) IsToolPreferred(toolKey keys.Key) bool {
+func (tc *BaseToolConstraints) IsToolPreferred(toolKey keys.Key) bool {
 	return slices.Contains(tc.PreferredTools, toolKey)
 }
 
 // IsToolRequired checks if a tool is in the required list
-func (tc *BatchToolConstraints) IsToolRequired(toolKey keys.Key) bool {
+func (tc *BaseToolConstraints) IsToolRequired(toolKey keys.Key) bool {
 	for _, required := range tc.RequiredTools {
 		if required == toolKey {
 			return true
@@ -77,15 +77,31 @@ func (tc *BatchToolConstraints) IsToolRequired(toolKey keys.Key) bool {
 }
 
 // GetMaxCalls returns the maximum allowed calls for a tool (0 if unlimited)
-func (tc *BatchToolConstraints) GetMaxCalls(toolKey keys.Key) int {
+func (tc *BaseToolConstraints) GetMaxCalls(toolKey keys.Key) int {
 	if tc.MaxCallsPerTool == nil {
 		return 0 // unlimited
 	}
 	return tc.MaxCallsPerTool[toolKey]
 }
 
+// GetMinCalls returns the minimum allowed calls for a tool (0 if unlimited)
+func (tc *BaseToolConstraints) GetMinCalls(toolKey keys.Key) int {
+	if tc.MinCallsPerTool == nil {
+		return 0 // unlimited
+	}
+	return tc.MinCallsPerTool[toolKey]
+}
+
+func (tc *BaseToolConstraints) GetAllMaxCalls() []int {
+	maxCalls := make([]int, 0, len(tc.MaxCallsPerTool))
+	for _, calls := range tc.MaxCallsPerTool {
+		maxCalls = append(maxCalls, calls)
+	}
+	return maxCalls
+}
+
 // CanCallTool checks if a tool can still be called based on current call count
-func (tc *BatchToolConstraints) CanCallTool(toolKey keys.Key, currentCalls int) bool {
+func (tc *BaseToolConstraints) CanCallTool(toolKey keys.Key, currentCalls int) bool {
 	maxCalls := tc.GetMaxCalls(toolKey)
 	if maxCalls == 0 {
 		return true // unlimited calls
@@ -94,7 +110,7 @@ func (tc *BatchToolConstraints) CanCallTool(toolKey keys.Key, currentCalls int) 
 }
 
 // GetAllowedTools returns all tools that are either preferred or required
-func (tc *BatchToolConstraints) GetAllowedTools() []keys.Key {
+func (tc *BaseToolConstraints) GetAllowedTools() []keys.Key {
 	allowedMap := make(map[keys.Key]bool)
 
 	// Add preferred tools
@@ -116,8 +132,34 @@ func (tc *BatchToolConstraints) GetAllowedTools() []keys.Key {
 	return allowed
 }
 
+// GetToolsWithLimits returns all tools that have max call limits configured
+func (tc *BaseToolConstraints) GetToolsWithLimits() []keys.Key {
+	var tools []keys.Key
+	for tool := range tc.MaxCallsPerTool {
+		tools = append(tools, tool)
+	}
+	return tools
+}
+
+// GetRequiredTools returns all tools that are required
+func (tc *BaseToolConstraints) GetRequiredTools() []keys.Key {
+	allowedMap := make(map[keys.Key]bool)
+
+	// Add required tools
+	for _, tool := range tc.RequiredTools {
+		allowedMap[tool] = true
+	}
+	// Convert to slice
+	var allowed []keys.Key
+	for tool := range allowedMap {
+		allowed = append(allowed, tool)
+	}
+
+	return allowed
+}
+
 // HasReachedMaxCalls checks if a tool has reached its maximum call limit
-func (tc *BatchToolConstraints) HasReachedMaxCalls(toolKey keys.Key, currentCalls int) bool {
+func (tc *BaseToolConstraints) HasReachedMaxCalls(toolKey keys.Key, currentCalls int) bool {
 	maxCalls := tc.GetMaxCalls(toolKey)
 	if maxCalls == 0 {
 		return false // unlimited calls
@@ -126,7 +168,7 @@ func (tc *BatchToolConstraints) HasReachedMaxCalls(toolKey keys.Key, currentCall
 }
 
 // RemainingCalls returns how many more calls are allowed for a tool
-func (tc *BatchToolConstraints) RemainingCalls(toolKey keys.Key, currentCalls int) int {
+func (tc *BaseToolConstraints) RemainingCalls(toolKey keys.Key, currentCalls int) int {
 	maxCalls := tc.GetMaxCalls(toolKey)
 	if maxCalls == 0 {
 		return -1 // unlimited
@@ -139,7 +181,7 @@ func (tc *BatchToolConstraints) RemainingCalls(toolKey keys.Key, currentCalls in
 }
 
 // Validate checks if the constraints are valid
-func (tc *BatchToolConstraints) Validate() error {
+func (tc *BaseToolConstraints) Validate() error {
 	// Check for duplicate tools between preferred and required
 	preferredMap := make(map[keys.Key]bool)
 	for _, tool := range tc.PreferredTools {
@@ -166,8 +208,8 @@ func (tc *BatchToolConstraints) Validate() error {
 }
 
 // NewToolConstraints creates a new ToolConstraints with validation
-func NewToolConstraints(preferred []keys.Key, required []keys.Key, maxCalls map[keys.Key]int) (*BatchToolConstraints, error) {
-	tc := &BatchToolConstraints{
+func NewToolConstraints(preferred []keys.Key, required []keys.Key, maxCalls map[keys.Key]int) (*BaseToolConstraints, error) {
+	tc := &BaseToolConstraints{
 		PreferredTools:  preferred,
 		RequiredTools:   required,
 		MaxCallsPerTool: maxCalls,

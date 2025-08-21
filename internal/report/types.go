@@ -19,6 +19,6 @@ type ReportGenerator interface {
 // Dependencies contains the dependencies needed for report generation
 type Dependencies struct {
 	Config     *config.Config
-	DataBag    bag.Bag
+	DataBag    bag.SharedBag // Changed to SharedBag to work with BagLoader
 	FileSystem fs.FS
 }

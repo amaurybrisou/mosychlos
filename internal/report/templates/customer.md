@@ -13,36 +13,24 @@
 
 - **Total Accounts:** {{len .Portfolio.Accounts}}
   {{range .Portfolio.Accounts}}
-- **{{.Type}} Account:** {{.Name}}
-  - Holdings: {{len .Holdings}}
+  - **{{.Type}} Account:** {{.Name}} ({{len .Holdings}} holdings)
     {{end}}
-
-### Portfolio Totals
-
-- **Total Accounts:** {{len .Portfolio.Accounts}}
-  {{if .Portfolio.BaseCurrency}}- **Base Currency:** {{.Portfolio.BaseCurrency}}{{end}}
-  {{if .Portfolio.AsOf}}- **As of Date:** {{.Portfolio.AsOf}}{{end}}
-  {{else}}
-  _No portfolio data available_
-  {{end}}
+    {{if .Portfolio.BaseCurrency}}- **Base Currency:** {{.Portfolio.BaseCurrency}}{{end}}
+    {{if .Portfolio.AsOf}}- **As of Date:** {{.Portfolio.AsOf}}{{end}}
+    {{else}}
+    _No portfolio data available_
+    {{end}}
 
 {{if .Insights}}
 
 ### Key Insights
 
 {{formatInvestmentResearch .Insights}}
-{{else}}
-
-### Key Highlights
-
-- Portfolio analysis completed
-- Risk assessment performed
-- Compliance review conducted
-  {{end}}
+{{end}}
 
 ---
 
-## Detailed Analysis
+## Analysis Summary
 
 {{if .RiskMetrics}}
 
@@ -82,14 +70,12 @@
 
 {{.NewsAnalyzed}}
 {{end}}
-
 {{if .Fundamentals}}
 
 ### 🔍 Fundamental Analysis
 
 {{.Fundamentals}}
 {{end}}
-
 {{if .StockAnalysis}}
 
 ### 📋 Individual Holdings Analysis
@@ -102,12 +88,17 @@
 
 ## Recommendations
 
-Based on the current portfolio analysis, consider the following:
+{{if .Recommendations}}
+{{range .Recommendations}}
 
+1. **{{.Title}}**: {{.Text}}
+   {{end}}
+   {{else}}
 1. **Risk Management**: Review risk exposure levels
-2. **Diversification**: Assess current asset allocation
-3. **Performance**: Monitor key performance indicators
-4. **Compliance**: Ensure regulatory compliance
+1. **Diversification**: Assess current asset allocation
+1. **Performance**: Monitor key performance indicators
+1. **Compliance**: Ensure regulatory compliance
+   {{end}}
 
 ---
 

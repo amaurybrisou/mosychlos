@@ -1,18 +1,27 @@
 package mosychlos
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
-	"os"
+	"strings"
 
-	"github.com/amaurybrisou/mosychlos/pkg/cli"
+	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/spf13/cobra"
 )
 
-func portfolioCommand(cmd *cobra.Command, args []string) {
-	// // Load configuration
-	// cfg := config.MustLoadConfig()
+func NewPortfolioCommand(cfg *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:   "portfolio",
+		Short: "Display portfolio information",
+		Long:  `Interactively display your portfolio with various view options.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return portfolioCommand(cmd, args, cfg)
+		},
+	}
+}
 
+func portfolioCommand(cmd *cobra.Command, args []string, cfg *config.Config) error {
 	// // Create filesystem and shared bag (don't convert to snapshot yet)
 	// filesystem := fs.OS{}
 	// sharedBag := bag.NewSharedBag()
@@ -44,10 +53,10 @@ func portfolioCommand(cmd *cobra.Command, args []string) {
 	// }
 
 	// Interactive display mode selection
-	displayMode, err := cli.SelectDisplayMode()
+	displayMode, err := selectDisplayMode()
 	if err != nil {
 		slog.Error("Failed to select display mode", "error", err)
-		os.Exit(1)
+		return err
 	}
 
 	// Display based on selection
@@ -61,20 +70,49 @@ func portfolioCommand(cmd *cobra.Command, args []string) {
 	// case "compliance":
 	// 	jurisdiction := cfg.Localization.Country
 	// 	cli.DisplayComplianceCheck(portfolioData, jurisdiction)
-	case "ai-analysis":
-		// Launch AI analysis - delegate to analyze command
-		analyzeCommand(cmd, []string{}) // Call with empty args for interactive mode
-		return                          // Don't ask for another view after analysis (analyze has its own loop)
+
 	}
 
 	// Ask if user wants to see another view
-	showAnother, err := cli.ConfirmAction("Would you like to see another view?")
+	showAnother, err := confirmAction("Would you like to see another view?")
 	if err != nil {
 		log.Printf("Error in confirmation: %v", err)
-		return
+		return err
 	}
 
 	if showAnother {
-		portfolioCommand(cmd, args) // recursive call for multiple views
+		return portfolioCommand(cmd, args, cfg) // recursive call for multiple views
 	}
+
+	return nil
+}
+
+// selectDisplayMode prompts the user to select a display mode
+func selectDisplayMode() (string, error) {
+	options := []string{
+		"summary - Portfolio overview and summary statistics",
+		"detailed - Detailed holdings breakdown",
+		"accounts - View by account structure",
+		"compliance - Compliance and regulatory check",
+	}
+
+	fmt.Println("\n📊 Select Display Mode:")
+	for i, option := range options {
+		fmt.Printf("  %d. %s\n", i+1, option)
+	}
+
+	var choice int
+	fmt.Print("\nEnter your choice (1-4): ")
+	if _, err := fmt.Scanf("%d", &choice); err != nil {
+		return "", fmt.Errorf("invalid input: %w", err)
+	}
+
+	if choice < 1 || choice > len(options) {
+		return "", fmt.Errorf("invalid choice: must be between 1 and %d", len(options))
+	}
+
+	// Extract the display mode from the option string
+	option := options[choice-1]
+	displayMode := strings.Split(option, " - ")[0]
+	return displayMode, nil
 }

@@ -10,15 +10,15 @@ import (
 
 // defaultToolConsumer implements ToolConsumer interface with constraint-based budget management
 type defaultToolConsumer struct {
-	constraints *models.BatchToolConstraints
+	constraints models.ToolConstraints
 	callCounts  map[keys.Key]int
 }
 
 // NewToolConsumer creates a new ToolConsumer based on the provided constraints
-func NewToolConsumer(constraints *models.BatchToolConstraints) models.ToolConsumer {
+func NewToolConsumer(constraints models.ToolConstraints) models.ToolConsumer {
 	if constraints == nil {
 		slog.Warn("budget.NewToolConsumer: nil constraints provided, using empty constraints")
-		constraints = &models.BatchToolConstraints{}
+		constraints = models.DefaultToolConstraints()
 	}
 
 	return &defaultToolConsumer{
@@ -29,7 +29,7 @@ func NewToolConsumer(constraints *models.BatchToolConstraints) models.ToolConsum
 
 // ConsumeTools executes tools based on constraints until credits are exhausted
 func (c *defaultToolConsumer) ConsumeTools(ctx context.Context, key keys.Key) error {
-	if _, hasLimit := c.constraints.MaxCallsPerTool[key]; !hasLimit {
+	if hasLimit := c.constraints.GetMaxCalls(key); hasLimit == 0 {
 		return nil // no limit for this tool, so no consumption needed
 	}
 
@@ -37,8 +37,8 @@ func (c *defaultToolConsumer) ConsumeTools(ctx context.Context, key keys.Key) er
 	slog.Debug("consuming credits for tool",
 		"tool", key,
 		"used", c.callCounts[key],
-		"max", c.constraints.MaxCallsPerTool[key],
-		"remaining", c.constraints.MaxCallsPerTool[key]-c.callCounts[key],
+		"max", c.constraints.GetMaxCalls(key),
+		"remaining", c.constraints.RemainingCalls(key, c.callCounts[key]),
 	)
 
 	return nil
@@ -48,10 +48,10 @@ func (c *defaultToolConsumer) ConsumeTools(ctx context.Context, key keys.Key) er
 func (c *defaultToolConsumer) GetRemainingCredits() map[keys.Key]int {
 	remaining := make(map[keys.Key]int)
 
-	// calculate remaining credits for each tool with a limit
-	for toolKey, maxCalls := range c.constraints.MaxCallsPerTool {
-		used := c.callCounts[toolKey]
-		remaining[toolKey] = max(maxCalls-used, 0)
+	// calculate remaining credits for each tool with a configured limit
+	for _, toolName := range c.constraints.GetToolsWithLimits() {
+		used := c.callCounts[toolName]
+		remaining[toolName] = c.constraints.RemainingCalls(toolName, used)
 	}
 
 	return remaining
@@ -59,19 +59,19 @@ func (c *defaultToolConsumer) GetRemainingCredits() map[keys.Key]int {
 
 // HasCreditsFor checks if there are remaining credits for a tool
 func (c *defaultToolConsumer) HasCreditsFor(toolKey keys.Key) bool {
-	maxCalls, hasLimit := c.constraints.MaxCallsPerTool[toolKey]
-	if !hasLimit {
+	limit := c.constraints.GetMaxCalls(toolKey)
+	if limit == 0 {
 		// no limit means unlimited credits
 		return true
 	}
 
 	used := c.callCounts[toolKey]
-	remaining := maxCalls - used
+	remaining := limit - used
 
 	slog.Debug("budget.HasCreditsFor",
 		"tool", toolKey,
 		"used", used,
-		"max", maxCalls,
+		"max", limit,
 		"remaining", remaining)
 
 	return remaining > 0
@@ -97,7 +97,7 @@ func (c *defaultToolConsumer) GetCallCount(toolKey keys.Key) int {
 }
 
 // GetConstraints returns a copy of the constraints
-func (c *defaultToolConsumer) GetConstraints() *models.BatchToolConstraints {
+func (c *defaultToolConsumer) GetConstraints() models.ToolConstraints {
 	return c.constraints
 }
 
@@ -106,9 +106,9 @@ func (c *defaultToolConsumer) GetConstraints() *models.BatchToolConstraints {
 func (c *defaultToolConsumer) GetUnusedRequiredTools() []keys.Key {
 	var unused []keys.Key
 
-	for _, requiredTool := range c.constraints.RequiredTools {
+	for _, requiredTool := range c.constraints.GetRequiredTools() {
 		currentCalls := c.callCounts[requiredTool]
-		minCalls := c.constraints.MinCallsPerTool[requiredTool] // defaults to 0 if not set
+		minCalls := c.constraints.GetMinCalls(requiredTool) // defaults to 0 if not set
 
 		// Tool is unused if:
 		// 1. It hasn't been called at all (currentCalls == 0), OR

@@ -76,9 +76,9 @@ func (t *YFinanceStockDataTool) IsExternal() bool { return false }
 
 // Definition returns the tool definition
 func (t *YFinanceStockDataTool) Definition() models.ToolDef {
-	return models.ToolDef{
-		Type: "function",
-		Function: models.FunctionDef{
+	return &models.CustomToolDef{
+		Type: models.CustomToolDefType,
+		FunctionDef: models.FunctionDef{
 			Name:        t.Name(),
 			Description: t.Description(),
 			Parameters: map[string]any{

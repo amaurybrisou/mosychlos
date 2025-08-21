@@ -27,7 +27,7 @@ type Client struct {
 	consumer     models.ToolConsumer
 
 	responsesStrat ResponsesStrategyInterface
-	chatStrat      *llmopenai.ChatStrategy // optional
+	chatStrat      ChatStrategyInterface // optional
 }
 
 func NewLLMClient(cfg *config.Config, sharedBag bag.SharedBag) (*Client, error) {
@@ -137,8 +137,31 @@ func (c *Client) DoBatch(ctx context.Context, reqs []models.PromptRequest) (*mod
 				body["temperature"] = *req.Temperature
 			}
 			if req.Tools != nil {
-				body["tools"] = req.Tools
-				slog.Debug("Adding tools to batch request", "tool_count", len(req.Tools))
+				// Convert tools for batch compatibility with /v1/chat/completions
+				batchTools := make([]any, 0, len(req.Tools))
+				for _, toolDef := range req.Tools {
+					// For batch requests, convert all tools to function format
+					switch t := toolDef.(type) {
+					case *models.FunctionToolDef:
+						batchTools = append(batchTools, t)
+					case *models.CustomToolDef:
+						// Convert custom tools to function tools for batch requests
+						functionTool := &models.FunctionToolDef{
+							Type: models.FunctionToolDefType,
+							Function: models.FunctionDef{
+								Name:        t.Name,
+								Description: t.Description,
+								Parameters:  t.Parameters,
+							},
+						}
+						batchTools = append(batchTools, functionTool)
+					default:
+						// Fallback - try to use as is
+						batchTools = append(batchTools, toolDef)
+					}
+				}
+				body["tools"] = batchTools
+				slog.Debug("Adding tools to batch request", "tool_count", len(batchTools))
 			}
 			if req.ResponseFormat != nil {
 				body["response_format"] = req.ResponseFormat

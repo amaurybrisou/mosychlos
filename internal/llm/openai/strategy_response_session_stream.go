@@ -16,7 +16,7 @@ import (
 )
 
 func (s *session) NextStream(ctx context.Context, tools []models.ToolDef, rf *models.ResponseFormat) (<-chan models.StreamChunk, error) {
-	body := responsesReq{
+	body := responseApiReq{
 		Model: s.p.cfg.Model.String(),
 		Input: s.messages,
 		Tools: toAnyTools(tools, nil),
@@ -95,7 +95,7 @@ func (s *session) NextStream(ctx context.Context, tools []models.ToolDef, rf *mo
 
 		// Non-200 → decode JSON error if possible
 		if resp.StatusCode != http.StatusOK {
-			var er responsesErr
+			var er responseApiErr
 			if err := json.NewDecoder(resp.Body).Decode(&er); err != nil {
 				ch <- models.StreamChunk{Error: fmt.Errorf("stream HTTP %d", resp.StatusCode)}
 				return

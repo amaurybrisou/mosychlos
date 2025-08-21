@@ -7,6 +7,7 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -27,19 +28,22 @@ func TestWebSearchProvider(t *testing.T) {
 
 	t.Run("Tool Definition", func(t *testing.T) {
 		def := provider.Definition()
-		assert.Equal(t, "function", def.Type)
-		assert.Equal(t, keys.WebSearch.String(), def.Function.Name)
-		assert.NotEmpty(t, def.Function.Description)
+
+		typedDef, ok := def.(*models.CustomToolDef)
+		assert.True(t, ok)
+		assert.Equal(t, models.CustomToolDefType, typedDef.Type)
+		assert.Equal(t, keys.WebSearch.String(), typedDef.FunctionDef.Name)
+		assert.NotEmpty(t, typedDef.FunctionDef.Description)
 
 		// Check parameters structure
-		params, ok := def.Function.Parameters["properties"].(map[string]any)
+		params, ok := typedDef.FunctionDef.Parameters["properties"].(map[string]any)
 		require.True(t, ok)
 
 		queryParam, ok := params["query"].(map[string]any)
 		require.True(t, ok)
 		assert.Equal(t, "string", queryParam["type"])
 
-		required, ok := def.Function.Parameters["required"].([]string)
+		required, ok := typedDef.FunctionDef.Parameters["required"].([]string)
 		require.True(t, ok)
 		assert.Contains(t, required, "query")
 	})

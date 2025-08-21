@@ -144,8 +144,8 @@ func (e *BatchInvestmentResearchEngine) generateRegionalPrompt(
 }
 
 // getToolConstraints returns tool constraints based on research depth (same as regular engine)
-func (e *BatchInvestmentResearchEngine) getToolConstraints() models.BatchToolConstraints {
-	baseConstraints := models.BatchToolConstraints{
+func (e *BatchInvestmentResearchEngine) getToolConstraints() models.BaseToolConstraints {
+	baseConstraints := models.BaseToolConstraints{
 		Tools: tools.GetToolsDef(),
 		RequiredTools: []keys.Key{
 			keys.WebSearch,

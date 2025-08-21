@@ -13,3 +13,11 @@ type ResponsesStrategyInterface interface {
 	Ask(ctx context.Context, req models.PromptRequest) (*models.LLMResponse, error)
 	AskStream(ctx context.Context, req models.PromptRequest) (<-chan models.StreamChunk, error)
 }
+
+// ChatStrategyInterface defines the interface for chat strategies
+type ChatStrategyInterface interface {
+	RegisterTool(t models.Tool)
+	SetToolConsumer(c models.ToolConsumer)
+	Ask(ctx context.Context, req models.PromptRequest) (*models.LLMResponse, error)
+	AskStream(ctx context.Context, req models.PromptRequest) (<-chan models.StreamChunk, error)
+}

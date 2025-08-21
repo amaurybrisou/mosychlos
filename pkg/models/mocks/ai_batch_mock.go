@@ -208,10 +208,10 @@ func (mr *MockBatchManagerMockRecorder) GetJobStatus(ctx, jobID interface{}) *go
 }
 
 // GetResults mocks base method.
-func (m *MockBatchManager) GetResults(ctx context.Context, jobID string) (*models.Aggregated, error) {
+func (m *MockBatchManager) GetResults(ctx context.Context, jobID string) (*models.BatchResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetResults", ctx, jobID)
-	ret0, _ := ret[0].(*models.Aggregated)
+	ret0, _ := ret[0].(*models.BatchResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

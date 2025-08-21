@@ -8,10 +8,10 @@ func (k Key) String() string {
 	return string(k)
 }
 
-// Well-known keys organized by functional domain
 const (
 	// === APPLICATION STATE & CONFIGURATION ===
 	KVerboseMode       Key = "verbose_mode"        // Whether verbose logging is enabled
+	KBatchMode         Key = "batch_mode"          // Whether current run is in batch mode
 	KRegionalConfig    Key = "localization_config" // Localization configuration
 	KAnalysisConfig    Key = "analysis_config"     // Analysis configuration
 	KJurisdiction      Key = "jurisdiction"        // Jurisdiction/regulatory context
@@ -79,8 +79,8 @@ const (
 	KInsights                 Key = "insights"                   // Generated insights
 	KDiagnostics              Key = "diagnostics"                // System diagnostics
 	KAnalysisResults          Key = "analysis_results"           // AI analysis results
-	KRiskAnalysisResult       Key = "risk_analysis.result"       // Risk analysis output
-	KInvestmentResearchResult Key = "investment_research.result" // Investment research output
+	KRiskAnalysisResult       Key = "risk_analysis_result"       // Risk analysis output
+	KInvestmentResearchResult Key = "investment_research_result" // Investment research output
 
 	// === EXECUTION & REPORTING ===
 	KExecutionReport Key = "execution_report" // Execution report
@@ -96,6 +96,8 @@ const (
 	KApplicationHealth  Key = "application_health"   // Overall system health status
 	KPerformanceMetrics Key = "performance_metrics"  // Application performance metrics
 	KExternalDataHealth Key = "external_data_health" // External data provider health
+
+	ResponseFormatJSON Key = "json_schema" // JSON schema response format
 )
 
 // === EXTERNAL TOOLS & DATA SOURCES ===

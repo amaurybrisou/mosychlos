@@ -45,7 +45,16 @@ func RunConversation(
 	}
 
 	for round := 0; round < opts.MaxRounds; round++ {
+		slog.Debug("RunConversation loop iteration",
+			"round", round,
+			"max_rounds", opts.MaxRounds,
+			"tool_calls_count", len(turn.ToolCalls),
+			"content_length", len(turn.Content))
+
 		if len(turn.ToolCalls) == 0 {
+			slog.Debug("No more tool calls, returning final turn",
+				"content_length", len(turn.Content),
+				"content_preview", turn.Content[:min(100, len(turn.Content))])
 			return turn, nil // no tools => done
 		}
 
@@ -88,15 +97,25 @@ func RunConversation(
 			}
 
 			// Feed result to the model
-			sess.AddToolResult(call.CallID, out)
+			sess.AddFunctionCallResult(call, out)
 		}
 
 		// Next model turn (rf forwarded)
+		slog.Debug("Requesting next model turn after tool execution", "round", round)
 		next, err := sess.Next(ctx, funcTools, rf)
 		if err != nil {
 			return nil, err
 		}
 		turn = next
+		slog.Debug("Received next model turn",
+			"round", round,
+			"content_length", len(next.Content),
+			"tool_calls_count", len(next.ToolCalls),
+			"content_preview", next.Content[:min(100, len(next.Content))])
 	}
+	slog.Warn("RunConversation reached max rounds without completion",
+		"max_rounds", opts.MaxRounds,
+		"final_turn_content_length", len(turn.Content),
+		"final_turn_tool_calls", len(turn.ToolCalls))
 	return turn, nil
 }

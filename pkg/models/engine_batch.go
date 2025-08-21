@@ -23,7 +23,7 @@ type BatchEngineHooks interface {
 	PreIteration(iteration int, jobs []BatchJob) error
 
 	// PostIteration is called after each batch iteration with results
-	PostIteration(iteration int, results *Aggregated) error
+	PostIteration(iteration int, results *BatchResult) error
 
 	// ProcessToolResult is called when a tool call result is processed
 	ProcessToolResult(customID, toolName, result string, sharedBag bag.SharedBag) error
@@ -38,11 +38,24 @@ type BatchEngineHooks interface {
 	ResultKey() keys.Key
 }
 
+// ToolConstraints is an interface for BaseToolConstraints
+type ToolConstraints interface {
+	// Core constraint methods - actually used
+	GetMaxCalls(toolKey keys.Key) int
+	GetMinCalls(toolKey keys.Key) int
+	GetRequiredTools() []keys.Key
+	GetToolsWithLimits() []keys.Key
+	RemainingCalls(toolKey keys.Key, currentCalls int) int
+
+	// Validation
+	Validate() error
+}
+
 // BatchConstraints defines constraints and limits for batch processing operations
 // Composes existing Constraints and adds batch-specific settings
 type BatchConstraints struct {
 	// Embed existing constraints for model limits, timeouts, etc.
-	BatchToolConstraints
+	ToolConstraints
 
 	// Batch-specific constraints
 	MaxIterations    int           `json:"max_iterations" yaml:"max_iterations"`         // Maximum number of batch iterations
@@ -59,16 +72,16 @@ type BatchConstraints struct {
 // DefaultBatchConstraints returns sensible defaults for batch processing
 func DefaultBatchConstraints() BatchConstraints {
 	return BatchConstraints{
-		BatchToolConstraints: DefaultToolConstraints(), // Use existing defaults
-		MaxIterations:        10,
-		MaxJobsPerBatch:      100,
-		BatchTimeout:         30 * time.Minute,
-		IterationTimeout:     5 * time.Minute,
-		RetryAttempts:        3,
-		RetryDelay:           5 * time.Second,
-		ConcurrentJobs:       5,
-		EnableEarlyStop:      true,
-		SuccessThreshold:     0.7, // 70% success rate required to continue
+		ToolConstraints:  DefaultToolConstraints(), // Use existing defaults
+		MaxIterations:    10,
+		MaxJobsPerBatch:  100,
+		BatchTimeout:     30 * time.Minute,
+		IterationTimeout: 5 * time.Minute,
+		RetryAttempts:    3,
+		RetryDelay:       5 * time.Second,
+		ConcurrentJobs:   5,
+		EnableEarlyStop:  true,
+		SuccessThreshold: 0.7, // 70% success rate required to continue
 	}
 }
 
@@ -101,7 +114,7 @@ func DefaultBatchConstraints() BatchConstraints {
 // Validate checks if the batch constraints are valid
 func (bc *BatchConstraints) Validate() error {
 	// Validate embedded constraints first
-	if err := bc.BatchToolConstraints.Validate(); err != nil {
+	if err := bc.ToolConstraints.Validate(); err != nil {
 		return fmt.Errorf("base constraints validation failed: %w", err)
 	}
 

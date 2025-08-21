@@ -28,17 +28,18 @@ const (
 
 // CustomerReportData contains data for customer-facing reports
 type CustomerReportData struct {
-	Portfolio       *Portfolio `json:"portfolio,omitempty"`
-	RiskMetrics     any        `json:"risk_metrics,omitempty"`
-	AllocationData  any        `json:"allocation_data,omitempty"`
-	PerformanceData any        `json:"performance_data,omitempty"`
-	ComplianceData  any        `json:"compliance_data,omitempty"`
-	StockAnalysis   any        `json:"stock_analysis,omitempty"`
-	Insights        any        `json:"insights,omitempty"`
-	NewsAnalyzed    any        `json:"news_analyzed,omitempty"`
-	Fundamentals    any        `json:"fundamentals,omitempty"`
-	GeneratedAt     time.Time  `json:"generated_at"`
-	CustomerName    string     `json:"customer_name,omitempty"`
+	Portfolio       any       `json:"portfolio,omitempty"`
+	RiskMetrics     any       `json:"risk_metrics,omitempty"`
+	AllocationData  any       `json:"allocation_data,omitempty"`
+	PerformanceData any       `json:"performance_data,omitempty"`
+	ComplianceData  any       `json:"compliance_data,omitempty"`
+	StockAnalysis   any       `json:"stock_analysis,omitempty"`
+	Insights        any       `json:"insights,omitempty"`
+	NewsAnalyzed    any       `json:"news_analyzed,omitempty"`
+	Fundamentals    any       `json:"fundamentals,omitempty"`
+	Recommendations any       `json:"recommendations,omitempty"`
+	GeneratedAt     time.Time `json:"generated_at"`
+	CustomerName    string    `json:"customer_name,omitempty"`
 }
 
 // SystemReportData contains data for system diagnostic reports
@@ -50,6 +51,7 @@ type SystemReportData struct {
 	MarketDataFreshness *MarketDataFreshness `json:"market_data_freshness,omitempty"`
 	ToolComputations    []ToolComputation    `json:"tool_computations,omitempty"`
 	GeneratedAt         time.Time            `json:"generated_at"`
+	BatchMode           bool                 `json:"batch_mode,omitempty"`
 }
 
 // ReportGenerator interface for generating different types of reports
@@ -67,6 +69,12 @@ type ReportOutput struct {
 	FilePath    string       `json:"file_path,omitempty"`
 	GeneratedAt time.Time    `json:"generated_at"`
 	Metadata    ReportMeta   `json:"metadata"`
+}
+
+// FullReportData combines customer and system data for comprehensive reports
+type FullReportData struct {
+	Customer *CustomerReportData `json:"customer_data"`
+	System   *SystemReportData   `json:"system_data"`
 }
 
 // ReportMeta contains metadata about the report

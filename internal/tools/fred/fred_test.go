@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
+	"github.com/amaurybrisou/mosychlos/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestProvider_New(t *testing.T) {
@@ -71,9 +73,11 @@ func TestProvider_ToolInterface(t *testing.T) {
 	}
 
 	def := provider.Definition()
-	if def.Function.Name != provider.Name() {
-		t.Errorf("Definition() Function.Name = %v, want %v", def.Function.Name, provider.Name())
-	}
+
+	typedDef, ok := def.(*models.CustomToolDef)
+	assert.True(t, ok)
+	assert.Equal(t, typedDef.FunctionDef.Name, provider.Name())
+	assert.Equal(t, typedDef.FunctionDef.Description, provider.Description())
 }
 
 // Integration test - requires FRED_API_KEY environment variable

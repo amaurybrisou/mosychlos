@@ -67,7 +67,7 @@ func (mr *MockBatchEngineHooksMockRecorder) GetInitialPrompt(arg0 interface{}) *
 }
 
 // PostIteration mocks base method.
-func (m *MockBatchEngineHooks) PostIteration(arg0 int, arg1 *models.Aggregated) error {
+func (m *MockBatchEngineHooks) PostIteration(arg0 int, arg1 *models.BatchResult) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PostIteration", arg0, arg1)
 	ret0, _ := ret[0].(error)

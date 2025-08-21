@@ -1,3 +1,4 @@
+// New returns a default OS filesystem instance
 package fs
 
 import (
@@ -5,6 +6,11 @@ import (
 	"os"
 	"path/filepath"
 )
+
+// New returns a default OS filesystem instance
+func New() FS {
+	return OS{}
+}
 
 //go:generate mockgen -source=fs.go -destination=mocks/fs_mock.go -package=mocks
 

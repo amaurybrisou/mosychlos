@@ -6,6 +6,8 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestProvider_New(t *testing.T) {
@@ -103,17 +105,15 @@ func TestProvider_Interface(t *testing.T) {
 
 	// Test Definition
 	def := provider.Definition()
-	if def.Function.Name != "news_api" {
-		t.Errorf("expected function name 'news_api', got %s", def.Function.Name)
+	typedDef, ok := def.(*models.CustomToolDef)
+	if !ok {
+		t.Fatalf("expected *models.CustomToolDef, got %T", def)
 	}
 
-	if def.Function.Description == "" {
-		t.Error("expected non-empty description in definition")
-	}
-
-	if def.Function.Parameters == nil {
-		t.Error("expected parameters in definition")
-	}
+	assert.Equal(t, models.CustomToolDefType, typedDef.Type)
+	assert.NotNil(t, typedDef.FunctionDef.Parameters)
+	assert.Equal(t, typedDef.FunctionDef.Name, provider.Name())
+	assert.Equal(t, typedDef.FunctionDef.Description, provider.Description())
 }
 
 func TestProvider_Run_InvalidArgs(t *testing.T) {

@@ -1,3 +1,4 @@
+// GenerateReport generates a report from FullReportData, outputDir, and format (for CLI use)
 package report
 
 import (
@@ -8,14 +9,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/amaurybrisou/mosychlos/pkg/fs"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/amaurybrisou/mosychlos/pkg/pdf"
 )
 
 // Generator implements the ReportGenerator interface
 type Generator struct {
-	deps Dependencies
-	pdf  pdf.Converter
+	deps      Dependencies
+	pdf       pdf.Converter
+	bagLoader BagLoader
 }
 
 // NewGenerator creates a new report generator
@@ -27,9 +30,13 @@ func NewGenerator(deps Dependencies) *Generator {
 	}
 	pdfOptions = append(pdfOptions, pdf.WithSanitize(deps.Config.Report.EnablePDFUnicodeSanitization))
 
+	// Create bag loader with file system access
+	bagLoader := NewBagLoader(deps.FileSystem)
+
 	return &Generator{
-		deps: deps,
-		pdf:  pdf.New(pdfOptions...),
+		deps:      deps,
+		pdf:       pdf.New(pdfOptions...),
+		bagLoader: bagLoader,
 	}
 }
 
@@ -37,9 +44,9 @@ func NewGenerator(deps Dependencies) *Generator {
 func (g *Generator) GenerateCustomerReport(ctx context.Context, format models.ReportFormat) (*models.ReportOutput, error) {
 	startTime := time.Now()
 
-	customerData, err := g.extractCustomerData()
+	customerData, err := g.bagLoader.LoadCustomerData(ctx, g.deps.DataBag)
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract customer data: %w", err)
+		return nil, fmt.Errorf("failed to load customer data: %w", err)
 	}
 
 	content, dataSources, err := g.renderCustomerReport(customerData)
@@ -75,9 +82,9 @@ func (g *Generator) GenerateCustomerReport(ctx context.Context, format models.Re
 func (g *Generator) GenerateSystemReport(ctx context.Context, format models.ReportFormat) (*models.ReportOutput, error) {
 	startTime := time.Now()
 
-	systemData, err := g.extractSystemData()
+	systemData, err := g.bagLoader.LoadSystemData(ctx, g.deps.DataBag)
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract system data: %w", err)
+		return nil, fmt.Errorf("failed to load system data: %w", err)
 	}
 
 	content, dataSources, err := g.renderSystemReport(systemData)
@@ -113,18 +120,13 @@ func (g *Generator) GenerateSystemReport(ctx context.Context, format models.Repo
 func (g *Generator) GenerateFullReport(ctx context.Context, format models.ReportFormat) (*models.ReportOutput, error) {
 	startTime := time.Now()
 
-	// Extract both customer and system data
-	customerData, err := g.extractCustomerData()
+	// Load full data using BagLoader
+	fullData, err := g.bagLoader.LoadFullData(ctx, g.deps.DataBag)
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract customer data: %w", err)
+		return nil, fmt.Errorf("failed to load full data: %w", err)
 	}
 
-	systemData, err := g.extractSystemData()
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract system data: %w", err)
-	}
-
-	content, dataSources, err := g.renderFullReport(customerData, systemData)
+	content, dataSources, err := g.renderFullReport(fullData.Customer, fullData.System)
 	if err != nil {
 		return nil, fmt.Errorf("failed to render full report: %w", err)
 	}
@@ -231,4 +233,49 @@ func (g *Generator) generateMarkdownFilePath(reportType models.ReportType, outpu
 
 	filename := fmt.Sprintf("%s_report%s.md", reportType, timestamp)
 	return filepath.Join(outputDir, filename)
+}
+
+func GenerateReport(fullData *models.FullReportData, outputDir, format string) error {
+	// Minimal dependencies for file writing
+	fsys := fs.New()
+	deps := Dependencies{
+		Config:     nil, // Not needed for direct CLI
+		DataBag:    nil, // Not used here
+		FileSystem: fsys,
+	}
+	gen := &Generator{deps: deps}
+
+	// Render report content (markdown only for now)
+	content, _, err := gen.renderFullReport(fullData.Customer, fullData.System)
+	if err != nil {
+		return err
+	}
+
+	// Determine file extension
+	ext := ".md"
+	switch format {
+	case "pdf":
+		ext = ".pdf"
+	case "json":
+		ext = ".json"
+	}
+
+	filename := "full_report_" + time.Now().Format("20060102_150405") + ext
+	filePath := filepath.Join(outputDir, filename)
+
+	// Write file
+	if format == "json" {
+		// Marshal as JSON
+		out := map[string]any{
+			"customer": fullData.Customer,
+			"system":   fullData.System,
+		}
+		data, err := json.MarshalIndent(out, "", "  ")
+		if err != nil {
+			return err
+		}
+		return fsys.WriteFile(filePath, data, 0644)
+	}
+
+	return fsys.WriteFile(filePath, []byte(content), 0644)
 }

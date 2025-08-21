@@ -14,7 +14,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/llm"
 	"github.com/amaurybrisou/mosychlos/internal/tools"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/cli"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
 	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
@@ -108,7 +107,7 @@ func (o *engineOrchestrator) Init(ctx context.Context) error {
 		}
 
 		if o.builder == nil {
-			o.builder = DefaultRegistry()
+			o.builder = DefaultBatchRegistry()
 		}
 		engs, err := o.builder.Build(ctx, Deps{
 			Ctx:       ctx,
@@ -172,54 +171,77 @@ func (o *engineOrchestrator) ExecutePipeline(ctx context.Context) error {
 	return nil
 }
 
-func (o *engineOrchestrator) GenerateReports(ctx context.Context, reportType models.ReportType, formats []models.ReportFormat) {
-	if len(formats) > 0 {
-		// Non-interactive mode: use flags
-		err := cli.GenerateReportWithParams(ctx, o.cfg, o.sharedBag.Snapshot(), o.filesystem, reportType, formats)
-		if err != nil {
-			slog.Error("Failed to generate reports", "error", err)
-		}
-	} else {
-		// Interactive mode: use original function
-		err := cli.GenerateReport(ctx, o.cfg, o.sharedBag.Snapshot(), o.filesystem)
-		if err != nil {
-			slog.Error("Failed to generate reports", "error", err)
-		}
-	}
-}
+// func (o *engineOrchestrator) GenerateReports(ctx context.Context, reportType models.ReportType, formats []models.ReportFormat) {
+// 	// Create dependencies for report generation
+// 	deps := report.Dependencies{
+// 		Config:     o.cfg,
+// 		DataBag:    o.sharedBag,
+// 		FileSystem: o.filesystem,
+// 	}
 
-func (o *engineOrchestrator) GetResults(analysisType models.AnalysisType) (*string, error) {
-	switch analysisType {
-	case models.AnalysisRisk:
-		if riskResult, exists := o.sharedBag.Get(keys.KRiskAnalysisResult); exists {
-			switch result := riskResult.(type) {
-			case string:
-				return &result, nil
-			case map[string]any:
-				if jsonResult, err := json.Marshal(result); err == nil {
-					resultStr := string(jsonResult)
-					return &resultStr, nil
-				}
-			}
-		}
-		return nil, fmt.Errorf("no risk analysis results found in shared bag")
-	case models.AnalysisInvestmentResearch:
-		if investmentResult, exists := o.sharedBag.Get(keys.KInvestmentResearchResult); exists {
-			// Convert the structured result to JSON string for display
-			if result, ok := investmentResult.(models.InvestmentResearchResult); ok {
-				resultJSON, err := json.Marshal(result)
-				if err != nil {
-					return nil, fmt.Errorf("failed to marshal investment research result: %w", err)
-				}
-				resultStr := string(resultJSON)
-				return &resultStr, nil
-			}
-		}
-		return nil, fmt.Errorf("no investment research results found in shared bag")
-	default:
-		return nil, fmt.Errorf("result extraction for analysis type %s not implemented", analysisType)
-	}
-}
+// 	generator := report.NewGenerator(deps)
+
+// 	// If no formats specified, use default markdown
+// 	if len(formats) == 0 {
+// 		formats = []models.ReportFormat{models.FormatMarkdown}
+// 	}
+
+// 	// Generate reports for each format
+// 	for _, format := range formats {
+// 		var output *models.ReportOutput
+// 		var err error
+
+// 		switch reportType {
+// 		case models.TypeCustomer:
+// 			output, err = generator.GenerateCustomerReport(ctx, format)
+// 		case models.TypeSystem:
+// 			output, err = generator.GenerateSystemReport(ctx, format)
+// 		case models.TypeFull:
+// 			output, err = generator.GenerateFullReport(ctx, format)
+// 		default:
+// 			output, err = generator.GenerateFullReport(ctx, format)
+// 		}
+
+// 		if err != nil {
+// 			slog.Error("Failed to generate report", "type", reportType, "format", format, "error", err)
+// 		} else {
+// 			slog.Info("Report generated successfully", "type", output.Type, "format", output.Format, "path", output.FilePath)
+// 		}
+// 	}
+// }
+
+// func (o *engineOrchestrator) GetResults(analysisType models.AnalysisType) (*string, error) {
+// 	switch analysisType {
+// 	case models.AnalysisRisk:
+// 		if riskResult, exists := o.sharedBag.Get(keys.KRiskAnalysisResult); exists {
+// 			switch result := riskResult.(type) {
+// 			case string:
+// 				return &result, nil
+// 			case map[string]any:
+// 				if jsonResult, err := json.Marshal(result); err == nil {
+// 					resultStr := string(jsonResult)
+// 					return &resultStr, nil
+// 				}
+// 			}
+// 		}
+// 		return nil, fmt.Errorf("no risk analysis results found in shared bag")
+// 	case models.AnalysisInvestmentResearch:
+// 		if investmentResult, exists := o.sharedBag.Get(keys.KInvestmentResearchResult); exists {
+// 			// Convert the structured result to JSON string for display
+// 			if result, ok := investmentResult.(models.InvestmentResearchResult); ok {
+// 				resultJSON, err := json.Marshal(result)
+// 				if err != nil {
+// 					return nil, fmt.Errorf("failed to marshal investment research result: %w", err)
+// 				}
+// 				resultStr := string(resultJSON)
+// 				return &resultStr, nil
+// 			}
+// 		}
+// 		return nil, fmt.Errorf("no investment research results found in shared bag")
+// 	default:
+// 		return nil, fmt.Errorf("result extraction for analysis type %s not implemented", analysisType)
+// 	}
+// }
 
 func (o *engineOrchestrator) GetID() uuid.UUID {
 	return o.ID

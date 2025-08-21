@@ -186,12 +186,11 @@ tools:
     timeout: 30 # seconds
     max_requests: 100
 
-  # FinRobot AI Analysis configuration
-  finrobot:
-    base_url: 'http://localhost'
-    port: 8080
+  sec_edgar:
+    user_agent: 'Mosychlos/2.0 (Portfolio Management System; contact@example.com)'
+    base_url: 'https://data.sec.gov'
     cache_enable: true
-    timeout: 60 # seconds
+    max_daily: 100
 
 # =============================================================================
 # TRADING PLATFORM INTEGRATIONS

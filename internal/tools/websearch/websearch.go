@@ -51,9 +51,9 @@ func (p *Provider) Description() string {
 
 // Definition returns the OpenAI tool definition
 func (p *Provider) Definition() models.ToolDef {
-	return models.ToolDef{
-		Type: "function",
-		Function: models.FunctionDef{
+	return &models.CustomToolDef{
+		Type: models.CustomToolDefType,
+		FunctionDef: models.FunctionDef{
 			Name:        p.Name(),
 			Description: p.Description(),
 			Parameters: map[string]any{

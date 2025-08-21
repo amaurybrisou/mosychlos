@@ -22,7 +22,7 @@ type RiskBatchEngine struct {
 var _ models.Engine = &RiskBatchEngine{}
 
 // NewRiskBatchEngine creates a new risk batch engine using base batch engine
-func NewRiskBatchEngine(name string, cfg config.LLMConfig, pb models.PromptBuilder, constraints models.BatchToolConstraints) *RiskBatchEngine {
+func NewRiskBatchEngine(name string, cfg config.LLMConfig, pb models.PromptBuilder, constraints models.BaseToolConstraints) *RiskBatchEngine {
 	if name == "" {
 		name = "risk-batch-engine"
 	}
@@ -74,7 +74,7 @@ func (h *RiskBatchEngineHooks) PreIteration(iteration int, jobs []models.BatchJo
 }
 
 // PostIteration is called after each batch iteration with results
-func (h *RiskBatchEngineHooks) PostIteration(iteration int, results *models.Aggregated) error {
+func (h *RiskBatchEngineHooks) PostIteration(iteration int, results *models.BatchResult) error {
 	slog.Debug("Risk batch iteration completed",
 		"iteration", iteration,
 		"successes", results.Successes,

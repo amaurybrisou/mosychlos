@@ -102,9 +102,9 @@ var _ Builder = (*RegistryBuilder)(nil)
 
 // ----- Optional: default registration helpers --------------------------------
 
-// DefaultRegistry returns a pre-populated registry for your common engines.
+// DefaultBatchRegistry returns a pre-populated registry for your common engines.
 // Use this as-is or copy/modify in your app wiring.
-func DefaultRegistry() *RegistryBuilder {
+func DefaultBatchRegistry() *RegistryBuilder {
 	return NewRegistryBuilder().
 		// Register("risk", func(d Deps) (models.Engine, error) {
 		// 	if d.Prompts == nil {
@@ -154,7 +154,7 @@ func DefaultRegistry() *RegistryBuilder {
 			}
 
 			// Example: per-engine tool constraints (tweak to your needs)
-			constraints := models.BatchToolConstraints{
+			constraints := models.BaseToolConstraints{
 				Tools:           tools.ToolsToToolDefs(d.Tools),
 				PreferredTools:  preferredTools,
 				MinCallsPerTool: minCalls,
@@ -172,14 +172,44 @@ func DefaultRegistry() *RegistryBuilder {
 	// .Register("screener", func(d Deps) (models.Engine, error) { ... })
 }
 
-// DefaultRegistryWithOrder sets an explicit construction order.
-// Engines not listed will be appended afterward in alphabetical order.
-func DefaultRegistryWithOrder() *RegistryBuilder {
-	return DefaultRegistry().
-		WithOrder(
-			// "risk",
-			"batch-risk-engine",
-			// "news",
-			// "screener",
-		)
+// // DefaultRegistryWithOrder sets an explicit construction order.
+// // Engines not listed will be appended afterward in alphabetical order.
+// func DefaultRegistryWithOrder() *RegistryBuilder {
+// 	return DefaultBatchRegistry().
+// 		WithOrder(
+// 			// "risk",
+// 			"batch-risk-engine",
+// 			// "news",
+// 			// "screener",
+// 		)
+// }
+
+// DefaultRegistry returns a pre-populated registry for your common engines.
+// Use this as-is or copy/modify in your app wiring.
+func DefaultRegistry() *RegistryBuilder {
+	return NewRegistryBuilder().
+		Register("risk", func(d Deps) (models.Engine, error) {
+			if d.Prompts == nil {
+				return nil, fmt.Errorf("risk engine requires Deps.Prompts")
+			}
+			// Example: per-engine tool constraints (tweak to your needs)
+			constraints := models.BaseToolConstraints{
+				Tools:          tools.ToolsToToolDefs(d.Tools),
+				PreferredTools: []keys.Key{keys.FMP, keys.NewsApi},
+				MinCallsPerTool: map[keys.Key]int{
+					keys.NewsApi: 2,
+					keys.FMP:     1,
+				},
+				MaxCallsPerTool: map[keys.Key]int{
+					keys.NewsApi: 2,
+					keys.FMP:     2,
+				},
+			}
+			// Option 1: set consumer globally here
+			d.AI.SetToolConsumer(budget.NewToolConsumer(&constraints))
+			// Option 2: or let the engine set one inside Execute()
+			d.AI.RegisterTool(d.Tools...)
+
+			return risk.New("risk-engine", d.Prompts, constraints), nil
+		})
 }

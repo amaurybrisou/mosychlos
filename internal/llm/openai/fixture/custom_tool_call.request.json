@@ -1,0 +1,12 @@
+{
+  "model": "gpt-4.1",
+  "tools": [
+    {
+      "type": "custom",
+      "name": "sql_query_runner",
+      "description": "Runs raw SQL queries on the company sales database."
+    }
+  ],
+  "input": "Show me the total sales for each product category last month.",
+  "tool_choice": "auto"
+}

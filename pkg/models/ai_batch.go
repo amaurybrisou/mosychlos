@@ -109,14 +109,14 @@ type BatchManager interface {
 	ProcessBatch(ctx context.Context, requests []BatchRequest, opts BatchOptions, waitForCompletion bool) (*BatchJob, error)
 	GetJobStatus(ctx context.Context, jobID string) (*BatchJob, error)
 	WaitForCompletion(ctx context.Context, jobID string) (*BatchJob, error)
-	GetResults(ctx context.Context, jobID string) (*Aggregated, error)
+	GetResults(ctx context.Context, jobID string) (*BatchResult, error)
 	CancelJob(ctx context.Context, jobID string) error
 	ListBatches(ctx context.Context, filters map[string]string) ([]BatchJob, error)
 	GetError(ctx context.Context, jobID string) (map[string]string, error)
 }
 
-// Aggregated represents the result of aggregating batch processing results
-type Aggregated struct {
+// BatchResult represents the result of aggregating batch processing results
+type BatchResult struct {
 	JobID     string                `json:"job_id"`
 	Successes int                   `json:"successes"`
 	Failures  int                   `json:"failures"`

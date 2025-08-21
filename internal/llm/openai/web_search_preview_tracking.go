@@ -234,8 +234,8 @@ func (s *session) updateWebSearchAPIHealth(comp models.ToolComputation) {
 	})
 }
 
-// trackOpenAIComputation tracks OpenAI API usage with token consumption
-func (s *session) trackOpenAIComputation(startTime time.Time, usage models.Usage, toolCallCount int, err error) {
+// trackOpenAITokenUsage tracks OpenAI API usage with token consumption
+func (s *session) trackOpenAITokenUsage(startTime time.Time, usage models.Usage, toolCallCount int, err error) {
 	if s.p.sharedBag == nil {
 		return
 	}

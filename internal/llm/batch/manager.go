@@ -15,7 +15,7 @@ import (
 // Manager orchestrates batch processing workflows with engine support
 type Manager struct {
 	client        models.AiBatchClient
-	aggregator    *ResultAggregator
+	aggregator    *ResultParser
 	costOptimizer *CostOptimizer
 	pollDelay     time.Duration
 }
@@ -23,9 +23,9 @@ type Manager struct {
 // NewManager creates a new batch processing manager
 func NewManager(client models.AiBatchClient) *Manager {
 	// Create aggregator using the same client (if it implements ResultsReader)
-	var aggregator *ResultAggregator
+	var aggregator *ResultParser
 	if reader, ok := client.(ResultsReader); ok {
-		aggregator = NewResultAggregator(reader)
+		aggregator = NewBatchResultParser(reader)
 	}
 
 	return &Manager{
@@ -90,7 +90,7 @@ func (m *Manager) WaitForCompletion(ctx context.Context, jobID string) (*models.
 }
 
 // GetResults retrieves and aggregates results from a completed batch job
-func (m *Manager) GetResults(ctx context.Context, jobID string) (*models.Aggregated, error) {
+func (m *Manager) GetResults(ctx context.Context, jobID string) (*models.BatchResult, error) {
 	if m.aggregator == nil {
 		return nil, fmt.Errorf("result aggregation not supported by this client")
 	}
@@ -105,7 +105,7 @@ func (m *Manager) GetResults(ctx context.Context, jobID string) (*models.Aggrega
 		return nil, fmt.Errorf("batch job not completed (status: %s)", job.Status)
 	}
 
-	return m.aggregator.AggregateResults(ctx, jobID)
+	return m.aggregator.AggregateBatchResult(ctx, jobID)
 }
 
 // CancelJob cancels a running or queued batch job

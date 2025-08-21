@@ -3,11 +3,13 @@ package risk
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/amaurybrisou/mosychlos/internal/budget"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
+	pkgopenai "github.com/amaurybrisou/mosychlos/pkg/openai"
 )
 
 // RiskEngine is a simple example engine that prompts the model for a risk analysis
@@ -15,11 +17,11 @@ import (
 // so tool usage is controlled by constraints.
 type RiskEngine struct {
 	name          string
-	constraints   models.BatchToolConstraints
+	constraints   models.BaseToolConstraints
 	promptManager models.PromptBuilder // must provide BuildPrompt(ctx, kind) (string, error)
 }
 
-func New(name string, pm models.PromptBuilder, constraints models.BatchToolConstraints) *RiskEngine {
+func New(name string, pm models.PromptBuilder, constraints models.BaseToolConstraints) *RiskEngine {
 	if name == "" {
 		name = "risk-engine"
 	}
@@ -73,13 +75,29 @@ Constraints:
 		// You can also set MaxTokens / Temperature from engine config if you want:
 		MaxTokens: 2000,
 		// Temperature: ptr.To(0.2),
-		Tools: r.constraints.Tools, // use the tools defined in constraints
+		Tools: r.constraints.Tools, // use the tools defined in constraints,
+		ResponseFormat: &models.ResponseFormat{
+			Format: models.Format{
+				Type:      keys.ResponseFormatJSON,
+				Name:      keys.KRiskAnalysisResult.String(),
+				Schema:    pkgopenai.BuildSchema[models.InvestmentResearchResult](),
+				Verbosity: "	",
+			},
+		},
 	}
 
 	resp, err := client.DoSync(ctx, req)
 	if err != nil {
 		return err
 	}
+
+	// DEBUG: Log the response content to see what we're getting
+	contentLen := len(resp.Content)
+	preview := resp.Content
+	if contentLen > 200 {
+		preview = resp.Content[:200]
+	}
+	slog.Info("Risk analysis response received", "content_length", contentLen, "content_preview", preview)
 
 	// 4) Store the result into the bag for downstream engines / reporters.
 	sharedBag.Set(r.ResultKey(), resp.Content)

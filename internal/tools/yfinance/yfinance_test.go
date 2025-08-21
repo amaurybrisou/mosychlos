@@ -6,6 +6,7 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
+	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,9 +29,12 @@ func TestYFinanceStockDataTool(t *testing.T) {
 
 	t.Run("Tool Definition", func(t *testing.T) {
 		def := tool.Definition()
-		assert.Equal(t, "function", def.Type)
-		assert.Equal(t, "yfinance_stock_data", def.Function.Name)
-		assert.NotEmpty(t, def.Function.Description)
+
+		typedDef, ok := def.(*models.CustomToolDef)
+		assert.True(t, ok)
+		assert.Equal(t, models.CustomToolDefType, typedDef.Type)
+		assert.Equal(t, "yfinance_stock_data", typedDef.FunctionDef.Name)
+		assert.NotEmpty(t, typedDef.FunctionDef.Description)
 	})
 
 	t.Run("Run Should Execute", func(t *testing.T) {
@@ -54,9 +58,12 @@ func TestYFinanceMarketDataTool(t *testing.T) {
 
 	t.Run("Tool Definition", func(t *testing.T) {
 		def := tool.Definition()
-		assert.Equal(t, "function", def.Type)
-		assert.Equal(t, "yfinance_market_data", def.Function.Name)
-		assert.NotEmpty(t, def.Function.Description)
+
+		typedDef, ok := def.(*models.CustomToolDef)
+		assert.True(t, ok)
+		assert.Equal(t, models.CustomToolDefType, typedDef.Type)
+		assert.Equal(t, "yfinance_market_data", typedDef.FunctionDef.Name)
+		assert.NotEmpty(t, typedDef.FunctionDef.Description)
 	})
 
 	t.Run("Run Should Execute", func(t *testing.T) {

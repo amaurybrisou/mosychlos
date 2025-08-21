@@ -49,19 +49,70 @@ func (s *session) Add(role models.Role, content string) {
 	s.messages = append(s.messages, map[string]any{"role": string(role), "content": content})
 }
 
-func (s *session) AddToolResult(toolCallID, content string) {
+// AddFunctionCall adds a function call to the session
+func (s *session) AddFunctionCall(toolCall models.ToolCall) {
+	s.messages = append(s.messages, map[string]any{
+		"type":      "function_call",
+		"id":        toolCall.ID,
+		"call_id":   toolCall.CallID,
+		"name":      toolCall.Function.Name,
+		"arguments": toolCall.Function.Arguments,
+		"status":    toolCall.Status,
+	})
+}
+
+func (s *session) AddToolCall(toolCall models.ToolCall) {
+	s.messages = append(s.messages, map[string]any{
+		"type":    "custom_tool_call",
+		"id":      toolCall.ID,
+		"call_id": toolCall.CallID,
+		"name":    toolCall.Function.Name,
+		"input":   toolCall.Function.Arguments,
+	})
+}
+
+func (s *session) AddFunctionCallResult(toolCall models.ToolCall, content string) {
+	s.messages = append(s.messages, map[string]any{
+		"type":    "function_call_output",
+		"call_id": toolCall.CallID,
+		"output":  content,
+	})
+}
+
+func (s *session) AddToolResult(toolCall models.ToolCall, content string) {
 	s.messages = append(s.messages, map[string]any{
 		"role":         "tool",
-		"tool_call_id": toolCallID,
+		"tool_call_id": toolCall.CallID,
 		"content":      content,
 	})
 }
 
 func (s *session) SetToolChoice(t *models.ToolChoice) { s.toolChoice = t }
 
+// filterResponsesSupported removes roles not supported by /v1/responses
+func filterResponsesSupported(ms []map[string]any) []map[string]any {
+	out := make([]map[string]any, 0, len(ms))
+	for _, m := range ms {
+		role, _ := m["role"].(string)
+		msgType, _ := m["type"].(string)
+
+		switch {
+		case role == "system" || role == "user" || role == "assistant" || role == "developer" || role == "tool":
+			out = append(out, m)
+		case msgType == "function_call_output" || msgType == "tool_call_output":
+			out = append(out, m) // Preserve function and tool call outputs
+		case msgType == "function_call" || msgType == "custom_tool_call":
+			out = append(out, m) // Preserve response output items
+		default:
+			// ignore other roles/types
+		}
+	}
+	return out
+}
+
 // ---- Responses API payloads (minimal & correct) ----
 
-type responsesReq struct {
+type responseApiReq struct {
 	Model             string                 `json:"model"`
 	Input             any                    `json:"input,omitempty"`             // string OR []message
 	MaxOutputTokens   int64                  `json:"max_output_tokens,omitempty"` // omit when nil
@@ -69,10 +120,10 @@ type responsesReq struct {
 	Tools             []any                  `json:"tools,omitempty"`               // supports function tools and built-ins like {"type":"web_search"}
 	ParallelToolCalls *bool                  `json:"parallel_tool_calls,omitempty"` // from cfg if you want
 	ServiceTier       string                 `json:"service_tier,omitempty"`        // "auto"|"default"|"flex"|"priority"
-	ResponseFormat    *models.ResponseFormat `json:"response_format,omitempty"`     // structured outputs
+	ResponseFormat    *models.ResponseFormat `json:"text,omitempty"`
 }
 
-type responsesErr struct {
+type responseApiErr struct {
 	Error struct {
 		Message string `json:"message"`
 		Type    string `json:"type"`
@@ -82,11 +133,18 @@ type responsesErr struct {
 }
 
 func (s *session) Next(ctx context.Context, tools []models.ToolDef, rf *models.ResponseFormat) (*models.AssistantTurn, error) {
-	body := responsesReq{
+	body := responseApiReq{
 		Model: s.p.cfg.Model.String(),
-		Input: s.messages,
-		Tools: toAnyTools(tools, nil), // built-ins are appended by strategy via runtime (see runtime.go)
+		Input: filterResponsesSupported(s.messages), // filter out unsupported roles like "tool"
+		Tools: toAnyTools(tools, nil),               // built-ins are appended by strategy via runtime (see runtime.go)
 	}
+
+	body.Tools = append(body.Tools, map[string]any{
+		"type":             "mcp",
+		"server_label":     "deepwiki",
+		"server_url":       "https://mcp.deepwiki.com/mcp",
+		"require_approval": "never",
+	})
 
 	// map cfg → request
 	if max := s.p.cfg.OpenAI.MaxCompletionTokens; max > 0 {
@@ -132,7 +190,7 @@ func (s *session) Next(ctx context.Context, tools []models.ToolDef, rf *models.R
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		var errResp responsesErr
+		var errResp responseApiErr
 		err = json.NewDecoder(resp.Body).Decode(&errResp)
 		if err == nil {
 			return nil, fmt.Errorf("API error: %s (type: %s, param: %s, code: %s)", errResp.Error.Message, errResp.Error.Type, errResp.Error.Param, errResp.Error.Code)
@@ -158,8 +216,43 @@ func (s *session) Next(ctx context.Context, tools []models.ToolDef, rf *models.R
 
 func toAnyTools(funcTools []models.ToolDef, extra []any) []any {
 	out := make([]any, 0, len(funcTools)+len(extra))
-	for _, t := range funcTools {
-		out = append(out, t)
+	for i, t := range funcTools {
+		// Convert CustomToolDef to flattened format for OpenAI compatibility
+		switch tool := t.(type) {
+		case *models.CustomToolDef:
+			// OpenAI API expects flattened structure with top-level name, not nested function
+			flatTool := map[string]any{
+				"type":        "function",
+				"name":        tool.Name,
+				"description": tool.Description,
+				"parameters":  tool.Parameters,
+			}
+			slog.Debug("Converting CustomToolDef to flat format",
+				"index", i,
+				"original_type", tool.Type,
+				"original_name", tool.Name,
+				"converted_name", tool.Name)
+			out = append(out, flatTool)
+		case *models.FunctionToolDef:
+			// Convert nested FunctionToolDef to flattened format
+			flatTool := map[string]any{
+				"type":        tool.Type,
+				"name":        tool.Function.Name,
+				"description": tool.Function.Description,
+				"parameters":  tool.Function.Parameters,
+			}
+			slog.Debug("Converting FunctionToolDef to flat format",
+				"index", i,
+				"nested_name", tool.Function.Name,
+				"converted_name", tool.Function.Name)
+			out = append(out, flatTool)
+		default:
+			// Use as-is for other types
+			slog.Debug("Using tool as-is",
+				"index", i,
+				"type", fmt.Sprintf("%T", t))
+			out = append(out, t)
+		}
 	}
 	out = append(out, extra...)
 	return out

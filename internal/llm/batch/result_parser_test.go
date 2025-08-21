@@ -41,7 +41,7 @@ func TestResultAggregator_AggregateResults(t *testing.T) {
 		errorsErr      error
 		wantSuccesses  int
 		wantFailures   int
-		validateResult func(t *testing.T, result *models.Aggregated)
+		validateResult func(t *testing.T, result *models.BatchResult)
 	}{
 		{
 			name: "successful results only",
@@ -50,7 +50,7 @@ func TestResultAggregator_AggregateResults(t *testing.T) {
 			errorsData:    "",
 			wantSuccesses: 2,
 			wantFailures:  0,
-			validateResult: func(t *testing.T, result *models.Aggregated) {
+			validateResult: func(t *testing.T, result *models.BatchResult) {
 				if len(result.Items) != 2 {
 					t.Errorf("expected 2 items, got %d", len(result.Items))
 				}
@@ -74,7 +74,7 @@ func TestResultAggregator_AggregateResults(t *testing.T) {
 {"id": "batch_req_3", "custom_id": "rate_limit_error", "error": {"code": "rate_limit_exceeded", "message": "Rate limit exceeded", "param": null, "type": "rate_limit_error"}}`,
 			wantSuccesses: 1,
 			wantFailures:  2,
-			validateResult: func(t *testing.T, result *models.Aggregated) {
+			validateResult: func(t *testing.T, result *models.BatchResult) {
 				if len(result.Items) != 1 {
 					t.Errorf("expected 1 item, got %d", len(result.Items))
 				}
@@ -101,7 +101,7 @@ func TestResultAggregator_AggregateResults(t *testing.T) {
 {"id": "batch_req_2", "custom_id": "failed_req_2", "error": {"code": "insufficient_quota", "message": "Insufficient quota", "param": null, "type": "insufficient_quota"}}`,
 			wantSuccesses: 0,
 			wantFailures:  2,
-			validateResult: func(t *testing.T, result *models.Aggregated) {
+			validateResult: func(t *testing.T, result *models.BatchResult) {
 				if len(result.Items) != 0 {
 					t.Errorf("expected 0 items, got %d", len(result.Items))
 				}
@@ -116,7 +116,7 @@ func TestResultAggregator_AggregateResults(t *testing.T) {
 			errorsData:    "",
 			wantSuccesses: 0,
 			wantFailures:  0,
-			validateResult: func(t *testing.T, result *models.Aggregated) {
+			validateResult: func(t *testing.T, result *models.BatchResult) {
 				if len(result.Items) != 0 {
 					t.Errorf("expected 0 items, got %d", len(result.Items))
 				}
@@ -133,7 +133,7 @@ invalid_json_line_should_be_skipped
 			errorsData:    "",
 			wantSuccesses: 2,
 			wantFailures:  0,
-			validateResult: func(t *testing.T, result *models.Aggregated) {
+			validateResult: func(t *testing.T, result *models.BatchResult) {
 				if len(result.Items) != 2 {
 					t.Errorf("expected 2 items (malformed line skipped), got %d", len(result.Items))
 				}
@@ -150,8 +150,8 @@ invalid_json_line_should_be_skipped
 				errorsErr:   c.errorsErr,
 			}
 
-			aggregator := NewResultAggregator(mock)
-			result, err := aggregator.AggregateResults(context.Background(), "test-job-id")
+			aggregator := NewBatchResultParser(mock)
+			result, err := aggregator.AggregateBatchResult(context.Background(), "test-job-id")
 
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
@@ -207,8 +207,8 @@ func TestResultAggregator_ErrorHandling(t *testing.T) {
 				errorsErr:   c.errorsErr,
 			}
 
-			aggregator := NewResultAggregator(mock)
-			_, err := aggregator.AggregateResults(context.Background(), "test-job-id")
+			aggregator := NewBatchResultParser(mock)
+			_, err := aggregator.AggregateBatchResult(context.Background(), "test-job-id")
 
 			if c.wantErr && err == nil {
 				t.Error("expected error but got nil")

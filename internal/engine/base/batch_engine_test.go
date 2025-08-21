@@ -15,13 +15,13 @@ func TestNewBatchEngine(t *testing.T) {
 		name        string
 		engineName  string
 		model       config.LLMModel
-		constraints models.BatchToolConstraints
+		constraints models.BaseToolConstraints
 	}{
 		{
 			name:       "valid creation",
 			engineName: "test-engine",
 			model:      config.LLMModelGPT4o,
-			constraints: models.BatchToolConstraints{
+			constraints: models.BaseToolConstraints{
 				Tools: []models.ToolDef{},
 			},
 		},
@@ -60,7 +60,7 @@ func TestBatchEngine_Interface(t *testing.T) {
 
 	hooks.EXPECT().ResultKey().Return(keys.KRiskAnalysisResult).AnyTimes()
 
-	engine := NewBatchEngine("test", config.LLMModelGPT4o, models.BatchToolConstraints{}, hooks)
+	engine := NewBatchEngine("test", config.LLMModelGPT4o, models.BaseToolConstraints{}, hooks)
 
 	// Test that it implements models.Engine interface
 	var _ models.Engine = engine

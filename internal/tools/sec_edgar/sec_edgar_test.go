@@ -8,6 +8,7 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -75,12 +76,16 @@ func TestProvider_ToolInterface(t *testing.T) {
 
 	// Test definition structure
 	def := provider.Definition()
-	assert.Equal(t, provider.Name(), def.Function.Name)
-	assert.Equal(t, provider.Description(), def.Function.Description)
-	assert.NotNil(t, def.Function.Parameters)
+
+	typedDef, ok := def.(*models.CustomToolDef)
+	assert.True(t, ok)
+	assert.Equal(t, models.CustomToolDefType, typedDef.Type)
+	assert.Equal(t, provider.Name(), typedDef.FunctionDef.Name)
+	assert.Equal(t, provider.Description(), typedDef.FunctionDef.Description)
+	assert.NotNil(t, typedDef.FunctionDef.Parameters)
 
 	// Check required parameters structure
-	params, ok := def.Function.Parameters["properties"].(map[string]any)
+	params, ok := typedDef.FunctionDef.Parameters["properties"].(map[string]any)
 	require.True(t, ok, "parameters should have properties field")
 
 	// Check action parameter

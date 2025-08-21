@@ -39,11 +39,12 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 func NewHTTPClient(mw ...RTMiddleware) *http.Client {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.DialContext = (&net.Dialer{
-		Timeout:   10 * time.Second,
+		Timeout:   30 * time.Second,
 		KeepAlive: 60 * time.Second,
 	}).DialContext
 	transport.TLSHandshakeTimeout = 10 * time.Second
 	transport.IdleConnTimeout = 90 * time.Second
+	transport.ResponseHeaderTimeout = 30 * time.Second
 	transport.MaxIdleConns = 100
 	transport.MaxConnsPerHost = 0
 	transport.MaxIdleConnsPerHost = 100

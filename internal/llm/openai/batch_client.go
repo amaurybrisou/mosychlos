@@ -75,6 +75,14 @@ func (bc *batchClient) SubmitBatch(ctx context.Context, reqs []models.BatchReque
 				endpoint = oa.BatchNewParamsEndpointV1Responses
 				break
 			}
+
+			if req.URL == "/v1/completions" {
+				endpoint = oa.BatchNewParamsEndpointV1Completions
+			}
+
+			if req.URL == "/v1/embeddings" {
+				endpoint = oa.BatchNewParamsEndpointV1Embeddings
+			}
 		}
 	}
 
@@ -283,10 +291,6 @@ func (bc *batchClient) GetBatchErrors(ctx context.Context, jobID string) (io.Rea
 	}
 
 	switch batch.Status {
-	case oa.BatchStatusCompleted:
-		// No error file means no errors - this is normal for successful batches
-		slog.Debug("No error file found for batch - this is normal for successful batches", "batch_id", jobID)
-		return nil, nil
 	case oa.BatchStatusFailed:
 		errorsBytes, err := json.Marshal(batch)
 		if err != nil {

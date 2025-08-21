@@ -72,9 +72,9 @@ func (t *SecEdgarTool) IsExternal() bool { return false }
 
 // Definition returns the OpenAI tool definition
 func (p *SecEdgarTool) Definition() models.ToolDef {
-	return models.ToolDef{
-		Type: "function",
-		Function: models.FunctionDef{
+	return &models.CustomToolDef{
+		Type: models.CustomToolDefType,
+		FunctionDef: models.FunctionDef{
 			Name:        p.Name(),
 			Description: p.Description(),
 			Parameters: map[string]any{
@@ -108,7 +108,7 @@ func (p *SecEdgarTool) Definition() models.ToolDef {
 						"maximum":     100,
 					},
 				},
-				"required":             []string{"action", "cik"},
+				"required":             []string{"action", "cik", "ticker", "form_type", "date_before", "count"},
 				"additionalProperties": false,
 			},
 		},

@@ -16,7 +16,7 @@ import (
 // BatchEngine implements models.Engine interface with template method pattern
 type BatchEngine struct {
 	name        string
-	constraints models.BatchToolConstraints
+	constraints models.BaseToolConstraints
 	model       config.LLMModel
 	hooks       models.BatchEngineHooks
 }
@@ -27,7 +27,7 @@ var _ models.Engine = &BatchEngine{}
 func NewBatchEngine(
 	name string,
 	model config.LLMModel,
-	constraints models.BatchToolConstraints,
+	constraints models.BaseToolConstraints,
 	hooks models.BatchEngineHooks,
 ) *BatchEngine {
 	return &BatchEngine{
@@ -182,7 +182,7 @@ func (b *BatchEngine) submitAndWaitForBatch(
 func (b *BatchEngine) processJobResults(
 	ctx context.Context,
 	jobs []models.BatchJob,
-	results *models.Aggregated,
+	results *models.BatchResult,
 	iteration int,
 	sharedBag bag.SharedBag,
 ) ([]models.BatchJob, error) {

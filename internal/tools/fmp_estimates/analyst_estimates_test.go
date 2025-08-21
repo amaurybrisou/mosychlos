@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
+	"github.com/amaurybrisou/mosychlos/pkg/models"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAnalystEstimatesProvider_New(t *testing.T) {
@@ -75,9 +77,18 @@ func TestAnalystEstimatesProvider_ToolInterface(t *testing.T) {
 	}
 
 	def := provider.Definition()
-	if def.Function.Name != provider.Name() {
-		t.Errorf("Definition() Name = %v, want %v", def.Function.Name, provider.Name())
+
+	typedDef, ok := def.(*models.CustomToolDef)
+	if !ok {
+		t.Errorf("Definition() = %T, want *CustomToolDef", def)
+		return
 	}
+
+	if typedDef.Name != provider.Name() {
+		t.Errorf("Definition() Name = %v, want %v", typedDef.Name, provider.Name())
+	}
+
+	require.Equal(t, models.CustomToolDefType, typedDef.Type)
 }
 
 // Integration test - requires FMP_API_KEY environment variable

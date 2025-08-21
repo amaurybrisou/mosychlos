@@ -19,7 +19,14 @@ const (
 	RoleUser      Role = "user"
 	RoleAssistant Role = "assistant"
 	RoleTool      Role = "tool"
+
+	FunctionToolDefType = "function"
+	CustomToolDefType   = "custom"
 )
+
+type ToolDef interface {
+	ToAny() any
+}
 
 type FunctionDef struct {
 	Name        string         `json:"name"`
@@ -27,9 +34,22 @@ type FunctionDef struct {
 	Parameters  map[string]any `json:"parameters"`
 }
 
-type ToolDef struct {
-	Type     string      `json:"type"`
+type FunctionToolDef struct {
+	Type     string      `json:"type" default:"function"`
 	Function FunctionDef `json:"function"`
+}
+
+func (f *FunctionToolDef) ToAny() any {
+	return f
+}
+
+type CustomToolDef struct {
+	Type        string `json:"type" default:"custom"`
+	FunctionDef `json:",inline"`
+}
+
+func (c *CustomToolDef) ToAny() any {
+	return c
 }
 
 type Tool interface {
@@ -42,14 +62,15 @@ type Tool interface {
 	Run(ctx context.Context, args string) (string, error)
 }
 
-type NewsTool interface {
-	Tool
-	Fetch(ctx context.Context, tickers []string) (*NewsData, error)
+type Format struct {
+	Type      keys.Key       `json:"type"` // e.g. "json_schema"
+	Name      string         `json:"name"`
+	Schema    map[string]any `json:"schema"`
+	Verbosity string         `json:"verbosity"`
 }
 
 type ResponseFormat struct {
-	Type   string         `json:"type"`
-	Schema map[string]any `json:"schema"`
+	Format Format `json:"format,omitempty"`
 }
 
 type ToolCallFunction struct {
@@ -62,6 +83,7 @@ type ToolCall struct {
 	CallID   string           `json:"call_id,omitempty"` // Internal field, not sent to API
 	Type     string           `json:"type"`
 	Function ToolCallFunction `json:"function"`
+	Status   string           `json:"status,omitempty"` // e.g. "completed", "failed"
 }
 
 type ToolChoiceFunction struct {
@@ -105,7 +127,8 @@ type RoleContent interface {
 
 type Session interface {
 	Add(role Role, content string)
-	AddToolResult(toolCallID, content string)
+	AddToolResult(toolCall ToolCall, content string)
+	AddFunctionCallResult(toolCall ToolCall, content string)
 	Next(ctx context.Context, tools []ToolDef, rf *ResponseFormat) (*AssistantTurn, error)
 	NextStream(ctx context.Context, tools []ToolDef, rf *ResponseFormat) (<-chan StreamChunk, error)
 	SetToolChoice(t *ToolChoice)
