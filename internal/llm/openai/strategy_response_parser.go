@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/openai/openai-go/v2/responses"
 )
@@ -87,7 +87,7 @@ func (s *session) processResponsesAPIResult(resp *responses.Response, startTime 
 			)
 
 			switch funcCall.Name {
-			case keys.WebSearch.String():
+			case bag.WebSearch.String():
 				slog.Debug("Web search function call - processing separately")
 				// Don't add web search calls to toolCalls as they are handled differently
 			default:
@@ -178,7 +178,7 @@ func (s *session) processWebSearchCall(searchCall responses.ResponseFunctionWebS
 	// Extract query from search call (type-safe extraction would go here)
 	// Track web search usage with citation metrics
 	trackingDetails := map[string]any{
-		"action": keys.WebSearch,
+		"action": bag.WebSearch,
 		"url":    searchCall.Action.URL,
 		"query":  searchCall.Action.Query,
 		"type":   searchCall.Action.Type,

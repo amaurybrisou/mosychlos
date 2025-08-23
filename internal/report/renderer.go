@@ -9,7 +9,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -153,7 +153,7 @@ func (g *Generator) getCustomerTemplate() (*template.Template, error) {
 			return g.formatWebSearchData(toolName, arguments, result)
 		},
 		"isWebSearchTool": func(toolName string) bool {
-			return toolName == keys.WebSearch.String()
+			return toolName == bag.WebSearch.String()
 		},
 	}
 
@@ -299,7 +299,7 @@ func (g *Generator) getSystemTemplate() (*template.Template, error) {
 			return g.formatWebSearchData(toolName, arguments, result)
 		},
 		"isWebSearchTool": func(toolName string) bool {
-			return toolName == keys.WebSearch.String()
+			return toolName == bag.WebSearch.String()
 		},
 	}
 
@@ -434,7 +434,7 @@ func (g *Generator) formatWebSearchData(toolName string, arguments string, resul
 	}
 
 	// Check if this is a web search result
-	if toolName != keys.WebSearch.String() {
+	if toolName != bag.WebSearch.String() {
 		return result // Not a web search, return as-is
 	}
 
@@ -485,7 +485,7 @@ func (g *Generator) getInvestmentResearchTemplate() (*template.Template, error) 
 			return g.formatWebSearchData(toolName, arguments, result)
 		},
 		"isWebSearchTool": func(toolName string) bool {
-			return toolName == keys.WebSearch.String()
+			return toolName == bag.WebSearch.String()
 		},
 	}
 
@@ -555,5 +555,5 @@ func (g *Generator) getWebSearchTemplate() (*template.Template, error) {
 		return nil, fmt.Errorf("failed to read web search template: %w", err)
 	}
 
-	return template.Must(template.New(keys.WebSearch.String()).Funcs(funcMap).Parse(string(tmplContent))), nil
+	return template.Must(template.New(bag.WebSearch.String()).Funcs(funcMap).Parse(string(tmplContent))), nil
 }

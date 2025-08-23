@@ -6,12 +6,11 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
 var (
-	tools     = map[keys.Key]models.Tool{}
+	tools     = map[bag.Key]models.Tool{}
 	sharedBag bag.SharedBag
 )
 
@@ -54,7 +53,7 @@ func GetTools() []models.Tool {
 }
 
 // GetToolsMap returns all registered tools
-func GetToolsMap() map[keys.Key]models.Tool {
+func GetToolsMap() map[bag.Key]models.Tool {
 	return tools
 }
 
@@ -71,14 +70,14 @@ func ToolCount() int {
 	return len(tools)
 }
 
-func GetTool(key keys.Key) (models.Tool, bool) {
+func GetTool(key bag.Key) (models.Tool, bool) {
 	t, ok := tools[key]
 	return t, ok
 }
 
 // ClearTools clears all registered tools (useful for testing)
 func ClearTools() {
-	tools = make(map[keys.Key]models.Tool)
+	tools = make(map[bag.Key]models.Tool)
 }
 
 func ToolsToToolDefs(tools []models.Tool) []models.ToolDef {

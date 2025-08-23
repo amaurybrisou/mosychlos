@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -38,7 +37,7 @@ func (ahm *ApplicationMonitor) UpdateApplicationHealth() {
 
 	// Get tool metrics for error rate calculation
 	var errorRate float64
-	if toolMetricsData, exists := ahm.sharedBag.Get(keys.KToolMetrics); exists {
+	if toolMetricsData, exists := ahm.sharedBag.Get(bag.KToolMetrics); exists {
 		if toolMetrics, ok := toolMetricsData.(models.ToolMetrics); ok {
 			if toolMetrics.TotalCalls > 0 {
 				errorRate = float64(toolMetrics.ErrorCount) / float64(toolMetrics.TotalCalls)
@@ -59,7 +58,7 @@ func (ahm *ApplicationMonitor) UpdateApplicationHealth() {
 
 	// Get component health from external data health
 	componentsHealth := make(map[string]string)
-	if externalDataHealthData, exists := ahm.sharedBag.Get(keys.KExternalDataHealth); exists {
+	if externalDataHealthData, exists := ahm.sharedBag.Get(bag.KExternalDataHealth); exists {
 		if externalDataHealth, ok := externalDataHealthData.(models.ExternalDataHealth); ok {
 			for name, provider := range externalDataHealth.Providers {
 				componentsHealth[name] = provider.Status
@@ -68,7 +67,7 @@ func (ahm *ApplicationMonitor) UpdateApplicationHealth() {
 	}
 
 	// Add cache health to components
-	if cacheHealthData, exists := ahm.sharedBag.Get(keys.KCacheStats); exists {
+	if cacheHealthData, exists := ahm.sharedBag.Get(bag.KCacheStats); exists {
 		if cacheStatsMap, ok := cacheHealthData.(models.CacheStatsMap); ok {
 			componentsHealth["cache"] = cacheStatsMap.Aggregated.StorageHealth
 		} else if cacheHealth, ok := cacheHealthData.(models.CacheHealthStatus); ok {
@@ -98,7 +97,7 @@ func (ahm *ApplicationMonitor) UpdateApplicationHealth() {
 	}
 
 	// Update application health in shared bag
-	ahm.sharedBag.Set(keys.KApplicationHealth, appHealth)
+	ahm.sharedBag.Set(bag.KApplicationHealth, appHealth)
 }
 
 // StartPeriodicHealthCheck starts a goroutine that periodically updates health status

@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
 // Registry maps a tool key to an implementation.
-type Registry map[keys.Key]models.Tool
+type Registry map[bag.Key]models.Tool
 
 type Options struct {
 	MaxRounds int // safety cap against infinite loops
@@ -60,7 +60,7 @@ func RunConversation(
 
 		for _, call := range turn.ToolCalls {
 			// Resolve function tool by name
-			var foundKey keys.Key
+			var foundKey bag.Key
 			var tool models.Tool
 			for k, t := range reg {
 				if t.Name() == call.Function.Name {

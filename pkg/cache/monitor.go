@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -12,11 +11,11 @@ import (
 type Monitor struct {
 	Cache
 	sharedBag bag.SharedBag
-	toolKey   keys.Key
+	toolKey   bag.Key
 }
 
 // NewMonitor creates a cache monitor that reports stats to shared bag
-func NewMonitor(c Cache, sharedBag bag.SharedBag, toolKey keys.Key) *Monitor {
+func NewMonitor(c Cache, sharedBag bag.SharedBag, toolKey bag.Key) *Monitor {
 	return &Monitor{
 		Cache:     c,
 		sharedBag: sharedBag,
@@ -77,7 +76,7 @@ func (cm *Monitor) updateCacheStats() {
 	}
 
 	// Update cache stats in the shared bag using map structure
-	cm.sharedBag.Update(keys.KCacheStats, func(current any) any {
+	cm.sharedBag.Update(bag.KCacheStats, func(current any) any {
 		var cacheStatsMap models.CacheStatsMap
 
 		// Initialize or get existing map
@@ -89,7 +88,7 @@ func (cm *Monitor) updateCacheStats() {
 
 		// Initialize maps if needed
 		if cacheStatsMap.ToolCaches == nil {
-			cacheStatsMap.ToolCaches = make(map[keys.Key]models.CacheHealthStatus)
+			cacheStatsMap.ToolCaches = make(map[bag.Key]models.CacheHealthStatus)
 		}
 
 		// Update this tool's cache stats

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	pkgopenai "github.com/amaurybrisou/mosychlos/pkg/openai"
 )
@@ -17,7 +17,7 @@ type ChatStrategy struct {
 	baseURL string
 	model   string
 
-	toolRegistry map[keys.Key]models.Tool
+	toolRegistry map[bag.Key]models.Tool
 	consumer     models.ToolConsumer
 }
 
@@ -26,7 +26,7 @@ func NewChatStrategy(cli *pkgopenai.Client, baseURL, model string) *ChatStrategy
 		cli:          cli,
 		baseURL:      baseURL,
 		model:        model,
-		toolRegistry: make(map[keys.Key]models.Tool),
+		toolRegistry: make(map[bag.Key]models.Tool),
 	}
 }
 

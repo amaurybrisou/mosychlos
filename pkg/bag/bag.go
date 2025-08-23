@@ -3,46 +3,44 @@ package bag
 import (
 	"encoding/json"
 	"maps"
-
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 )
 
 //go:generate mockgen -source=bag.go -destination=mocks/bag_mock.go -package=mocks
 
 // Bag is an immutable key/value store with typed accessors.
 type Bag interface {
-	Get(k keys.Key) (any, bool)
-	GetAs(k keys.Key, out any) bool // out must be pointer; returns false on type mismatch or missing
-	Set(k keys.Key, v any) Bag
-	Has(k keys.Key) bool
-	Keys() []keys.Key
+	Get(k Key) (any, bool)
+	GetAs(k Key, out any) bool // out must be pointer; returns false on type mismatch or missing
+	Set(k Key, v any) Bag
+	Has(k Key) bool
+	Keys() []Key
 	Len() int
 }
 
-type bag struct{ m map[keys.Key]any }
+type bag struct{ m map[Key]any }
 
 // New creates an empty Bag.
-func New() Bag { return bag{m: make(map[keys.Key]any)} }
+func New() Bag { return bag{m: make(map[Key]any)} }
 
 // From creates a Bag from an existing map (shallow copied).
-func From(src map[keys.Key]any) Bag {
-	cp := make(map[keys.Key]any, len(src))
+func From(src map[Key]any) Bag {
+	cp := make(map[Key]any, len(src))
 	maps.Copy(cp, src)
 	return bag{m: cp}
 }
 
-func (b bag) clone() map[keys.Key]any {
-	cp := make(map[keys.Key]any, len(b.m))
+func (b bag) clone() map[Key]any {
+	cp := make(map[Key]any, len(b.m))
 	maps.Copy(cp, b.m)
 	return cp
 }
 
-func (b bag) Get(k keys.Key) (any, bool) {
+func (b bag) Get(k Key) (any, bool) {
 	v, ok := b.m[k]
 	return v, ok
 }
 
-func (b bag) GetAs(k keys.Key, out any) bool {
+func (b bag) GetAs(k Key, out any) bool {
 	v, ok := b.Get(k)
 	if !ok {
 		return false
@@ -81,19 +79,19 @@ func (b bag) GetAs(k keys.Key, out any) bool {
 	return true
 }
 
-func (b bag) Set(k keys.Key, v any) Bag {
+func (b bag) Set(k Key, v any) Bag {
 	cp := b.clone()
 	cp[k] = v
 	return bag{m: cp}
 }
 
-func (b bag) Has(k keys.Key) bool {
+func (b bag) Has(k Key) bool {
 	_, ok := b.Get(k)
 	return ok
 }
 
-func (b bag) Keys() []keys.Key {
-	ks := make([]keys.Key, 0, len(b.m))
+func (b bag) Keys() []Key {
+	ks := make([]Key, 0, len(b.m))
 	for k := range b.m {
 		ks = append(ks, k)
 	}

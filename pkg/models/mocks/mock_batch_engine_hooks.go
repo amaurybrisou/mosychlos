@@ -9,7 +9,6 @@ import (
 	reflect "reflect"
 
 	bag "github.com/amaurybrisou/mosychlos/pkg/bag"
-	keys "github.com/amaurybrisou/mosychlos/pkg/keys"
 	models "github.com/amaurybrisou/mosychlos/pkg/models"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -123,10 +122,10 @@ func (mr *MockBatchEngineHooksMockRecorder) ProcessToolResult(arg0, arg1, arg2, 
 }
 
 // ResultKey mocks base method.
-func (m *MockBatchEngineHooks) ResultKey() keys.Key {
+func (m *MockBatchEngineHooks) ResultKey() bag.Key {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ResultKey")
-	ret0, _ := ret[0].(keys.Key)
+	ret0, _ := ret[0].(bag.Key)
 	return ret0
 }
 

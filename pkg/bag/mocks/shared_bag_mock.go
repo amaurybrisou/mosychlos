@@ -8,7 +8,6 @@ import (
 	reflect "reflect"
 
 	bag "github.com/amaurybrisou/mosychlos/pkg/bag"
-	keys "github.com/amaurybrisou/mosychlos/pkg/keys"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,7 +35,7 @@ func (m *MockSharedBag) EXPECT() *MockSharedBagMockRecorder {
 }
 
 // Get mocks base method.
-func (m *MockSharedBag) Get(k keys.Key) (any, bool) {
+func (m *MockSharedBag) Get(k bag.Key) (any, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", k)
 	ret0, _ := ret[0].(any)
@@ -51,7 +50,7 @@ func (mr *MockSharedBagMockRecorder) Get(k interface{}) *gomock.Call {
 }
 
 // GetAs mocks base method.
-func (m *MockSharedBag) GetAs(k keys.Key, out any) bool {
+func (m *MockSharedBag) GetAs(k bag.Key, out any) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAs", k, out)
 	ret0, _ := ret[0].(bool)
@@ -65,7 +64,7 @@ func (mr *MockSharedBagMockRecorder) GetAs(k, out interface{}) *gomock.Call {
 }
 
 // Has mocks base method.
-func (m *MockSharedBag) Has(k keys.Key) bool {
+func (m *MockSharedBag) Has(k bag.Key) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", k)
 	ret0, _ := ret[0].(bool)
@@ -94,7 +93,7 @@ func (mr *MockSharedBagMockRecorder) MarshalJSON() *gomock.Call {
 }
 
 // MustGet mocks base method.
-func (m *MockSharedBag) MustGet(k keys.Key) any {
+func (m *MockSharedBag) MustGet(k bag.Key) any {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MustGet", k)
 	ret0, _ := ret[0].(any)
@@ -108,7 +107,7 @@ func (mr *MockSharedBagMockRecorder) MustGet(k interface{}) *gomock.Call {
 }
 
 // Set mocks base method.
-func (m *MockSharedBag) Set(k keys.Key, v any) {
+func (m *MockSharedBag) Set(k bag.Key, v any) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Set", k, v)
 }
@@ -134,7 +133,7 @@ func (mr *MockSharedBagMockRecorder) Snapshot() *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MockSharedBag) Update(k keys.Key, fn func(any) any) {
+func (m *MockSharedBag) Update(k bag.Key, fn func(any) any) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Update", k, fn)
 }

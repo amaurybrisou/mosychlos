@@ -9,7 +9,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/prompt"
 	"github.com/amaurybrisou/mosychlos/internal/tools"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/amaurybrisou/mosychlos/pkg/openai"
 )
@@ -18,14 +17,14 @@ import (
 // This engine generates OpenAI Batch API requests that include tools and proper prompts
 type BatchInvestmentResearchEngine struct {
 	regionalPromptManager prompt.RegionalManager
-	toolRegistry          map[keys.Key]models.Tool
+	toolRegistry          map[bag.Key]models.Tool
 	researchDepth         string // "basic", "standard", "comprehensive"
 }
 
 // NewBatchEngine creates a new batch investment research engine
 func NewBatchEngine(
 	regionalPromptManager prompt.RegionalManager,
-	toolRegistry map[keys.Key]models.Tool,
+	toolRegistry map[bag.Key]models.Tool,
 	researchDepth string,
 ) *BatchInvestmentResearchEngine {
 	if researchDepth == "" {
@@ -103,13 +102,13 @@ func (e *BatchInvestmentResearchEngine) generateRegionalPrompt(
 ) (string, error) {
 
 	// 1. Extract data from shared bag
-	portfolio := sharedBag.MustGet(keys.KPortfolioNormalizedForAI).(*models.NormalizedPortfolio)
+	portfolio := sharedBag.MustGet(bag.KPortfolioNormalizedForAI).(*models.NormalizedPortfolio)
 
 	// 2. Extract investment profile from shared bag
-	investmentProfile := sharedBag.MustGet(keys.KProfile).(*models.InvestmentProfile)
+	investmentProfile := sharedBag.MustGet(bag.KProfile).(*models.InvestmentProfile)
 
 	// 3. Extract regional config from shared bag
-	regionalConfig := sharedBag.MustGet(keys.KRegionalConfig).(*models.RegionalConfig)
+	regionalConfig := sharedBag.MustGet(bag.KRegionalConfig).(*models.RegionalConfig)
 
 	// Create localization config from investment profile
 	localizationConfig := models.LocalizationConfig{
@@ -147,48 +146,48 @@ func (e *BatchInvestmentResearchEngine) generateRegionalPrompt(
 func (e *BatchInvestmentResearchEngine) getToolConstraints() models.BaseToolConstraints {
 	baseConstraints := models.BaseToolConstraints{
 		Tools: tools.GetToolsDef(),
-		RequiredTools: []keys.Key{
-			keys.WebSearch,
-			keys.FMP,     // Market data for research
-			keys.NewsApi, // News and market intelligence
+		RequiredTools: []bag.Key{
+			bag.WebSearch,
+			bag.FMP,     // Market data for research
+			bag.NewsApi, // News and market intelligence
 		},
-		PreferredTools: []keys.Key{
-			keys.Fred,                // Economic context
-			keys.YFinanceStockData,   // Additional market data
-			keys.FMPAnalystEstimates, // Analyst insights
+		PreferredTools: []bag.Key{
+			bag.Fred,                // Economic context
+			bag.YFinanceStockData,   // Additional market data
+			bag.FMPAnalystEstimates, // Analyst insights
 		},
 	}
 
 	// Adjust tool usage based on research depth (same logic as regular engine)
 	switch e.researchDepth {
 	case "comprehensive":
-		baseConstraints.MaxCallsPerTool = map[keys.Key]int{
-			keys.WebSearch: 8, // Deep research
-			keys.FMP:       4, // Comprehensive data
-			keys.NewsApi:   2, // News context
+		baseConstraints.MaxCallsPerTool = map[bag.Key]int{
+			bag.WebSearch: 8, // Deep research
+			bag.FMP:       4, // Comprehensive data
+			bag.NewsApi:   2, // News context
 		}
-		baseConstraints.MinCallsPerTool = map[keys.Key]int{
-			keys.WebSearch: 4, // Minimum quality
+		baseConstraints.MinCallsPerTool = map[bag.Key]int{
+			bag.WebSearch: 4, // Minimum quality
 		}
 
 	case "standard":
-		baseConstraints.MaxCallsPerTool = map[keys.Key]int{
-			keys.WebSearch: 5, // Balanced research
-			keys.FMP:       2,
-			keys.NewsApi:   1,
+		baseConstraints.MaxCallsPerTool = map[bag.Key]int{
+			bag.WebSearch: 5, // Balanced research
+			bag.FMP:       2,
+			bag.NewsApi:   1,
 		}
-		baseConstraints.MinCallsPerTool = map[keys.Key]int{
-			keys.WebSearch: 3,
+		baseConstraints.MinCallsPerTool = map[bag.Key]int{
+			bag.WebSearch: 3,
 		}
 
 	case "basic":
-		baseConstraints.MaxCallsPerTool = map[keys.Key]int{
-			keys.WebSearch: 3, // Light research
-			keys.FMP:       1,
-			keys.NewsApi:   1,
+		baseConstraints.MaxCallsPerTool = map[bag.Key]int{
+			bag.WebSearch: 3, // Light research
+			bag.FMP:       1,
+			bag.NewsApi:   1,
 		}
-		baseConstraints.MinCallsPerTool = map[keys.Key]int{
-			keys.WebSearch: 2,
+		baseConstraints.MinCallsPerTool = map[bag.Key]int{
+			bag.WebSearch: 2,
 		}
 	}
 

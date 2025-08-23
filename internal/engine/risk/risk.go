@@ -7,7 +7,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/budget"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	pkgopenai "github.com/amaurybrisou/mosychlos/pkg/openai"
 )
@@ -34,7 +33,7 @@ func New(name string, pm models.PromptBuilder, constraints models.BaseToolConstr
 
 func (r *RiskEngine) Name() string { return r.name }
 
-func (r *RiskEngine) ResultKey() keys.Key { return keys.KRiskAnalysisResult }
+func (r *RiskEngine) ResultKey() bag.Key { return bag.KRiskAnalysisResult }
 
 // Execute runs one synchronous Responses-API request and stores the content in KRiskAnalysisResult.
 func (r *RiskEngine) Execute(ctx context.Context, client models.AiClient, sharedBag bag.SharedBag) error {
@@ -78,8 +77,8 @@ Constraints:
 		Tools: r.constraints.Tools, // use the tools defined in constraints,
 		ResponseFormat: &models.ResponseFormat{
 			Format: models.Format{
-				Type:      keys.ResponseFormatJSON,
-				Name:      keys.KRiskAnalysisResult.String(),
+				Type:      bag.ResponseFormatJSON,
+				Name:      bag.KRiskAnalysisResult.String(),
 				Schema:    pkgopenai.BuildSchema[models.InvestmentResearchResult](),
 				Verbosity: "	",
 			},
@@ -102,7 +101,7 @@ Constraints:
 	// 4) Store the result into the bag for downstream engines / reporters.
 	sharedBag.Set(r.ResultKey(), resp.Content)
 	// Optionally:
-	sharedBag.Set(keys.KRiskMetrics, resp.Usage)
+	sharedBag.Set(bag.KRiskMetrics, resp.Usage)
 
 	return nil
 }

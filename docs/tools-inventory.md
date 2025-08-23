@@ -248,7 +248,7 @@ Every tool must implement the `models.Tool` interface:
 ```go
 type Tool interface {
     Name() string                              // Tool identifier
-    Key() keys.Key                            // Unique key
+    Key() bag.Key                            // Unique key
     Description() string                      // What the tool does
     Definition() ToolDef                      // OpenAI function definition
     Tags() []string                          // Categorization tags
@@ -382,7 +382,7 @@ All active tools have configuration in `config/config.default.yaml`:
 2. **Create Directory**: `internal/tools/{provider_name}/`
 3. **Implement Functions**: Create specific .go files for each data endpoint
 4. **Add Configuration**: Update `config.go` with tool config
-5. **Register Tool**: Add to `tools.go` and `keys.go`
+5. **Register Tool**: Add to `tools.go` and `bag.go`
 6. **Test Integration**: Create comprehensive tests
 
 ### **Current Status Summary**:

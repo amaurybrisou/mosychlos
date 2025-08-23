@@ -11,7 +11,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fmp"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -57,12 +56,12 @@ func New(key, cacheDir string, sharedBag bag.SharedBag) (*FMPTool, error) {
 
 // Name returns the tool name
 func (p *FMPTool) Name() string {
-	return keys.FMP.String()
+	return bag.FMP.String()
 }
 
 // Key returns the tool key
-func (p *FMPTool) Key() keys.Key {
-	return keys.FMP
+func (p *FMPTool) Key() bag.Key {
+	return bag.FMP
 }
 
 // Tags returns the tool tags

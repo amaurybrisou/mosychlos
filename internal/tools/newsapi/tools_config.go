@@ -5,7 +5,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -13,7 +12,7 @@ import (
 func GetToolConfigs(cfg *config.NewsAPIConfig) []models.ToolConfig {
 	return []models.ToolConfig{
 		{
-			Key: keys.NewsApi,
+			Key: bag.NewsApi,
 			Constructor: func(cfg any, sharedBag bag.SharedBag) (models.Tool, error) {
 				return NewFromConfig(cfg.(*config.NewsAPIConfig), sharedBag)
 			},

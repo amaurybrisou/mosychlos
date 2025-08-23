@@ -5,7 +5,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -17,7 +16,7 @@ func GetToolConfigs(cfg *config.SECEdgarConfig) []models.ToolConfig {
 
 	configs := []models.ToolConfig{
 		{
-			Key:    keys.SECFilings,
+			Key:    bag.SECFilings,
 			Config: cfg,
 			Constructor: func(cfg any, sharedBag bag.SharedBag) (models.Tool, error) {
 				return NewFromConfig(cfg.(*config.SECEdgarConfig), sharedBag)

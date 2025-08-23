@@ -4,14 +4,14 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
 // defaultToolConsumer implements ToolConsumer interface with constraint-based budget management
 type defaultToolConsumer struct {
 	constraints models.ToolConstraints
-	callCounts  map[keys.Key]int
+	callCounts  map[bag.Key]int
 }
 
 // NewToolConsumer creates a new ToolConsumer based on the provided constraints
@@ -23,12 +23,12 @@ func NewToolConsumer(constraints models.ToolConstraints) models.ToolConsumer {
 
 	return &defaultToolConsumer{
 		constraints: constraints,
-		callCounts:  make(map[keys.Key]int),
+		callCounts:  make(map[bag.Key]int),
 	}
 }
 
 // ConsumeTools executes tools based on constraints until credits are exhausted
-func (c *defaultToolConsumer) ConsumeTools(ctx context.Context, key keys.Key) error {
+func (c *defaultToolConsumer) ConsumeTools(ctx context.Context, key bag.Key) error {
 	if hasLimit := c.constraints.GetMaxCalls(key); hasLimit == 0 {
 		return nil // no limit for this tool, so no consumption needed
 	}
@@ -45,8 +45,8 @@ func (c *defaultToolConsumer) ConsumeTools(ctx context.Context, key keys.Key) er
 }
 
 // GetRemainingCredits returns remaining calls for each tool
-func (c *defaultToolConsumer) GetRemainingCredits() map[keys.Key]int {
-	remaining := make(map[keys.Key]int)
+func (c *defaultToolConsumer) GetRemainingCredits() map[bag.Key]int {
+	remaining := make(map[bag.Key]int)
 
 	// calculate remaining credits for each tool with a configured limit
 	for _, toolName := range c.constraints.GetToolsWithLimits() {
@@ -58,7 +58,7 @@ func (c *defaultToolConsumer) GetRemainingCredits() map[keys.Key]int {
 }
 
 // HasCreditsFor checks if there are remaining credits for a tool
-func (c *defaultToolConsumer) HasCreditsFor(toolKey keys.Key) bool {
+func (c *defaultToolConsumer) HasCreditsFor(toolKey bag.Key) bool {
 	limit := c.constraints.GetMaxCalls(toolKey)
 	if limit == 0 {
 		// no limit means unlimited credits
@@ -78,7 +78,7 @@ func (c *defaultToolConsumer) HasCreditsFor(toolKey keys.Key) bool {
 }
 
 // IncrementCallCount increments the call count for a tool (called after successful tool execution)
-func (c *defaultToolConsumer) IncrementCallCount(toolKey keys.Key) {
+func (c *defaultToolConsumer) IncrementCallCount(toolKey bag.Key) {
 	c.callCounts[toolKey]++
 	slog.Debug("budget.IncrementCallCount",
 		"tool", toolKey,
@@ -88,11 +88,11 @@ func (c *defaultToolConsumer) IncrementCallCount(toolKey keys.Key) {
 // Reset resets all tool call counters
 func (c *defaultToolConsumer) Reset() {
 	slog.Debug("budget.Reset: clearing all tool call counters")
-	c.callCounts = make(map[keys.Key]int)
+	c.callCounts = make(map[bag.Key]int)
 }
 
 // GetCallCount returns the current call count for a tool
-func (c *defaultToolConsumer) GetCallCount(toolKey keys.Key) int {
+func (c *defaultToolConsumer) GetCallCount(toolKey bag.Key) int {
 	return c.callCounts[toolKey]
 }
 
@@ -103,8 +103,8 @@ func (c *defaultToolConsumer) GetConstraints() models.ToolConstraints {
 
 // GetUnusedRequiredTools returns required tools that haven't been called yet and still have credits,
 // or tools that haven't reached their minimum call requirements
-func (c *defaultToolConsumer) GetUnusedRequiredTools() []keys.Key {
-	var unused []keys.Key
+func (c *defaultToolConsumer) GetUnusedRequiredTools() []bag.Key {
+	var unused []bag.Key
 
 	for _, requiredTool := range c.constraints.GetRequiredTools() {
 		currentCalls := c.callCounts[requiredTool]

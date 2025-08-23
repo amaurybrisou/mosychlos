@@ -6,7 +6,7 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/internal/tools/yfinance"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -44,16 +44,16 @@ func TestModularToolConfigs(t *testing.T) {
 	}
 
 	// Verify we have all expected keys
-	expectedKeys := map[keys.Key]bool{
-		keys.NewsApi: false,
-		keys.Fred:    false,
-		keys.FMP:     false,
-		// keys.FMPAnalystEstimates: false, // Premium - disabled
-		keys.YFinanceStockData:  false,
-		keys.YFinanceStockInfo:  false,
-		keys.YFinanceDividends:  false,
-		keys.YFinanceFinancials: false,
-		keys.YFinanceMarketData: false,
+	expectedKeys := map[bag.Key]bool{
+		bag.NewsApi: false,
+		bag.Fred:    false,
+		bag.FMP:     false,
+		// bag.FMPAnalystEstimates: false, // Premium - disabled
+		bag.YFinanceStockData:  false,
+		bag.YFinanceStockInfo:  false,
+		bag.YFinanceDividends:  false,
+		bag.YFinanceFinancials: false,
+		bag.YFinanceMarketData: false,
 	}
 
 	// Check each config
@@ -101,12 +101,12 @@ func TestYFinanceToolConfigs_CacheTTL(t *testing.T) {
 	configs := GetYFinanceConfigs(cfg)
 
 	// Verify different cache TTLs for different tool types
-	expectedTTLs := map[keys.Key]time.Duration{
-		keys.YFinanceStockData:  6 * time.Hour,  // Real-time data
-		keys.YFinanceStockInfo:  24 * time.Hour, // Company info changes slowly
-		keys.YFinanceDividends:  24 * time.Hour, // Dividends change rarely
-		keys.YFinanceFinancials: 24 * time.Hour, // Financial statements change quarterly
-		keys.YFinanceMarketData: 6 * time.Hour,  // Market data updates frequently
+	expectedTTLs := map[bag.Key]time.Duration{
+		bag.YFinanceStockData:  6 * time.Hour,  // Real-time data
+		bag.YFinanceStockInfo:  24 * time.Hour, // Company info changes slowly
+		bag.YFinanceDividends:  24 * time.Hour, // Dividends change rarely
+		bag.YFinanceFinancials: 24 * time.Hour, // Financial statements change quarterly
+		bag.YFinanceMarketData: 6 * time.Hour,  // Market data updates frequently
 	}
 
 	for _, config := range configs {

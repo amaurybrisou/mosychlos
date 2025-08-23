@@ -9,7 +9,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -53,7 +52,7 @@ func (pm *ProfileManager) LoadProfile(ctx context.Context, country, riskToleranc
 
 	// Check SharedBag first (like tools pattern)
 	if pm.sharedBag != nil {
-		if cached, exists := pm.sharedBag.Get(keys.KProfile); exists {
+		if cached, exists := pm.sharedBag.Get(bag.KProfile); exists {
 			if profile, ok := cached.(*models.InvestmentProfile); ok {
 				return profile, nil
 			}
@@ -65,7 +64,7 @@ func (pm *ProfileManager) LoadProfile(ctx context.Context, country, riskToleranc
 	if err == nil {
 		// Cache successful load
 		if pm.sharedBag != nil {
-			pm.sharedBag.Set(keys.KProfile, profile)
+			pm.sharedBag.Set(bag.KProfile, profile)
 		}
 		return profile, nil
 	}
@@ -78,7 +77,7 @@ func (pm *ProfileManager) LoadProfile(ctx context.Context, country, riskToleranc
 
 	// Cache the global profile under the requested key
 	if pm.sharedBag != nil {
-		pm.sharedBag.Set(keys.KProfile, profile)
+		pm.sharedBag.Set(bag.KProfile, profile)
 	}
 	return profile, nil
 }
@@ -147,7 +146,7 @@ func (pm *ProfileManager) SaveProfile(ctx context.Context, profile *models.Inves
 
 	// Update SharedBag with saved profile
 	if pm.sharedBag != nil {
-		pm.sharedBag.Set(keys.KProfile, profile)
+		pm.sharedBag.Set(bag.KProfile, profile)
 	}
 
 	return nil

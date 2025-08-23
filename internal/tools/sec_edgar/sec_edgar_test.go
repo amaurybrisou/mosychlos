@@ -7,7 +7,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -70,7 +69,7 @@ func TestProvider_ToolInterface(t *testing.T) {
 
 	// Test tool interface methods
 	assert.Equal(t, "sec_edgar_filings", provider.Name())
-	assert.Equal(t, keys.SECFilings, provider.Key())
+	assert.Equal(t, bag.SECFilings, provider.Key())
 	assert.NotEmpty(t, provider.Description())
 	assert.NotEmpty(t, provider.Tags())
 

@@ -119,7 +119,7 @@ custom_requirements:
 
 ## SharedBag Integration
 
-The ProfileManager integrates with the SharedBag system using `keys.KProfile`:
+The ProfileManager integrates with the SharedBag system using `bag.KProfile`:
 
 - **Caching**: Successful profile loads are cached in SharedBag
 - **Session State**: Profiles persist across engine operations within a session

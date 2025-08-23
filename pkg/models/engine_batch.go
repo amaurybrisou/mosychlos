@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 )
 
 //go:generate mockgen -destination=mocks/mock_batch_engine_hooks.go -package=mocks . BatchEngineHooks
@@ -35,17 +34,17 @@ type BatchEngineHooks interface {
 	ShouldContinueIteration(iteration int, nextJobs []BatchJob) bool
 
 	// ResultKey returns the key where final results should be stored
-	ResultKey() keys.Key
+	ResultKey() bag.Key
 }
 
 // ToolConstraints is an interface for BaseToolConstraints
 type ToolConstraints interface {
 	// Core constraint methods - actually used
-	GetMaxCalls(toolKey keys.Key) int
-	GetMinCalls(toolKey keys.Key) int
-	GetRequiredTools() []keys.Key
-	GetToolsWithLimits() []keys.Key
-	RemainingCalls(toolKey keys.Key, currentCalls int) int
+	GetMaxCalls(toolKey bag.Key) int
+	GetMinCalls(toolKey bag.Key) int
+	GetRequiredTools() []bag.Key
+	GetToolsWithLimits() []bag.Key
+	RemainingCalls(toolKey bag.Key, currentCalls int) int
 
 	// Validation
 	Validate() error

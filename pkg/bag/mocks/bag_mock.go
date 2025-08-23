@@ -8,7 +8,6 @@ import (
 	reflect "reflect"
 
 	bag "github.com/amaurybrisou/mosychlos/pkg/bag"
-	keys "github.com/amaurybrisou/mosychlos/pkg/keys"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,7 +35,7 @@ func (m *MockBag) EXPECT() *MockBagMockRecorder {
 }
 
 // Get mocks base method.
-func (m *MockBag) Get(k keys.Key) (any, bool) {
+func (m *MockBag) Get(k bag.Key) (any, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", k)
 	ret0, _ := ret[0].(any)
@@ -51,7 +50,7 @@ func (mr *MockBagMockRecorder) Get(k interface{}) *gomock.Call {
 }
 
 // GetAs mocks base method.
-func (m *MockBag) GetAs(k keys.Key, out any) bool {
+func (m *MockBag) GetAs(k bag.Key, out any) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAs", k, out)
 	ret0, _ := ret[0].(bool)
@@ -65,7 +64,7 @@ func (mr *MockBagMockRecorder) GetAs(k, out interface{}) *gomock.Call {
 }
 
 // Has mocks base method.
-func (m *MockBag) Has(k keys.Key) bool {
+func (m *MockBag) Has(k bag.Key) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", k)
 	ret0, _ := ret[0].(bool)
@@ -79,10 +78,10 @@ func (mr *MockBagMockRecorder) Has(k interface{}) *gomock.Call {
 }
 
 // Keys mocks base method.
-func (m *MockBag) Keys() []keys.Key {
+func (m *MockBag) Keys() []bag.Key {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
-	ret0, _ := ret[0].([]keys.Key)
+	ret0, _ := ret[0].([]bag.Key)
 	return ret0
 }
 
@@ -107,7 +106,7 @@ func (mr *MockBagMockRecorder) Len() *gomock.Call {
 }
 
 // Set mocks base method.
-func (m *MockBag) Set(k keys.Key, v any) bag.Bag {
+func (m *MockBag) Set(k bag.Key, v any) bag.Bag {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set", k, v)
 	ret0, _ := ret[0].(bag.Bag)

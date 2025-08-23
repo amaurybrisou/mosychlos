@@ -14,7 +14,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	pkgfs "github.com/amaurybrisou/mosychlos/pkg/fs"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -308,7 +307,7 @@ source: 'default_global'
 					InvestmentStyle: "growth",
 					ResearchDepth:   "comprehensive",
 				}
-				sb.Set(keys.KProfile, profile)
+				sb.Set(bag.KProfile, profile)
 			},
 			wantErr:      false,
 			expectSource: "bag",
@@ -354,7 +353,7 @@ source: 'default_global'
 			assert.NotNil(t, profile)
 
 			// Verify the profile was stored in SharedBag
-			bagProfile, ok := sharedBag.Get(keys.KProfile)
+			bagProfile, ok := sharedBag.Get(bag.KProfile)
 			assert.True(t, ok)
 			assert.Equal(t, profile, bagProfile)
 
@@ -417,7 +416,7 @@ source: 'default_global'
 	assert.Equal(t, "balanced", profile1.InvestmentStyle)
 
 	// Verify it's in the SharedBag
-	bagProfile, ok := sharedBag.Get(keys.KProfile)
+	bagProfile, ok := sharedBag.Get(bag.KProfile)
 	require.True(t, ok)
 	assert.Equal(t, profile1, bagProfile)
 

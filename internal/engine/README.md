@@ -191,15 +191,15 @@ type EngineOrchestrator interface {
 ```go
 const (
     // Engine-specific result keys
-    KNewsAnalysis       keys.Key = "news_analysis"
-    KRiskAnalysis       keys.Key = "risk_analysis"
-    KAllocationAnalysis keys.Key = "allocation_analysis"
-    KComplianceAnalysis keys.Key = "compliance_analysis"
+    KNewsAnalysis       bag.Key = "news_analysis"
+    KRiskAnalysis       bag.Key = "risk_analysis"
+    KAllocationAnalysis bag.Key = "allocation_analysis"
+    KComplianceAnalysis bag.Key = "compliance_analysis"
 
     // Engine metadata keys
-    KEngineExecutionOrder keys.Key = "engine_execution_order"
-    KEngineTimestamps     keys.Key = "engine_timestamps"
-    KEngineErrors         keys.Key = "engine_errors"
+    KEngineExecutionOrder bag.Key = "engine_execution_order"
+    KEngineTimestamps     bag.Key = "engine_timestamps"
+    KEngineErrors         bag.Key = "engine_errors"
 )
 ```
 
@@ -207,13 +207,13 @@ const (
 
 ```go
 // Engine reads shared state
-if newsData, ok := sharedBag.Get(keys.KNewsAnalysis); ok {
+if newsData, ok := sharedBag.Get(bag.KNewsAnalysis); ok {
     // Use news analysis from NewsEngine
 }
 
 // Engine stores results for others
-sharedBag.Set(keys.KRiskAnalysis, riskData)
-sharedBag.Set(keys.KRiskAnalysisTime, time.Now())
+sharedBag.Set(bag.KRiskAnalysis, riskData)
+sharedBag.Set(bag.KRiskAnalysisTime, time.Now())
 ```
 
 ## Implementation Guidelines

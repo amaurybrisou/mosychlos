@@ -15,7 +15,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/tools"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/google/uuid"
 )
@@ -55,7 +54,7 @@ func (o *engineOrchestrator) BatchManager() models.BatchManager {
 
 func (o *engineOrchestrator) Init(ctx context.Context) error {
 
-	o.sharedBag.Set(keys.KVerboseMode, o.cfg.Logging.Level)
+	o.sharedBag.Set(bag.KVerboseMode, o.cfg.Logging.Level)
 
 	// Set up tools and services
 	if err := initializeTools(o.cfg, o.sharedBag); err != nil {
@@ -145,7 +144,7 @@ func (o *engineOrchestrator) ExecutePipeline(ctx context.Context) error {
 		}
 	}()
 
-	resultKeys := make([]keys.Key, len(o.engines))
+	resultKeys := make([]bag.Key, len(o.engines))
 
 	for i, eng := range o.engines {
 		slog.Info("engine: start", "name", eng.Name())
@@ -213,7 +212,7 @@ func (o *engineOrchestrator) ExecutePipeline(ctx context.Context) error {
 // func (o *engineOrchestrator) GetResults(analysisType models.AnalysisType) (*string, error) {
 // 	switch analysisType {
 // 	case models.AnalysisRisk:
-// 		if riskResult, exists := o.sharedBag.Get(keys.KRiskAnalysisResult); exists {
+// 		if riskResult, exists := o.sharedBag.Get(bag.KRiskAnalysisResult); exists {
 // 			switch result := riskResult.(type) {
 // 			case string:
 // 				return &result, nil
@@ -226,7 +225,7 @@ func (o *engineOrchestrator) ExecutePipeline(ctx context.Context) error {
 // 		}
 // 		return nil, fmt.Errorf("no risk analysis results found in shared bag")
 // 	case models.AnalysisInvestmentResearch:
-// 		if investmentResult, exists := o.sharedBag.Get(keys.KInvestmentResearchResult); exists {
+// 		if investmentResult, exists := o.sharedBag.Get(bag.KInvestmentResearchResult); exists {
 // 			// Convert the structured result to JSON string for display
 // 			if result, ok := investmentResult.(models.InvestmentResearchResult); ok {
 // 				resultJSON, err := json.Marshal(result)

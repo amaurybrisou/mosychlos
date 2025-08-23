@@ -60,10 +60,10 @@ package investmentresearch
 // 	client.SetToolConsumer(budget.NewToolConsumer(&e.toolConstraints))
 
 // 	// 1. Extract data from shared bag
-// 	portfolio := sharedBag.MustGet(keys.KPortfolioNormalizedForAI).(*models.NormalizedPortfolio)
+// 	portfolio := sharedBag.MustGet(bag.KPortfolioNormalizedForAI).(*models.NormalizedPortfolio)
 
 // 	// 2. Extract investment profile from shared bag
-// 	investmentProfile := sharedBag.MustGet(keys.KProfile).(*models.InvestmentProfile)
+// 	investmentProfile := sharedBag.MustGet(bag.KProfile).(*models.InvestmentProfile)
 
 // 	// 2. Generate regional research prompt
 // 	prompt, err := e.regionalPromptManager.GenerateRegionalPrompt(
@@ -74,7 +74,7 @@ package investmentresearch
 // 			EngineVersion:     "v2.0",
 // 			AnalysisType:      models.AnalysisInvestmentResearch,
 // 			Timestamp:         time.Now(),
-// 			RegionalConfig:    sharedBag.MustGet(keys.KRegionalConfig).(*models.RegionalConfig),
+// 			RegionalConfig:    sharedBag.MustGet(bag.KRegionalConfig).(*models.RegionalConfig),
 // 			Portfolio:         portfolio,
 // 			InvestmentProfile: investmentProfile,
 // 			Localization: models.LocalizationConfig{
@@ -101,7 +101,7 @@ package investmentresearch
 // 	}
 
 // 	// 4. Store results in shared bag for potential chaining
-// 	sharedBag.Set(keys.KInvestmentResearchResult, result)
+// 	sharedBag.Set(bag.KInvestmentResearchResult, result)
 
 // 	return nil
 // }
@@ -109,48 +109,48 @@ package investmentresearch
 // // Tool constraints optimized for investment research
 // func getToolConstraints(researchDepth string) models.ToolConstraints {
 // 	baseConstraints := models.ToolConstraints{
-// 		RequiredTools: []keys.Key{
-// 			keys.WebSearch, // Web search for market intelligence and real-time data
-// 			keys.FMP,       // Market data for research
-// 			keys.NewsApi,   // News and market intelligence
+// 		RequiredTools: []bag.Key{
+// 			bag.WebSearch, // Web search for market intelligence and real-time data
+// 			bag.FMP,       // Market data for research
+// 			bag.NewsApi,   // News and market intelligence
 // 		},
-// 		PreferredTools: []keys.Key{
-// 			keys.Fred,                // Economic context
-// 			keys.YFinanceStockData,   // Additional market data
-// 			keys.FMPAnalystEstimates, // Analyst insights
+// 		PreferredTools: []bag.Key{
+// 			bag.Fred,                // Economic context
+// 			bag.YFinanceStockData,   // Additional market data
+// 			bag.FMPAnalystEstimates, // Analyst insights
 // 		},
 // 	}
 
 // 	// Adjust tool usage based on research depth
 // 	switch researchDepth {
 // 	case "comprehensive":
-// 		baseConstraints.MaxCallsPerTool = map[keys.Key]int{
-// 			keys.WebSearch: 8, // Comprehensive web research
-// 			keys.FMP:       4, // Comprehensive data
-// 			keys.NewsApi:   2, // News context
+// 		baseConstraints.MaxCallsPerTool = map[bag.Key]int{
+// 			bag.WebSearch: 8, // Comprehensive web research
+// 			bag.FMP:       4, // Comprehensive data
+// 			bag.NewsApi:   2, // News context
 // 		}
-// 		baseConstraints.MinCallsPerTool = map[keys.Key]int{
-// 			keys.WebSearch: 4, // Minimum web searches for comprehensive analysis
+// 		baseConstraints.MinCallsPerTool = map[bag.Key]int{
+// 			bag.WebSearch: 4, // Minimum web searches for comprehensive analysis
 // 		}
 
 // 	case "standard":
-// 		baseConstraints.MaxCallsPerTool = map[keys.Key]int{
-// 			keys.WebSearch: 5, // Moderate web research
-// 			keys.FMP:       2,
-// 			keys.NewsApi:   1,
+// 		baseConstraints.MaxCallsPerTool = map[bag.Key]int{
+// 			bag.WebSearch: 5, // Moderate web research
+// 			bag.FMP:       2,
+// 			bag.NewsApi:   1,
 // 		}
-// 		baseConstraints.MinCallsPerTool = map[keys.Key]int{
-// 			keys.WebSearch: 3, // Minimum web searches for standard analysis
+// 		baseConstraints.MinCallsPerTool = map[bag.Key]int{
+// 			bag.WebSearch: 3, // Minimum web searches for standard analysis
 // 		}
 
 // 	case "basic":
-// 		baseConstraints.MaxCallsPerTool = map[keys.Key]int{
-// 			keys.WebSearch: 3, // Basic web research
-// 			keys.FMP:       1,
-// 			keys.NewsApi:   1,
+// 		baseConstraints.MaxCallsPerTool = map[bag.Key]int{
+// 			bag.WebSearch: 3, // Basic web research
+// 			bag.FMP:       1,
+// 			bag.NewsApi:   1,
 // 		}
-// 		baseConstraints.MinCallsPerTool = map[keys.Key]int{
-// 			keys.WebSearch: 2, // Minimum web searches for basic analysis
+// 		baseConstraints.MinCallsPerTool = map[bag.Key]int{
+// 			bag.WebSearch: 2, // Minimum web searches for basic analysis
 // 		}
 // 	}
 

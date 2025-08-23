@@ -9,7 +9,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/internal/tools"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -44,7 +43,7 @@ func (b *BatchEngine) Name() string {
 }
 
 // ResultKey returns the result key from hooks
-func (b *BatchEngine) ResultKey() keys.Key {
+func (b *BatchEngine) ResultKey() bag.Key {
 	return b.hooks.ResultKey()
 }
 
@@ -192,7 +191,7 @@ func (b *BatchEngine) processJobResults(
 	for customID, usage := range results.Usage {
 		if usage.TotalTokens > 0 {
 			// Store token usage in shared bag for metrics tracking
-			sharedBag.Set(keys.Key(fmt.Sprintf("token_usage_%s", customID)), usage)
+			sharedBag.Set(bag.Key(fmt.Sprintf("token_usage_%s", customID)), usage)
 			slog.Debug("Stored batch token usage",
 				"custom_id", customID,
 				"prompt_tokens", usage.PromptTokens,
@@ -321,7 +320,7 @@ func (b *BatchEngine) executeToolCall(ctx context.Context, toolCall models.ToolC
 		"available_tools", len(tools.GetToolsMap()))
 
 	allTools := tools.GetToolsMap()
-	tool, exists := allTools[keys.Key(toolCall.Function.Name)]
+	tool, exists := allTools[bag.Key(toolCall.Function.Name)]
 	if !exists {
 		slog.Error("Tool not found",
 			"tool_name", toolCall.Function.Name,

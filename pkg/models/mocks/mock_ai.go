@@ -8,10 +8,47 @@ import (
 	context "context"
 	reflect "reflect"
 
-	keys "github.com/amaurybrisou/mosychlos/pkg/keys"
+	bag "github.com/amaurybrisou/mosychlos/pkg/bag"
 	models "github.com/amaurybrisou/mosychlos/pkg/models"
 	gomock "github.com/golang/mock/gomock"
 )
+
+// MockToolDef is a mock of ToolDef interface.
+type MockToolDef struct {
+	ctrl     *gomock.Controller
+	recorder *MockToolDefMockRecorder
+}
+
+// MockToolDefMockRecorder is the mock recorder for MockToolDef.
+type MockToolDefMockRecorder struct {
+	mock *MockToolDef
+}
+
+// NewMockToolDef creates a new mock instance.
+func NewMockToolDef(ctrl *gomock.Controller) *MockToolDef {
+	mock := &MockToolDef{ctrl: ctrl}
+	mock.recorder = &MockToolDefMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockToolDef) EXPECT() *MockToolDefMockRecorder {
+	return m.recorder
+}
+
+// ToAny mocks base method.
+func (m *MockToolDef) ToAny() any {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToAny")
+	ret0, _ := ret[0].(any)
+	return ret0
+}
+
+// ToAny indicates an expected call of ToAny.
+func (mr *MockToolDefMockRecorder) ToAny() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToAny", reflect.TypeOf((*MockToolDef)(nil).ToAny))
+}
 
 // MockTool is a mock of Tool interface.
 type MockTool struct {
@@ -79,10 +116,10 @@ func (mr *MockToolMockRecorder) IsExternal() *gomock.Call {
 }
 
 // Key mocks base method.
-func (m *MockTool) Key() keys.Key {
+func (m *MockTool) Key() bag.Key {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Key")
-	ret0, _ := ret[0].(keys.Key)
+	ret0, _ := ret[0].(bag.Key)
 	return ret0
 }
 
@@ -133,143 +170,6 @@ func (m *MockTool) Tags() []string {
 func (mr *MockToolMockRecorder) Tags() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tags", reflect.TypeOf((*MockTool)(nil).Tags))
-}
-
-// MockNewsTool is a mock of NewsTool interface.
-type MockNewsTool struct {
-	ctrl     *gomock.Controller
-	recorder *MockNewsToolMockRecorder
-}
-
-// MockNewsToolMockRecorder is the mock recorder for MockNewsTool.
-type MockNewsToolMockRecorder struct {
-	mock *MockNewsTool
-}
-
-// NewMockNewsTool creates a new mock instance.
-func NewMockNewsTool(ctrl *gomock.Controller) *MockNewsTool {
-	mock := &MockNewsTool{ctrl: ctrl}
-	mock.recorder = &MockNewsToolMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockNewsTool) EXPECT() *MockNewsToolMockRecorder {
-	return m.recorder
-}
-
-// Definition mocks base method.
-func (m *MockNewsTool) Definition() models.ToolDef {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Definition")
-	ret0, _ := ret[0].(models.ToolDef)
-	return ret0
-}
-
-// Definition indicates an expected call of Definition.
-func (mr *MockNewsToolMockRecorder) Definition() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Definition", reflect.TypeOf((*MockNewsTool)(nil).Definition))
-}
-
-// Description mocks base method.
-func (m *MockNewsTool) Description() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Description")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// Description indicates an expected call of Description.
-func (mr *MockNewsToolMockRecorder) Description() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Description", reflect.TypeOf((*MockNewsTool)(nil).Description))
-}
-
-// Fetch mocks base method.
-func (m *MockNewsTool) Fetch(ctx context.Context, tickers []string) (*models.NewsData, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Fetch", ctx, tickers)
-	ret0, _ := ret[0].(*models.NewsData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Fetch indicates an expected call of Fetch.
-func (mr *MockNewsToolMockRecorder) Fetch(ctx, tickers interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockNewsTool)(nil).Fetch), ctx, tickers)
-}
-
-// IsExternal mocks base method.
-func (m *MockNewsTool) IsExternal() bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsExternal")
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsExternal indicates an expected call of IsExternal.
-func (mr *MockNewsToolMockRecorder) IsExternal() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsExternal", reflect.TypeOf((*MockNewsTool)(nil).IsExternal))
-}
-
-// Key mocks base method.
-func (m *MockNewsTool) Key() keys.Key {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Key")
-	ret0, _ := ret[0].(keys.Key)
-	return ret0
-}
-
-// Key indicates an expected call of Key.
-func (mr *MockNewsToolMockRecorder) Key() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Key", reflect.TypeOf((*MockNewsTool)(nil).Key))
-}
-
-// Name mocks base method.
-func (m *MockNewsTool) Name() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Name")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// Name indicates an expected call of Name.
-func (mr *MockNewsToolMockRecorder) Name() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Name", reflect.TypeOf((*MockNewsTool)(nil).Name))
-}
-
-// Run mocks base method.
-func (m *MockNewsTool) Run(ctx context.Context, args string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Run", ctx, args)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Run indicates an expected call of Run.
-func (mr *MockNewsToolMockRecorder) Run(ctx, args interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockNewsTool)(nil).Run), ctx, args)
-}
-
-// Tags mocks base method.
-func (m *MockNewsTool) Tags() []string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Tags")
-	ret0, _ := ret[0].([]string)
-	return ret0
-}
-
-// Tags indicates an expected call of Tags.
-func (mr *MockNewsToolMockRecorder) Tags() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tags", reflect.TypeOf((*MockNewsTool)(nil).Tags))
 }
 
 // MockRoleContent is a mock of RoleContent interface.
@@ -358,16 +258,28 @@ func (mr *MockSessionMockRecorder) Add(role, content interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockSession)(nil).Add), role, content)
 }
 
-// AddToolResult mocks base method.
-func (m *MockSession) AddToolResult(toolCallID, content string) {
+// AddFunctionCallResult mocks base method.
+func (m *MockSession) AddFunctionCallResult(toolCall models.ToolCall, content string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddToolResult", toolCallID, content)
+	m.ctrl.Call(m, "AddFunctionCallResult", toolCall, content)
+}
+
+// AddFunctionCallResult indicates an expected call of AddFunctionCallResult.
+func (mr *MockSessionMockRecorder) AddFunctionCallResult(toolCall, content interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFunctionCallResult", reflect.TypeOf((*MockSession)(nil).AddFunctionCallResult), toolCall, content)
+}
+
+// AddToolResult mocks base method.
+func (m *MockSession) AddToolResult(toolCall models.ToolCall, content string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "AddToolResult", toolCall, content)
 }
 
 // AddToolResult indicates an expected call of AddToolResult.
-func (mr *MockSessionMockRecorder) AddToolResult(toolCallID, content interface{}) *gomock.Call {
+func (mr *MockSessionMockRecorder) AddToolResult(toolCall, content interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddToolResult", reflect.TypeOf((*MockSession)(nil).AddToolResult), toolCallID, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddToolResult", reflect.TypeOf((*MockSession)(nil).AddToolResult), toolCall, content)
 }
 
 // Next mocks base method.

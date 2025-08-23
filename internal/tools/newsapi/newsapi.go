@@ -8,7 +8,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/amaurybrisou/mosychlos/pkg/newsapi"
 )
@@ -27,7 +26,7 @@ func NewFromConfig(cfg *config.NewsAPIConfig, sharedBag bag.SharedBag) (*NewsApi
 	return New(cfg.APIKey, cfg.BaseURL, cfg.Locale, sharedBag)
 }
 
-// New constructs a NewsAPI provider using NEWSAPI_API_KEY from env or config API keys.
+// New constructs a NewsAPI provider using NEWSAPI_API_KEY from env or config API bag.
 func New(apiKey, baseUrl, locale string, sharedBag bag.SharedBag) (*NewsApiTool, error) {
 	if apiKey == "" {
 		return nil, fmt.Errorf("newsapi: missing NEWSAPI_API_KEY")
@@ -50,11 +49,11 @@ func New(apiKey, baseUrl, locale string, sharedBag bag.SharedBag) (*NewsApiTool,
 }
 
 func (p *NewsApiTool) Name() string {
-	return keys.NewsApi.String()
+	return bag.NewsApi.String()
 }
 
-func (p *NewsApiTool) Key() keys.Key {
-	return keys.NewsApi
+func (p *NewsApiTool) Key() bag.Key {
+	return bag.NewsApi
 }
 
 func (p *NewsApiTool) Description() string {

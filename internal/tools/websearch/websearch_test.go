@@ -6,7 +6,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,8 +17,8 @@ func TestWebSearchProvider(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("Tool Properties", func(t *testing.T) {
-		assert.Equal(t, keys.WebSearch.String(), provider.Name())
-		assert.Equal(t, keys.WebSearch, provider.Key())
+		assert.Equal(t, bag.WebSearch.String(), provider.Name())
+		assert.Equal(t, bag.WebSearch, provider.Key())
 		assert.NotEmpty(t, provider.Description())
 		assert.Contains(t, provider.Tags(), "web")
 		assert.Contains(t, provider.Tags(), "openai-internal")
@@ -32,7 +31,7 @@ func TestWebSearchProvider(t *testing.T) {
 		typedDef, ok := def.(*models.CustomToolDef)
 		assert.True(t, ok)
 		assert.Equal(t, models.CustomToolDefType, typedDef.Type)
-		assert.Equal(t, keys.WebSearch.String(), typedDef.FunctionDef.Name)
+		assert.Equal(t, bag.WebSearch.String(), typedDef.FunctionDef.Name)
 		assert.NotEmpty(t, typedDef.FunctionDef.Description)
 
 		// Check parameters structure
@@ -77,7 +76,7 @@ func TestGetToolConfigs(t *testing.T) {
 		require.Len(t, configs, 1)
 
 		config := configs[0]
-		assert.Equal(t, keys.WebSearch, config.Key)
+		assert.Equal(t, bag.WebSearch, config.Key)
 		assert.False(t, config.CacheEnabled) // No caching for internal tools
 		assert.Nil(t, config.RateLimit)      // OpenAI handles rate limiting
 		assert.NotNil(t, config.Constructor)
@@ -85,6 +84,6 @@ func TestGetToolConfigs(t *testing.T) {
 		// Test constructor
 		tool, err := config.Constructor(cfg, sharedBag)
 		require.NoError(t, err)
-		assert.Equal(t, keys.WebSearch.String(), tool.Name())
+		assert.Equal(t, bag.WebSearch.String(), tool.Name())
 	})
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -39,42 +38,42 @@ func (l *bagLoader) LoadCustomerData(ctx context.Context, sharedBag bag.SharedBa
 	}
 
 	// Load portfolio data
-	if portfolio, ok := sharedBag.Get(keys.KPortfolio); ok {
+	if portfolio, ok := sharedBag.Get(bag.KPortfolio); ok {
 		if p, ok := portfolio.(*models.Portfolio); ok {
 			data.Portfolio = p
 		}
 	}
 
 	// Load analysis results
-	if risk, ok := sharedBag.Get(keys.KRiskMetrics); ok {
+	if risk, ok := sharedBag.Get(bag.KRiskMetrics); ok {
 		data.RiskMetrics = risk
 	}
 
-	if allocation, ok := sharedBag.Get(keys.KPortfolioAllocationData); ok {
+	if allocation, ok := sharedBag.Get(bag.KPortfolioAllocationData); ok {
 		data.AllocationData = allocation
 	}
 
-	if performance, ok := sharedBag.Get(keys.KPortfolioPerformanceData); ok {
+	if performance, ok := sharedBag.Get(bag.KPortfolioPerformanceData); ok {
 		data.PerformanceData = performance
 	}
 
-	if compliance, ok := sharedBag.Get(keys.KPortfolioComplianceData); ok {
+	if compliance, ok := sharedBag.Get(bag.KPortfolioComplianceData); ok {
 		data.ComplianceData = compliance
 	}
 
-	if stockAnalysis, ok := sharedBag.Get(keys.KStockAnalysis); ok {
+	if stockAnalysis, ok := sharedBag.Get(bag.KStockAnalysis); ok {
 		data.StockAnalysis = stockAnalysis
 	}
 
-	if insights, ok := sharedBag.Get(keys.KInsights); ok {
+	if insights, ok := sharedBag.Get(bag.KInsights); ok {
 		data.Insights = insights
 	}
 
-	if newsAnalyzed, ok := sharedBag.Get(keys.KNewsAnalyzed); ok {
+	if newsAnalyzed, ok := sharedBag.Get(bag.KNewsAnalyzed); ok {
 		data.NewsAnalyzed = newsAnalyzed
 	}
 
-	if fundamentals, ok := sharedBag.Get(keys.KFundamentals); ok {
+	if fundamentals, ok := sharedBag.Get(bag.KFundamentals); ok {
 		data.Fundamentals = fundamentals
 	}
 
@@ -88,38 +87,38 @@ func (l *bagLoader) LoadSystemData(ctx context.Context, sharedBag bag.SharedBag)
 	}
 
 	// Load system health data
-	if appHealth, ok := sharedBag.Get(keys.KApplicationHealth); ok {
+	if appHealth, ok := sharedBag.Get(bag.KApplicationHealth); ok {
 		if health, ok := appHealth.(models.ApplicationHealth); ok {
 			data.ApplicationHealth = health
 		}
 	}
 
-	if toolMetrics, ok := sharedBag.Get(keys.KToolMetrics); ok {
+	if toolMetrics, ok := sharedBag.Get(bag.KToolMetrics); ok {
 		if metrics, ok := toolMetrics.(*models.ToolMetrics); ok {
 			data.ToolMetrics = metrics
 		}
 	}
 
-	if cacheStats, ok := sharedBag.Get(keys.KCacheHealthStatus); ok {
+	if cacheStats, ok := sharedBag.Get(bag.KCacheHealthStatus); ok {
 		if stats, ok := cacheStats.(*models.CacheHealthStatus); ok {
 			data.CacheStats = stats
 		}
 	}
 
-	if extDataHealth, ok := sharedBag.Get(keys.KExternalDataHealth); ok {
+	if extDataHealth, ok := sharedBag.Get(bag.KExternalDataHealth); ok {
 		if health, ok := extDataHealth.(*models.ExternalDataHealth); ok {
 			data.ExternalDataHealth = health
 		}
 	}
 
-	if marketDataFreshness, ok := sharedBag.Get(keys.KMarketDataFreshness); ok {
+	if marketDataFreshness, ok := sharedBag.Get(bag.KMarketDataFreshness); ok {
 		if freshness, ok := marketDataFreshness.(*models.MarketDataFreshness); ok {
 			data.MarketDataFreshness = freshness
 		}
 	}
 
 	// Load tool computations
-	if toolComputations, ok := sharedBag.Get(keys.KToolComputations); ok {
+	if toolComputations, ok := sharedBag.Get(bag.KToolComputations); ok {
 		if computations, ok := toolComputations.([]models.ToolComputation); ok {
 			data.ToolComputations = computations
 		}

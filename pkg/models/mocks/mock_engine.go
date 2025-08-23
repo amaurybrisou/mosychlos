@@ -9,7 +9,6 @@ import (
 	reflect "reflect"
 
 	bag "github.com/amaurybrisou/mosychlos/pkg/bag"
-	keys "github.com/amaurybrisou/mosychlos/pkg/keys"
 	models "github.com/amaurybrisou/mosychlos/pkg/models"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -38,7 +37,7 @@ func (m *MockToolConsumer) EXPECT() *MockToolConsumerMockRecorder {
 }
 
 // ConsumeTools mocks base method.
-func (m *MockToolConsumer) ConsumeTools(ctx context.Context, key keys.Key) error {
+func (m *MockToolConsumer) ConsumeTools(ctx context.Context, key bag.Key) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConsumeTools", ctx, key)
 	ret0, _ := ret[0].(error)
@@ -52,10 +51,10 @@ func (mr *MockToolConsumerMockRecorder) ConsumeTools(ctx, key interface{}) *gomo
 }
 
 // GetRemainingCredits mocks base method.
-func (m *MockToolConsumer) GetRemainingCredits() map[keys.Key]int {
+func (m *MockToolConsumer) GetRemainingCredits() map[bag.Key]int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRemainingCredits")
-	ret0, _ := ret[0].(map[keys.Key]int)
+	ret0, _ := ret[0].(map[bag.Key]int)
 	return ret0
 }
 
@@ -66,10 +65,10 @@ func (mr *MockToolConsumerMockRecorder) GetRemainingCredits() *gomock.Call {
 }
 
 // GetUnusedRequiredTools mocks base method.
-func (m *MockToolConsumer) GetUnusedRequiredTools() []keys.Key {
+func (m *MockToolConsumer) GetUnusedRequiredTools() []bag.Key {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUnusedRequiredTools")
-	ret0, _ := ret[0].([]keys.Key)
+	ret0, _ := ret[0].([]bag.Key)
 	return ret0
 }
 
@@ -80,7 +79,7 @@ func (mr *MockToolConsumerMockRecorder) GetUnusedRequiredTools() *gomock.Call {
 }
 
 // HasCreditsFor mocks base method.
-func (m *MockToolConsumer) HasCreditsFor(toolKey keys.Key) bool {
+func (m *MockToolConsumer) HasCreditsFor(toolKey bag.Key) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasCreditsFor", toolKey)
 	ret0, _ := ret[0].(bool)
@@ -171,10 +170,10 @@ func (mr *MockEngineMockRecorder) Name() *gomock.Call {
 }
 
 // ResultKey mocks base method.
-func (m *MockEngine) ResultKey() keys.Key {
+func (m *MockEngine) ResultKey() bag.Key {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ResultKey")
-	ret0, _ := ret[0].(keys.Key)
+	ret0, _ := ret[0].(bag.Key)
 	return ret0
 }
 

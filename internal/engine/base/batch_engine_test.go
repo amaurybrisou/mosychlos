@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/amaurybrisou/mosychlos/pkg/models/mocks"
 	"github.com/golang/mock/gomock"
@@ -33,7 +33,7 @@ func TestNewBatchEngine(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			hooks := mocks.NewMockBatchEngineHooks(ctrl)
-			hooks.EXPECT().ResultKey().Return(keys.KRiskAnalysisResult).AnyTimes()
+			hooks.EXPECT().ResultKey().Return(bag.KRiskAnalysisResult).AnyTimes()
 
 			engine := NewBatchEngine(c.engineName, c.model, c.constraints, hooks)
 
@@ -45,8 +45,8 @@ func TestNewBatchEngine(t *testing.T) {
 				t.Errorf("Name() = %v, want %v", engine.Name(), c.engineName)
 			}
 
-			if engine.ResultKey() != keys.KRiskAnalysisResult {
-				t.Errorf("ResultKey() = %v, want %v", engine.ResultKey(), keys.KRiskAnalysisResult)
+			if engine.ResultKey() != bag.KRiskAnalysisResult {
+				t.Errorf("ResultKey() = %v, want %v", engine.ResultKey(), bag.KRiskAnalysisResult)
 			}
 		})
 	}
@@ -58,7 +58,7 @@ func TestBatchEngine_Interface(t *testing.T) {
 
 	hooks := mocks.NewMockBatchEngineHooks(ctrl)
 
-	hooks.EXPECT().ResultKey().Return(keys.KRiskAnalysisResult).AnyTimes()
+	hooks.EXPECT().ResultKey().Return(bag.KRiskAnalysisResult).AnyTimes()
 
 	engine := NewBatchEngine("test", config.LLMModelGPT4o, models.BaseToolConstraints{}, hooks)
 

@@ -12,7 +12,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/internal/tools/newsapi"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models/mocks"
 	"github.com/golang/mock/gomock"
 )
@@ -23,7 +22,7 @@ func TestWrapWithCache_NewsAPI_CacheEnabled(t *testing.T) {
 
 	// Create a mock tool that tracks how many times it's called
 	mockTool := mocks.NewMockTool(ctrl)
-	mockTool.EXPECT().Key().Return(keys.NewsApi).AnyTimes()
+	mockTool.EXPECT().Key().Return(bag.NewsApi).AnyTimes()
 	mockTool.EXPECT().Name().Return("newsapi").AnyTimes()
 
 	// Set up expectations for the tool calls
@@ -138,7 +137,7 @@ func TestWrapWithCache_CacheDisabled_NoWrap(t *testing.T) {
 
 	// Create a mock tool with an unknown key
 	mockTool := mocks.NewMockTool(ctrl)
-	mockTool.EXPECT().Key().Return(keys.Key("unknown")).AnyTimes()
+	mockTool.EXPECT().Key().Return(bag.Key("unknown")).AnyTimes()
 
 	// Wrap with cache disabled - should not be cached
 	wrappedTool := wrapWithCache(mockTool, &ToolCacheConfig{

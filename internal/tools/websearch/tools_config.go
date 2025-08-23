@@ -3,7 +3,6 @@ package websearch
 import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -17,7 +16,7 @@ func GetToolConfigs(cfg *config.OpenAIConfig) []models.ToolConfig {
 
 	return []models.ToolConfig{
 		{
-			Key:          keys.WebSearch,
+			Key:          bag.WebSearch,
 			CacheEnabled: false, // Internal OpenAI tool - no local caching
 			CacheTTL:     0,     // No TTL needed
 			RateLimit:    nil,   // OpenAI handles rate limiting internally

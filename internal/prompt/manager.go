@@ -10,7 +10,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -72,27 +72,27 @@ func (m *manager) gatherPromptData(_ context.Context, analysisType models.Analys
 	}
 
 	// Get portfolio data if available
-	if portfolioData, exists := m.deps.Bag.Get(keys.KPortfolioNormalizedForAI); exists {
+	if portfolioData, exists := m.deps.Bag.Get(bag.KPortfolioNormalizedForAI); exists {
 		if portfolio, ok := portfolioData.(*models.NormalizedPortfolio); ok {
 			data.Portfolio = portfolio
 		}
 	}
 
-	if profileData, exists := m.deps.Bag.Get(keys.KProfile); exists {
+	if profileData, exists := m.deps.Bag.Get(bag.KProfile); exists {
 		if profile, ok := profileData.(*models.InvestmentProfile); ok {
 			data.UserProfile = profile
 		}
 	}
 
 	// Get market data if available
-	if marketData, exists := m.deps.Bag.Get(keys.KMarketDataNormalized); exists {
+	if marketData, exists := m.deps.Bag.Get(bag.KMarketDataNormalized); exists {
 		if market, ok := marketData.(*models.NormalizedMarketData); ok {
 			data.MarketData = market
 		}
 	}
 
 	// Get macro data if available
-	if macroData, exists := m.deps.Bag.Get(keys.KMacroDataNormalized); exists {
+	if macroData, exists := m.deps.Bag.Get(bag.KMacroDataNormalized); exists {
 		if macro, ok := macroData.(models.NormalizedMacroData); ok {
 			data.MacroData = &macro
 		}

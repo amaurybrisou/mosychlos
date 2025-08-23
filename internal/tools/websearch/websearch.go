@@ -8,7 +8,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -36,12 +35,12 @@ func New(sharedBag bag.SharedBag) (*Provider, error) {
 
 // Name returns the exact tool name that OpenAI expects
 func (p *Provider) Name() string {
-	return keys.WebSearch.String()
+	return bag.WebSearch.String()
 }
 
 // Key returns the unique tool key
-func (p *Provider) Key() keys.Key {
-	return keys.WebSearch
+func (p *Provider) Key() bag.Key {
+	return bag.WebSearch
 }
 
 // Description returns the tool description for AI function calling

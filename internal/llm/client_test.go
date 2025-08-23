@@ -9,8 +9,8 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/internal/llm/mocks"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	bagmocks "github.com/amaurybrisou/mosychlos/pkg/bag/mocks"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	modelsmocks "github.com/amaurybrisou/mosychlos/pkg/models/mocks"
 )
@@ -20,7 +20,7 @@ func TestClient_RegisterTool(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockTool := modelsmocks.NewMockTool(ctrl)
-	toolKey := keys.Key("test-tool")
+	toolKey := bag.Key("test-tool")
 	mockTool.EXPECT().Key().Return(toolKey).AnyTimes()
 
 	// Create a mock responses strategy
@@ -28,7 +28,7 @@ func TestClient_RegisterTool(t *testing.T) {
 	mockResponsesStrat.EXPECT().RegisterTool(mockTool).Times(1)
 
 	client := &Client{
-		toolRegistry:   make(map[keys.Key]models.Tool),
+		toolRegistry:   make(map[bag.Key]models.Tool),
 		responsesStrat: mockResponsesStrat,
 	}
 

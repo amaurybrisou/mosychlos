@@ -22,9 +22,9 @@ The main implementation that tracks tool usage against defined constraints:
 
 ```go
 constraints := &models.ToolConstraints{
-    MaxCallsPerTool: map[keys.Key]int{
-        keys.FinRobotRiskAssessment: 2,
-        keys.FMP: 3,
+    MaxCallsPerTool: map[bag.Key]int{
+        bag.FinRobotRiskAssessment: 2,
+        bag.FMP: 3,
     },
 }
 
@@ -52,16 +52,16 @@ func (e *engine) Execute(ctx context.Context, client models.AiClient, sharedBag 
 
 ```go
 // Check if tool has remaining credits
-if consumer.HasCreditsFor(keys.FinRobotRiskAssessment) {
+if consumer.HasCreditsFor(bag.FinRobotRiskAssessment) {
     // Execute tool...
 
     // Increment counter after successful execution
-    consumer.IncrementCallCount(keys.FinRobotRiskAssessment)
+    consumer.IncrementCallCount(bag.FinRobotRiskAssessment)
 }
 
 // Check remaining credits
 remaining := consumer.GetRemainingCredits()
-fmt.Printf("FMP calls remaining: %d", remaining[keys.FMP])
+fmt.Printf("FMP calls remaining: %d", remaining[bag.FMP])
 
 // Reset for new session
 consumer.Reset()

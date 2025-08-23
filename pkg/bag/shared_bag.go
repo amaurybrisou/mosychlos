@@ -7,26 +7,25 @@ import (
 	"sync"
 
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 )
 
 //go:generate mockgen -source=shared_bag.go -destination=mocks/shared_bag_mock.go -package=mocks
 
 // SharedBag interface for mutable shared state
 type SharedBag interface {
-	Get(k keys.Key) (any, bool)
-	MustGet(k keys.Key) any
-	GetAs(k keys.Key, out any) bool
-	Set(k keys.Key, v any)
-	Update(k keys.Key, fn func(any) any)
-	Has(k keys.Key) bool
+	Get(k Key) (any, bool)
+	MustGet(k Key) any
+	GetAs(k Key, out any) bool
+	Set(k Key, v any)
+	Update(k Key, fn func(any) any)
+	Has(k Key) bool
 	Snapshot() Bag
 	MarshalJSON() ([]byte, error)
 }
 
 // sharedBag implementation with thread-safe operations
 type sharedBag struct {
-	data map[keys.Key]any
+	data map[Key]any
 	mu   sync.RWMutex
 
 	fs fs.FS
@@ -35,14 +34,14 @@ type sharedBag struct {
 // NewSharedBag creates a new thread-safe shared bag
 func NewSharedBag() SharedBag {
 	return &sharedBag{
-		data: make(map[keys.Key]any),
+		data: make(map[Key]any),
 	}
 }
 
 // NewSharedBagFrom creates a shared bag from an existing immutable bag
 func NewSharedBagFrom(b Bag) SharedBag {
 	sb := &sharedBag{
-		data: make(map[keys.Key]any),
+		data: make(map[Key]any),
 	}
 
 	// Copy data from immutable bag
@@ -55,14 +54,14 @@ func NewSharedBagFrom(b Bag) SharedBag {
 	return sb
 }
 
-func (sb *sharedBag) Get(k keys.Key) (any, bool) {
+func (sb *sharedBag) Get(k Key) (any, bool) {
 	sb.mu.RLock()
 	defer sb.mu.RUnlock()
 	v, ok := sb.data[k]
 	return v, ok
 }
 
-func (sb *sharedBag) MustGet(k keys.Key) any {
+func (sb *sharedBag) MustGet(k Key) any {
 	v, ok := sb.Get(k)
 	if !ok {
 		panic("key not found")
@@ -70,7 +69,7 @@ func (sb *sharedBag) MustGet(k keys.Key) any {
 	return v
 }
 
-func (sb *sharedBag) GetAs(k keys.Key, out any) bool {
+func (sb *sharedBag) GetAs(k Key, out any) bool {
 	sb.mu.RLock()
 	defer sb.mu.RUnlock()
 
@@ -117,13 +116,13 @@ func (sb *sharedBag) GetAs(k keys.Key, out any) bool {
 	return true
 }
 
-func (sb *sharedBag) Set(k keys.Key, v any) {
+func (sb *sharedBag) Set(k Key, v any) {
 	sb.mu.Lock()
 	defer sb.mu.Unlock()
 	sb.data[k] = v
 }
 
-func (sb *sharedBag) Update(k keys.Key, fn func(any) any) {
+func (sb *sharedBag) Update(k Key, fn func(any) any) {
 	sb.mu.Lock()
 	defer sb.mu.Unlock()
 
@@ -140,7 +139,7 @@ func (sb *sharedBag) Update(k keys.Key, fn func(any) any) {
 	sb.data[k] = newValue
 }
 
-func (sb *sharedBag) Has(k keys.Key) bool {
+func (sb *sharedBag) Has(k Key) bool {
 	sb.mu.RLock()
 	defer sb.mu.RUnlock()
 	_, ok := sb.data[k]
@@ -164,7 +163,7 @@ func (sb *sharedBag) MarshalJSON() ([]byte, error) {
 
 // LoadSharedBagFromJSON loads a SharedBag from a JSON file (io.Reader)
 func LoadSharedBagFromJSON(r io.Reader) (SharedBag, error) {
-	var m map[keys.Key]any
+	var m map[Key]any
 	dec := json.NewDecoder(r)
 	if err := dec.Decode(&m); err != nil {
 		return nil, err

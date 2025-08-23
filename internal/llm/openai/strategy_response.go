@@ -7,7 +7,7 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	toolsruntime "github.com/amaurybrisou/mosychlos/internal/llm/tools_runtime"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -16,7 +16,7 @@ import (
 type ResponsesStrategy struct {
 	provider     models.Provider
 	cfg          *config.LLMConfig
-	toolRegistry map[keys.Key]models.Tool
+	toolRegistry map[bag.Key]models.Tool
 	consumer     models.ToolConsumer
 }
 
@@ -24,7 +24,7 @@ func NewResponsesStrategy(p models.Provider, cfg *config.LLMConfig) *ResponsesSt
 	return &ResponsesStrategy{
 		provider:     p,
 		cfg:          cfg,
-		toolRegistry: map[keys.Key]models.Tool{},
+		toolRegistry: map[bag.Key]models.Tool{},
 	}
 }
 
@@ -56,10 +56,10 @@ func (s *ResponsesStrategy) Ask(ctx context.Context, req models.PromptRequest) (
 	// optional built-in web_search_preview tool
 	var extraTools []any
 	if s.cfg != nil && s.cfg.OpenAI.WebSearch {
-		ws := map[string]any{"type": keys.WebSearch}
+		ws := map[string]any{"type": bag.WebSearch}
 		// Context size hint if present: "low" | "medium" | "high"
 		if sz := s.cfg.OpenAI.WebSearchContextSize; sz != "" {
-			ws[keys.WebSearch.String()] = map[string]any{"context_size": sz}
+			ws[bag.WebSearch.String()] = map[string]any{"context_size": sz}
 		}
 
 		if s.cfg.OpenAI.WebSearchUserLocation.Country != nil {

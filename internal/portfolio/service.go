@@ -11,7 +11,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -54,8 +53,8 @@ func (s *service) GetPortfolio(ctx context.Context, fetcher Fetcher) (*models.Po
 		}
 
 		// update fetch metadata in bag
-		s.bag.Set(keys.KPortfolioLastFetched, now)
-		s.bag.Set(keys.KPortfolioFetchSource, fmt.Sprintf("%T", fetcher))
+		s.bag.Set(bag.KPortfolioLastFetched, now)
+		s.bag.Set(bag.KPortfolioFetchSource, fmt.Sprintf("%T", fetcher))
 
 		// validate portfolio with all validators
 		if err := s.validatePortfolio(ctx, portfolio); err != nil {
@@ -64,13 +63,13 @@ func (s *service) GetPortfolio(ctx context.Context, fetcher Fetcher) (*models.Po
 
 		// mark as validated and update bag
 		portfolio.Validated = true
-		s.bag.Set(keys.KPortfolio, portfolio)
+		s.bag.Set(bag.KPortfolio, portfolio)
 
 		// store normalized portfolio for AI analysis
 		if normalizedPortfolio, err := portfolio.Normalize(); err != nil {
 			fmt.Printf("Warning: failed to normalize portfolio: %v\n", err)
 		} else {
-			s.bag.Set(keys.KPortfolioNormalizedForAI, normalizedPortfolio)
+			s.bag.Set(bag.KPortfolioNormalizedForAI, normalizedPortfolio)
 		}
 
 		// persist to storage for caching
@@ -107,8 +106,8 @@ func (s *service) validatePortfolio(ctx context.Context, portfolio *models.Portf
 	}
 
 	// update bag with validation records and time
-	s.bag.Set(keys.KPortfolioValidationRecord, validationRecords)
-	s.bag.Set(keys.KPortfolioValidationTime, time.Now())
+	s.bag.Set(bag.KPortfolioValidationRecord, validationRecords)
+	s.bag.Set(bag.KPortfolioValidationTime, time.Now())
 
 	return nil
 }
@@ -129,7 +128,7 @@ func (s *service) shouldFetchPortfolio(current *models.Portfolio, now time.Time)
 	}
 
 	// check last fetch time from bag
-	if lastFetchValue, ok := s.bag.Get(keys.KPortfolioLastFetched); ok {
+	if lastFetchValue, ok := s.bag.Get(bag.KPortfolioLastFetched); ok {
 		if lastFetch, ok := lastFetchValue.(time.Time); ok {
 			if lastFetch.Truncate(24 * time.Hour).Equal(now.Truncate(24 * time.Hour)) {
 				return false // already fetched today
@@ -143,7 +142,7 @@ func (s *service) shouldFetchPortfolio(current *models.Portfolio, now time.Time)
 // getCurrentPortfolio retrieves current portfolio from bag or loads from disk
 func (s *service) getCurrentPortfolio() *models.Portfolio {
 	// First check if we have it in memory (bag)
-	if portfolioValue, ok := s.bag.Get(keys.KPortfolio); ok {
+	if portfolioValue, ok := s.bag.Get(bag.KPortfolio); ok {
 		if portfolio, ok := portfolioValue.(*models.Portfolio); ok {
 			return portfolio
 		}
@@ -157,13 +156,13 @@ func (s *service) getCurrentPortfolio() *models.Portfolio {
 	}
 
 	// Store in bag for future access
-	s.bag.Set(keys.KPortfolio, portfolio)
+	s.bag.Set(bag.KPortfolio, portfolio)
 
 	// also store normalized version for AI analysis
 	if normalizedPortfolio, err := portfolio.Normalize(); err != nil {
 		fmt.Printf("Warning: failed to normalize cached portfolio: %v\n", err)
 	} else {
-		s.bag.Set(keys.KPortfolioNormalizedForAI, normalizedPortfolio)
+		s.bag.Set(bag.KPortfolioNormalizedForAI, normalizedPortfolio)
 	}
 
 	return portfolio

@@ -7,7 +7,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/amaurybrisou/mosychlos/pkg/models/mocks"
 	"github.com/golang/mock/gomock"
@@ -71,8 +70,8 @@ func TestNewRiskBatchEngine(t *testing.T) {
 			}
 
 			// Test that the result key is correct
-			if engine.ResultKey() != keys.KRiskAnalysisResult {
-				t.Errorf("ResultKey() = %v, want %v", engine.ResultKey(), keys.KRiskAnalysisResult)
+			if engine.ResultKey() != bag.KRiskAnalysisResult {
+				t.Errorf("ResultKey() = %v, want %v", engine.ResultKey(), bag.KRiskAnalysisResult)
 			}
 		})
 	}
@@ -274,7 +273,7 @@ func TestRiskBatchEngineHooks_ProcessResults(t *testing.T) {
 		}
 
 		// Verify result was stored in shared bag
-		storedResults := sharedBag.MustGet(keys.KRiskAnalysisResult)
+		storedResults := sharedBag.MustGet(bag.KRiskAnalysisResult)
 		resultMap, ok := storedResults.(map[string]any)
 		if !ok {
 			t.Fatal("expected map[string]any in shared bag")
@@ -296,7 +295,7 @@ func TestRiskBatchEngineHooks_ProcessResults(t *testing.T) {
 		}
 
 		// Verify result was stored in shared bag
-		storedResults := sharedBag.MustGet(keys.KRiskAnalysisResult)
+		storedResults := sharedBag.MustGet(bag.KRiskAnalysisResult)
 		resultMap, ok := storedResults.(map[string]any)
 		if !ok {
 			t.Fatal("expected map[string]any in shared bag")
@@ -312,8 +311,8 @@ func TestRiskBatchEngineHooks_ResultKey(t *testing.T) {
 	hooks := &RiskBatchEngineHooks{}
 
 	key := hooks.ResultKey()
-	if key != keys.KRiskAnalysisResult {
-		t.Errorf("ResultKey() = %v, want %v", key, keys.KRiskAnalysisResult)
+	if key != bag.KRiskAnalysisResult {
+		t.Errorf("ResultKey() = %v, want %v", key, bag.KRiskAnalysisResult)
 	}
 }
 

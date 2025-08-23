@@ -58,7 +58,7 @@ type BatchEngineHooks interface {
     ShouldContinueIteration(iteration int, nextJobs []BatchJob) bool
 
     // Engine identification
-    ResultKey() keys.Key
+    ResultKey() bag.Key
 }
 
 // Engine-specific implementation
@@ -120,7 +120,7 @@ func (b *BaseBatchEngine) Name() string {
     return b.name
 }
 
-func (b *BaseBatchEngine) ResultKey() keys.Key {
+func (b *BaseBatchEngine) ResultKey() bag.Key {
     return b.hooks.ResultKey()
 }
 
@@ -315,8 +315,8 @@ func (r *RiskBatchEngine) ShouldContinueIteration(iteration int, nextJobs []Batc
     return len(nextJobs) > 0
 }
 
-func (r *RiskBatchEngine) ResultKey() keys.Key {
-    return keys.KRiskAnalysisResult
+func (r *RiskBatchEngine) ResultKey() bag.Key {
+    return bag.KRiskAnalysisResult
 }
 
 // Risk-specific helper methods
@@ -339,10 +339,10 @@ func (r *RiskBatchEngine) parseRiskAnalysis(content string) *models.RiskAnalysis
 func NewRiskBatchEngine(cfg *config.Config, pb models.PromptBuilder, sharedBag bag.SharedBag) models.Engine {
     constraints := models.ToolConstraints{
         Tools:          getAvailableTools(),
-        PreferredTools: []keys.Key{keys.YFinance, keys.NewsAPI, keys.WebSearch},
-        MaxCallsPerTool: map[keys.Key]int{
-            keys.WebSearch: 3,
-            keys.NewsAPI:   5,
+        PreferredTools: []bag.Key{bag.YFinance, bag.NewsAPI, bag.WebSearch},
+        MaxCallsPerTool: map[bag.Key]int{
+            bag.WebSearch: 3,
+            bag.NewsAPI:   5,
         },
     }
 
@@ -436,7 +436,7 @@ func TestRiskBatchEngine_ProcessFinalResult(t *testing.T) {
     assert.Len(t, citations, 1)
 
     // Verify risk result was stored
-    result := sharedBag.MustGet(keys.KRiskAnalysisResult)
+    result := sharedBag.MustGet(bag.KRiskAnalysisResult)
     assert.Contains(t, result, "test_id")
 }
 ```

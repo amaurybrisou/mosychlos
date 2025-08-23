@@ -11,7 +11,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fmp"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -59,12 +58,12 @@ func NewAnalystEstimatesProvider(key, cacheDir string, sharedBag bag.SharedBag) 
 
 // Name returns the tool name
 func (p *FMPAnalystEstimatesProvider) Name() string {
-	return keys.FMPAnalystEstimates.String()
+	return bag.FMPAnalystEstimates.String()
 }
 
 // Key returns the tool key
-func (p *FMPAnalystEstimatesProvider) Key() keys.Key {
-	return keys.FMPAnalystEstimates
+func (p *FMPAnalystEstimatesProvider) Key() bag.Key {
+	return bag.FMPAnalystEstimates
 }
 
 // Tags returns the tool tags

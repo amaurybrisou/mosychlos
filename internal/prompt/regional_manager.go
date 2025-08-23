@@ -12,7 +12,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"gopkg.in/yaml.v3"
 )
@@ -52,9 +51,9 @@ func (rm *regionalManager) GenerateRegionalPrompt(
 	sharedBag bag.SharedBag,
 	data PromptData,
 ) (string, error) {
-	// key keys.KRegionalConfig
+	// key bag.KRegionalConfig
 	regionalConfig := &models.RegionalConfig{}
-	ok := sharedBag.GetAs(keys.KRegionalConfig, regionalConfig)
+	ok := sharedBag.GetAs(bag.KRegionalConfig, regionalConfig)
 	if !ok {
 		return "", fmt.Errorf("invalid regional config")
 	}

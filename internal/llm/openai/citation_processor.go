@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 )
 
 // Citation represents a parsed web search citation
@@ -298,23 +297,23 @@ func (p *CitationProcessor) storeCitationResult(result *CitationResult) {
 	}
 
 	// Store individual result
-	resultKey := fmt.Sprintf("%s.result.%d", keys.WebSearch, time.Now().Unix())
-	p.sharedBag.Set(keys.Key(resultKey), result)
+	resultKey := fmt.Sprintf("%s.result.%d", bag.WebSearch, time.Now().Unix())
+	p.sharedBag.Set(bag.Key(resultKey), result)
 
 	// Store or update aggregated results
 	var allResults []*CitationResult
-	if existing, ok := p.sharedBag.Get(keys.WebSearch); ok {
+	if existing, ok := p.sharedBag.Get(bag.WebSearch); ok {
 		if existingResults, ok := existing.([]*CitationResult); ok {
 			allResults = existingResults
 		}
 	}
 
 	allResults = append(allResults, result)
-	p.sharedBag.Set(keys.WebSearch, allResults)
+	p.sharedBag.Set(bag.WebSearch, allResults)
 
 	// Store citations separately for easy access
 	if result.Success && len(result.Citations) > 0 {
-		citationsKey := keys.Key(fmt.Sprintf("%s.citations", keys.WebSearch))
+		citationsKey := bag.Key(fmt.Sprintf("%s.citations", bag.WebSearch))
 		var allCitations []Citation
 		if existing, ok := p.sharedBag.Get(citationsKey); ok {
 			if existingCitations, ok := existing.([]Citation); ok {
@@ -338,7 +337,7 @@ func GetCitationResults(sharedBag bag.SharedBag) ([]*CitationResult, bool) {
 		return nil, false
 	}
 
-	if results, ok := sharedBag.Get(keys.WebSearch); ok {
+	if results, ok := sharedBag.Get(bag.WebSearch); ok {
 		if citationResults, ok := results.([]*CitationResult); ok {
 			return citationResults, true
 		}
@@ -353,7 +352,7 @@ func GetWebSearchCitations(sharedBag bag.SharedBag) ([]Citation, bool) {
 		return nil, false
 	}
 
-	citationsKey := keys.Key(fmt.Sprintf("%s.citations", keys.WebSearch))
+	citationsKey := bag.Key(fmt.Sprintf("%s.citations", bag.WebSearch))
 	if citations, ok := sharedBag.Get(citationsKey); ok {
 		if webCitations, ok := citations.([]Citation); ok {
 			return webCitations, true

@@ -158,7 +158,7 @@ func (h *RiskBatchEngineHooks) PostIteration(iteration int, results *models.Aggr
     cumulativeRisk := h.buildCumulativeRiskAssessment(results)
 
     // Store intermediate risk metrics
-    sharedBag.Update(keys.KRiskMetrics, func(a any) any {
+    sharedBag.Update(bag.KRiskMetrics, func(a any) any {
         metrics := a.(*RiskMetrics)
         metrics.AddIterationResults(iteration, cumulativeRisk)
         return metrics

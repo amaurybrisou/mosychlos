@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 )
 
 // APICallStatus represents the status of an API call
@@ -28,9 +28,9 @@ type CacheHealthStatus struct {
 
 // CacheStatsMap represents cache statistics organized by tool key
 type CacheStatsMap struct {
-	ToolCaches  map[keys.Key]CacheHealthStatus `json:"tool_caches"`
-	Aggregated  CacheHealthStatus              `json:"aggregated"`
-	LastUpdated time.Time                      `json:"last_updated"`
+	ToolCaches  map[bag.Key]CacheHealthStatus `json:"tool_caches"`
+	Aggregated  CacheHealthStatus             `json:"aggregated"`
+	LastUpdated time.Time                     `json:"last_updated"`
 }
 
 // ApplicationHealth represents overall system health

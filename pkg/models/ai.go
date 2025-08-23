@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 )
 
 type Role string
@@ -54,7 +53,7 @@ func (c *CustomToolDef) ToAny() any {
 
 type Tool interface {
 	Name() string
-	Key() keys.Key
+	Key() bag.Key
 	Description() string
 	Definition() ToolDef
 	Tags() []string
@@ -63,7 +62,7 @@ type Tool interface {
 }
 
 type Format struct {
-	Type      keys.Key       `json:"type"` // e.g. "json_schema"
+	Type      bag.Key        `json:"type"` // e.g. "json_schema"
 	Name      string         `json:"name"`
 	Schema    map[string]any `json:"schema"`
 	Verbosity string         `json:"verbosity"`
@@ -201,7 +200,7 @@ type ChatMessage struct {
 
 // ToolConfig holds configuration for a tool
 type ToolConfig struct {
-	Key          keys.Key
+	Key          bag.Key
 	Constructor  ToolConstructor
 	Config       any
 	CacheEnabled bool

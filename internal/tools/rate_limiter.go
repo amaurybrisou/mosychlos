@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -146,7 +146,7 @@ func (rt *RateLimitedTool) Name() string {
 }
 
 // Key implements the Tool interface
-func (rt *RateLimitedTool) Key() keys.Key {
+func (rt *RateLimitedTool) Key() bag.Key {
 	return rt.tool.Key()
 }
 

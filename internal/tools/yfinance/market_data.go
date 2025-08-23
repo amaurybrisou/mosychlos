@@ -9,7 +9,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/amaurybrisou/mosychlos/pkg/yfinance"
 )
@@ -63,8 +62,8 @@ func (t *YFinanceMarketDataTool) Name() string {
 }
 
 // Key returns the unique tool key
-func (t *YFinanceMarketDataTool) Key() keys.Key {
-	return keys.YFinance
+func (t *YFinanceMarketDataTool) Key() bag.Key {
+	return bag.YFinance
 }
 
 // Description returns the tool description for AI

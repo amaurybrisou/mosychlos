@@ -9,7 +9,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/internal/engine/base"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -85,7 +84,7 @@ func (h *RiskBatchEngineHooks) PostIteration(iteration int, results *models.Batc
 // ProcessToolResult is called when a tool call result is processed
 func (h *RiskBatchEngineHooks) ProcessToolResult(customID, toolName, result string, sharedBag bag.SharedBag) error {
 	// Store tool results in the shared bag for risk analysis
-	sharedBag.Update(keys.KRiskAnalysisResult, func(a any) any {
+	sharedBag.Update(bag.KRiskAnalysisResult, func(a any) any {
 		resultMap, ok := a.(map[string]any)
 		if !ok {
 			resultMap = make(map[string]any)
@@ -149,6 +148,6 @@ func (h *RiskBatchEngineHooks) ShouldContinueIteration(iteration int, nextJobs [
 }
 
 // ResultKey returns the key where risk analysis results should be stored
-func (h *RiskBatchEngineHooks) ResultKey() keys.Key {
-	return keys.KRiskAnalysisResult
+func (h *RiskBatchEngineHooks) ResultKey() bag.Key {
+	return bag.KRiskAnalysisResult
 }

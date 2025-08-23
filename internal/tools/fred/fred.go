@@ -10,7 +10,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fred"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -56,11 +55,11 @@ func New(apiKey string, sharedBag bag.SharedBag) (*FredTool, error) {
 // models.Tool interface implementation
 
 func (p *FredTool) Name() string {
-	return keys.Fred.String()
+	return bag.Fred.String()
 }
 
-func (p *FredTool) Key() keys.Key {
-	return keys.Fred
+func (p *FredTool) Key() bag.Key {
+	return bag.Fred
 }
 
 func (p *FredTool) Tags() []string {

@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -21,7 +21,7 @@ func (s *session) trackWebSearchComputation(action string, startTime time.Time, 
 
 	// Create computation record exactly like metrics wrapper
 	computation := models.ToolComputation{
-		ToolName:  keys.WebSearch.String(),
+		ToolName:  bag.WebSearch.String(),
 		Arguments: fmt.Sprintf(`{"action": "%s", "details": %v}`, action, details),
 		Result:    s.buildWebSearchResult(action, details, success),
 		StartTime: startTime,
@@ -34,7 +34,7 @@ func (s *session) trackWebSearchComputation(action string, startTime time.Time, 
 	}
 
 	// Use EXACT same pattern as metrics wrapper
-	s.p.sharedBag.Update(keys.KToolComputations, func(current any) any {
+	s.p.sharedBag.Update(bag.KToolComputations, func(current any) any {
 		var computations []models.ToolComputation
 		if current != nil {
 			if existing, ok := current.([]models.ToolComputation); ok {
@@ -119,7 +119,7 @@ func (s *session) buildWebSearchResult(action string, details map[string]any, su
 
 // updateWebSearchMetrics updates aggregated metrics using same pattern as MetricsWrapper
 func (s *session) updateWebSearchMetrics(comp models.ToolComputation) {
-	s.p.sharedBag.Update(keys.KToolMetrics, func(current any) any {
+	s.p.sharedBag.Update(bag.KToolMetrics, func(current any) any {
 		var metrics models.ToolMetrics
 		if current != nil {
 			if existing, ok := current.(models.ToolMetrics); ok {
@@ -184,7 +184,7 @@ func (s *session) updateWebSearchMetrics(comp models.ToolComputation) {
 
 // updateWebSearchAPIHealth tracks API health using same pattern as MetricsWrapper
 func (s *session) updateWebSearchAPIHealth(comp models.ToolComputation) {
-	s.p.sharedBag.Update(keys.KExternalDataHealth, func(current any) any {
+	s.p.sharedBag.Update(bag.KExternalDataHealth, func(current any) any {
 		var health models.ExternalDataHealth
 		if current != nil {
 			if existing, ok := current.(models.ExternalDataHealth); ok {
@@ -262,7 +262,7 @@ func (s *session) trackOpenAITokenUsage(startTime time.Time, usage models.Usage,
 	}
 
 	// Store in shared bag using same pattern as other tracking
-	s.p.sharedBag.Update(keys.KToolComputations, func(current any) any {
+	s.p.sharedBag.Update(bag.KToolComputations, func(current any) any {
 		var computations []models.ToolComputation
 		if current != nil {
 			if existing, ok := current.([]models.ToolComputation); ok {
@@ -298,7 +298,7 @@ func (s *session) calculateCost(usage models.Usage) float64 {
 
 // updateOpenAIMetrics updates OpenAI-specific metrics
 func (s *session) updateOpenAIMetrics(comp models.ToolComputation) {
-	s.p.sharedBag.Update(keys.KToolMetrics, func(current any) any {
+	s.p.sharedBag.Update(bag.KToolMetrics, func(current any) any {
 		var metrics models.ToolMetrics
 		if current != nil {
 			if existing, ok := current.(models.ToolMetrics); ok {
@@ -363,7 +363,7 @@ func (s *session) updateOpenAIMetrics(comp models.ToolComputation) {
 
 // updateOpenAIAPIHealth tracks OpenAI API health status
 func (s *session) updateOpenAIAPIHealth(comp models.ToolComputation) {
-	s.p.sharedBag.Update(keys.KExternalDataHealth, func(current any) any {
+	s.p.sharedBag.Update(bag.KExternalDataHealth, func(current any) any {
 		var health models.ExternalDataHealth
 		if current != nil {
 			if existing, ok := current.(models.ExternalDataHealth); ok {

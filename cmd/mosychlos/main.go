@@ -3,7 +3,7 @@ package mosychlos
 import (
 	"log"
 
-	pkgconfig "github.com/amaurybrisou/mosychlos/pkg/config"
+	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +14,7 @@ func RootCmd() {
 		Long:  `An interactive command-line interface for managing and analyzing your portfolio.`,
 	}
 
-	cfg := pkgconfig.MustLoadConfig()
+	cfg := config.MustLoadConfig()
 	rootCmd.AddCommand(NewPortfolioCommand(cfg))
 	rootCmd.AddCommand(NewAnalyzeCommand(cfg))
 	rootCmd.AddCommand(CreateToolsCommand(cfg))

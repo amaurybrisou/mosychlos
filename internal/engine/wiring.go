@@ -9,7 +9,7 @@ import (
 	"github.com/amaurybrisou/mosychlos/internal/budget"
 	"github.com/amaurybrisou/mosychlos/internal/engine/risk"
 	"github.com/amaurybrisou/mosychlos/internal/tools"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -113,14 +113,14 @@ func DefaultBatchRegistry() *RegistryBuilder {
 		// 	// Example: per-engine tool constraints (tweak to your needs)
 		// 	constraints := models.ToolConstraints{
 		// 		Tools:          tools.ToolsToToolDefs(d.Tools),
-		// 		PreferredTools: []keys.Key{keys.FMP, keys.NewsApi},
-		// 		MinCallsPerTool: map[keys.Key]int{
-		// 			keys.NewsApi: 2,
-		// 			keys.FMP:     1,
+		// 		PreferredTools: []bag.Key{bag.FMP, bag.NewsApi},
+		// 		MinCallsPerTool: map[bag.Key]int{
+		// 			bag.NewsApi: 2,
+		// 			bag.FMP:     1,
 		// 		},
-		// 		MaxCallsPerTool: map[keys.Key]int{
-		// 			keys.NewsApi: 2,
-		// 			keys.FMP:     2,
+		// 		MaxCallsPerTool: map[bag.Key]int{
+		// 			bag.NewsApi: 2,
+		// 			bag.FMP:     2,
 		// 		},
 		// 	}
 		// 	// Option 1: set consumer globally here
@@ -136,21 +136,21 @@ func DefaultBatchRegistry() *RegistryBuilder {
 			}
 
 			// Base tools for risk analysis
-			preferredTools := []keys.Key{keys.FMP, keys.NewsApi}
-			minCalls := map[keys.Key]int{
-				keys.NewsApi: 2,
-				keys.FMP:     1,
+			preferredTools := []bag.Key{bag.FMP, bag.NewsApi}
+			minCalls := map[bag.Key]int{
+				bag.NewsApi: 2,
+				bag.FMP:     1,
 			}
-			maxCalls := map[keys.Key]int{
-				keys.NewsApi: 2,
-				keys.FMP:     2,
+			maxCalls := map[bag.Key]int{
+				bag.NewsApi: 2,
+				bag.FMP:     2,
 			}
 
 			// Add web search if enabled in OpenAI config
 			if d.Config.LLM.OpenAI.WebSearch {
-				preferredTools = append(preferredTools, keys.WebSearch)
-				minCalls[keys.WebSearch] = 1 // At least 1 web search for market context
-				maxCalls[keys.WebSearch] = 3 // Up to 3 web searches for comprehensive analysis
+				preferredTools = append(preferredTools, bag.WebSearch)
+				minCalls[bag.WebSearch] = 1 // At least 1 web search for market context
+				maxCalls[bag.WebSearch] = 3 // Up to 3 web searches for comprehensive analysis
 			}
 
 			// Example: per-engine tool constraints (tweak to your needs)
@@ -195,14 +195,14 @@ func DefaultRegistry() *RegistryBuilder {
 			// Example: per-engine tool constraints (tweak to your needs)
 			constraints := models.BaseToolConstraints{
 				Tools:          tools.ToolsToToolDefs(d.Tools),
-				PreferredTools: []keys.Key{keys.FMP, keys.NewsApi},
-				MinCallsPerTool: map[keys.Key]int{
-					keys.NewsApi: 2,
-					keys.FMP:     1,
+				PreferredTools: []bag.Key{bag.FMP, bag.NewsApi},
+				MinCallsPerTool: map[bag.Key]int{
+					bag.NewsApi: 2,
+					bag.FMP:     1,
 				},
-				MaxCallsPerTool: map[keys.Key]int{
-					keys.NewsApi: 2,
-					keys.FMP:     2,
+				MaxCallsPerTool: map[bag.Key]int{
+					bag.NewsApi: 2,
+					bag.FMP:     2,
 				},
 			}
 			// Option 1: set consumer globally here

@@ -16,7 +16,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/binance"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -58,7 +57,7 @@ func loadPortfolioData(ctx context.Context, cfg *config.Config, filesystem fs.FS
 		slog.Debug("No portfolio data available")
 	}
 
-	sharedBag.Set(keys.KPortfolio, portfolioData)
+	sharedBag.Set(bag.KPortfolio, portfolioData)
 	return nil
 }
 
@@ -72,7 +71,7 @@ func loadInvestmentProfile(ctx context.Context, cfg *config.Config, filesystem f
 
 	// Use localization from config to determine country and default risk tolerance
 	country := cfg.Localization.Country
-	riskTolerance := keys.KRiskToleranceAggressive // Default risk tolerance
+	riskTolerance := bag.KRiskToleranceAggressive // Default risk tolerance
 
 	// Load the investment profile
 	investmentProfile, err := profileManager.LoadProfile(ctx, country, riskTolerance.String())
@@ -89,7 +88,7 @@ func loadInvestmentProfile(ctx context.Context, cfg *config.Config, filesystem f
 	)
 
 	// Store in shared bag for engine use
-	sharedBag.Set(keys.KProfile, investmentProfile)
+	sharedBag.Set(bag.KProfile, investmentProfile)
 
 	return nil
 }
@@ -98,7 +97,7 @@ func loadRegionalConfig(_ context.Context, cfg *config.Config, filesystem fs.FS,
 	svc := localization.New(filesystem, cfg.ConfigDir)
 	regionalCfg, err := svc.LoadRegionalConfig(sharedBag, cfg.Localization.Country, cfg.Localization.Language)
 	slog.Debug("Loaded regional config", slog.Any("config", regionalCfg))
-	sharedBag.Set(keys.KRegionalConfig, regionalCfg)
+	sharedBag.Set(bag.KRegionalConfig, regionalCfg)
 	return err
 }
 
@@ -106,7 +105,7 @@ func loadPromptManager(ctx context.Context, cfg *config.Config, filesystem fs.FS
 	// Create prompt manager
 	promptConfig := prompt.Config{
 		UserLocalization: cfg.Localization,
-		UserProfile:      sharedBag.MustGet(keys.KProfile).(*models.InvestmentProfile),
+		UserProfile:      sharedBag.MustGet(bag.KProfile).(*models.InvestmentProfile),
 	}
 
 	promptDeps := prompt.Dependencies{

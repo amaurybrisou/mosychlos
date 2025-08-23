@@ -3,7 +3,7 @@ package budget
 import (
 	"testing"
 
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -16,9 +16,9 @@ func TestNewToolConsumer(t *testing.T) {
 		{
 			name: "valid constraints",
 			constraints: &models.BaseToolConstraints{
-				MaxCallsPerTool: map[keys.Key]int{
-					keys.Fred: 2,
-					keys.FMP:  3,
+				MaxCallsPerTool: map[bag.Key]int{
+					bag.Fred: 2,
+					bag.FMP:  3,
 				},
 			},
 			expectNil: false,
@@ -53,9 +53,9 @@ func TestNewToolConsumer(t *testing.T) {
 
 func TestHasCreditsFor(t *testing.T) {
 	constraints := &models.BaseToolConstraints{
-		MaxCallsPerTool: map[keys.Key]int{
-			keys.Fred: 2,
-			keys.FMP:  1,
+		MaxCallsPerTool: map[bag.Key]int{
+			bag.Fred: 2,
+			bag.FMP:  1,
 		},
 	}
 
@@ -63,22 +63,22 @@ func TestHasCreditsFor(t *testing.T) {
 
 	cases := []struct {
 		name         string
-		toolKey      keys.Key
+		toolKey      bag.Key
 		expectCredit bool
 	}{
 		{
 			name:         "tool with limit and no usage",
-			toolKey:      keys.Fred,
+			toolKey:      bag.Fred,
 			expectCredit: true,
 		},
 		{
 			name:         "tool with no limit",
-			toolKey:      keys.NewsApi, // not in constraints
+			toolKey:      bag.NewsApi, // not in constraints
 			expectCredit: true,
 		},
 		{
 			name:         "tool with limit at boundary",
-			toolKey:      keys.FMP,
+			toolKey:      bag.FMP,
 			expectCredit: true,
 		},
 	}
@@ -95,13 +95,13 @@ func TestHasCreditsFor(t *testing.T) {
 
 func TestIncrementCallCount(t *testing.T) {
 	constraints := &models.BaseToolConstraints{
-		MaxCallsPerTool: map[keys.Key]int{
-			keys.Fred: 2,
+		MaxCallsPerTool: map[bag.Key]int{
+			bag.Fred: 2,
 		},
 	}
 
 	consumer := NewToolConsumer(constraints).(*defaultToolConsumer)
-	toolKey := keys.Fred
+	toolKey := bag.Fred
 
 	// initially should have credit
 	if !consumer.HasCreditsFor(toolKey) {
@@ -138,9 +138,9 @@ func TestIncrementCallCount(t *testing.T) {
 
 func TestGetRemainingCredits(t *testing.T) {
 	constraints := &models.BaseToolConstraints{
-		MaxCallsPerTool: map[keys.Key]int{
-			keys.Fred: 3,
-			keys.FMP:  2,
+		MaxCallsPerTool: map[bag.Key]int{
+			bag.Fred: 3,
+			bag.FMP:  2,
 		},
 	}
 
@@ -148,43 +148,43 @@ func TestGetRemainingCredits(t *testing.T) {
 
 	// initial state
 	remaining := consumer.GetRemainingCredits()
-	if remaining[keys.Fred] != 3 {
-		t.Errorf("expected 3 remaining for risk assessment, got %d", remaining[keys.Fred])
+	if remaining[bag.Fred] != 3 {
+		t.Errorf("expected 3 remaining for risk assessment, got %d", remaining[bag.Fred])
 	}
-	if remaining[keys.FMP] != 2 {
-		t.Errorf("expected 2 remaining for FMP, got %d", remaining[keys.FMP])
+	if remaining[bag.FMP] != 2 {
+		t.Errorf("expected 2 remaining for FMP, got %d", remaining[bag.FMP])
 	}
 
 	// after using some credits
-	consumer.IncrementCallCount(keys.Fred)
-	consumer.IncrementCallCount(keys.FMP)
-	consumer.IncrementCallCount(keys.FMP)
+	consumer.IncrementCallCount(bag.Fred)
+	consumer.IncrementCallCount(bag.FMP)
+	consumer.IncrementCallCount(bag.FMP)
 
 	remaining = consumer.GetRemainingCredits()
-	if remaining[keys.Fred] != 2 {
-		t.Errorf("expected 2 remaining for risk assessment, got %d", remaining[keys.Fred])
+	if remaining[bag.Fred] != 2 {
+		t.Errorf("expected 2 remaining for risk assessment, got %d", remaining[bag.Fred])
 	}
-	if remaining[keys.FMP] != 0 {
-		t.Errorf("expected 0 remaining for FMP, got %d", remaining[keys.FMP])
+	if remaining[bag.FMP] != 0 {
+		t.Errorf("expected 0 remaining for FMP, got %d", remaining[bag.FMP])
 	}
 
 	// after exceeding limits
-	consumer.IncrementCallCount(keys.FMP) // over limit
+	consumer.IncrementCallCount(bag.FMP) // over limit
 	remaining = consumer.GetRemainingCredits()
-	if remaining[keys.FMP] != 0 {
-		t.Errorf("expected 0 remaining for FMP (not negative), got %d", remaining[keys.FMP])
+	if remaining[bag.FMP] != 0 {
+		t.Errorf("expected 0 remaining for FMP (not negative), got %d", remaining[bag.FMP])
 	}
 }
 
 func TestReset(t *testing.T) {
 	constraints := &models.BaseToolConstraints{
-		MaxCallsPerTool: map[keys.Key]int{
-			keys.Fred: 2,
+		MaxCallsPerTool: map[bag.Key]int{
+			bag.Fred: 2,
 		},
 	}
 
 	consumer := NewToolConsumer(constraints).(*defaultToolConsumer)
-	toolKey := keys.Fred
+	toolKey := bag.Fred
 
 	// use up credits
 	consumer.IncrementCallCount(toolKey)
@@ -205,8 +205,8 @@ func TestReset(t *testing.T) {
 
 func TestGetConstraints(t *testing.T) {
 	constraints := &models.BaseToolConstraints{
-		MaxCallsPerTool: map[keys.Key]int{
-			keys.Fred: 2,
+		MaxCallsPerTool: map[bag.Key]int{
+			bag.Fred: 2,
 		},
 	}
 

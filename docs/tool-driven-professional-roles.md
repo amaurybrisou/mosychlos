@@ -20,10 +20,10 @@ You're absolutely right! The Mosychlos architecture achieves sophisticated multi
 ```go
 // Each engine's professional behavior is defined by its tool constraints
 type ToolConstraints struct {
-    PreferredTools  []keys.Key       // Tools to inject first (professional priorities)
-    RequiredTools   []keys.Key       // Tools that must be used (professional standards)
-    MaxCallsPerTool map[keys.Key]int // Professional boundaries/limits
-    MinCallsPerTool map[keys.Key]int // Professional thoroughness requirements
+    PreferredTools  []bag.Key       // Tools to inject first (professional priorities)
+    RequiredTools   []bag.Key       // Tools that must be used (professional standards)
+    MaxCallsPerTool map[bag.Key]int // Professional boundaries/limits
+    MinCallsPerTool map[bag.Key]int // Professional thoroughness requirements
 }
 ```
 
@@ -40,33 +40,33 @@ func NewFinancialAnalystEngine() *FinancialAnalysisEngine {
         role: "Senior Financial Analyst",
         constraints: models.ToolConstraints{
             // Professional priorities - always start with fundamentals
-            PreferredTools: []keys.Key{
-                keys.AnalyzeIncomeStatement,     // Always lead with P&L analysis
-                keys.AnalyzeBalanceSheet,        // Then balance sheet strength
-                keys.AnalyzeCashFlow,            // Then cash generation quality
+            PreferredTools: []bag.Key{
+                bag.AnalyzeIncomeStatement,     // Always lead with P&L analysis
+                bag.AnalyzeBalanceSheet,        // Then balance sheet strength
+                bag.AnalyzeCashFlow,            // Then cash generation quality
             },
 
             // Professional standards - must cover core areas
-            RequiredTools: []keys.Key{
-                keys.AnalyzeIncomeStatement,     // Must analyze profitability
-                keys.AnalyzeBalanceSheet,        // Must assess financial strength
-                keys.AnalyzeCashFlow,            // Must evaluate cash quality
-                keys.GetCompetitivePoisitioning, // Must assess competitive moats
+            RequiredTools: []bag.Key{
+                bag.AnalyzeIncomeStatement,     // Must analyze profitability
+                bag.AnalyzeBalanceSheet,        // Must assess financial strength
+                bag.AnalyzeCashFlow,            // Must evaluate cash quality
+                bag.GetCompetitivePoisitioning, // Must assess competitive moats
             },
 
             // Professional thoroughness - comprehensive analysis
-            MinCallsPerTool: map[keys.Key]int{
-                keys.AnalyzeIncomeStatement: 2,  // Thorough P&L analysis (current + trends)
-                keys.AnalyzeBalanceSheet:    2,  // Complete balance sheet review
-                keys.AnalyzeCashFlow:        1,  // Cash flow quality assessment
-                keys.GetValuationMetrics:    3,  // Multiple valuation approaches
+            MinCallsPerTool: map[bag.Key]int{
+                bag.AnalyzeIncomeStatement: 2,  // Thorough P&L analysis (current + trends)
+                bag.AnalyzeBalanceSheet:    2,  // Complete balance sheet review
+                bag.AnalyzeCashFlow:        1,  // Cash flow quality assessment
+                bag.GetValuationMetrics:    3,  // Multiple valuation approaches
             },
 
             // Professional boundaries - focused analysis
-            MaxCallsPerTool: map[keys.Key]int{
-                keys.AnalyzeIncomeStatement: 3,  // Don't over-analyze P&L
-                keys.GetMarketSentiment:     1,  // Limited market sentiment (not their focus)
-                keys.BacktestStrategy:       0,  // No backtesting (not their expertise)
+            MaxCallsPerTool: map[bag.Key]int{
+                bag.AnalyzeIncomeStatement: 3,  // Don't over-analyze P&L
+                bag.GetMarketSentiment:     1,  // Limited market sentiment (not their focus)
+                bag.BacktestStrategy:       0,  // No backtesting (not their expertise)
             },
         },
     }
@@ -82,33 +82,33 @@ func NewQuantitativeAnalystEngine() *QuantitativeAnalysisEngine {
         role: "Senior Quantitative Analyst",
         constraints: models.ToolConstraints{
             // Quant priorities - statistical rigor first
-            PreferredTools: []keys.Key{
-                keys.CalculateRiskMetrics,       // Start with risk assessment
-                keys.BacktestStrategy,           // Historical performance validation
-                keys.MonteCarloSimulation,       // Scenario modeling
+            PreferredTools: []bag.Key{
+                bag.CalculateRiskMetrics,       // Start with risk assessment
+                bag.BacktestStrategy,           // Historical performance validation
+                bag.MonteCarloSimulation,       // Scenario modeling
             },
 
             // Quant standards - must validate with data
-            RequiredTools: []keys.Key{
-                keys.CalculateRiskMetrics,       // Must quantify risk
-                keys.CalculateCorrelations,      // Must assess correlations
-                keys.BacktestStrategy,           // Must validate historically
-                keys.GetPerformanceAttribution, // Must explain performance sources
+            RequiredTools: []bag.Key{
+                bag.CalculateRiskMetrics,       // Must quantify risk
+                bag.CalculateCorrelations,      // Must assess correlations
+                bag.BacktestStrategy,           // Must validate historically
+                bag.GetPerformanceAttribution, // Must explain performance sources
             },
 
             // Quant thoroughness - comprehensive modeling
-            MinCallsPerTool: map[keys.Key]int{
-                keys.CalculateRiskMetrics:  2,   // VaR, CVaR, multiple risk measures
-                keys.BacktestStrategy:      3,   // Multiple strategy backtests
-                keys.MonteCarloSimulation:  1,   // Scenario analysis required
-                keys.OptimizePortfolio:     2,   // Multiple optimization approaches
+            MinCallsPerTool: map[bag.Key]int{
+                bag.CalculateRiskMetrics:  2,   // VaR, CVaR, multiple risk measures
+                bag.BacktestStrategy:      3,   // Multiple strategy backtests
+                bag.MonteCarloSimulation:  1,   // Scenario analysis required
+                bag.OptimizePortfolio:     2,   // Multiple optimization approaches
             },
 
             // Quant boundaries - focused on quantitative methods
-            MaxCallsPerTool: map[keys.Key]int{
-                keys.AnalyzeIncomeStatement: 0,  // No fundamental analysis (not their role)
-                keys.GetCompanyNews:         1,  // Limited news analysis
-                keys.GenerateReport:         0,  // No report writing (not their role)
+            MaxCallsPerTool: map[bag.Key]int{
+                bag.AnalyzeIncomeStatement: 0,  // No fundamental analysis (not their role)
+                bag.GetCompanyNews:         1,  // Limited news analysis
+                bag.GenerateReport:         0,  // No report writing (not their role)
             },
         },
     }
@@ -124,32 +124,32 @@ func NewMarketAnalystEngine() *MarketAnalysisEngine {
         role: "Senior Market Analyst",
         constraints: models.ToolConstraints{
             // Market analyst priorities - sentiment and timing first
-            PreferredTools: []keys.Key{
-                keys.GetMarketSentiment,         // Market mood assessment
-                keys.AnalyzeTechnicalIndicators, // Chart patterns and momentum
-                keys.GetSectorTrends,            // Sector rotation analysis
+            PreferredTools: []bag.Key{
+                bag.GetMarketSentiment,         // Market mood assessment
+                bag.AnalyzeTechnicalIndicators, // Chart patterns and momentum
+                bag.GetSectorTrends,            // Sector rotation analysis
             },
 
             // Market analyst standards - must assess market conditions
-            RequiredTools: []keys.Key{
-                keys.GetMarketSentiment,         // Must gauge sentiment
-                keys.AnalyzeTechnicalIndicators, // Must analyze technicals
-                keys.GetInstitutionalFlows,      // Must check institutional positioning
-                keys.GetSectorTrends,            // Must assess sector dynamics
+            RequiredTools: []bag.Key{
+                bag.GetMarketSentiment,         // Must gauge sentiment
+                bag.AnalyzeTechnicalIndicators, // Must analyze technicals
+                bag.GetInstitutionalFlows,      // Must check institutional positioning
+                bag.GetSectorTrends,            // Must assess sector dynamics
             },
 
             // Market analyst thoroughness - comprehensive market view
-            MinCallsPerTool: map[keys.Key]int{
-                keys.GetMarketSentiment:    2,   // Multiple sentiment indicators
-                keys.GetSectorTrends:       2,   // Broad sector analysis
-                keys.GetOptionsFlow:        1,   // Derivatives positioning
+            MinCallsPerTool: map[bag.Key]int{
+                bag.GetMarketSentiment:    2,   // Multiple sentiment indicators
+                bag.GetSectorTrends:       2,   // Broad sector analysis
+                bag.GetOptionsFlow:        1,   // Derivatives positioning
             },
 
             // Market analyst boundaries - market-focused
-            MaxCallsPerTool: map[keys.Key]int{
-                keys.AnalyzeBalanceSheet:    0,  // No fundamental analysis
-                keys.BacktestStrategy:       1,  // Limited backtesting
-                keys.MonteCarloSimulation:   0,  // No complex modeling
+            MaxCallsPerTool: map[bag.Key]int{
+                bag.AnalyzeBalanceSheet:    0,  // No fundamental analysis
+                bag.BacktestStrategy:       1,  // Limited backtesting
+                bag.MonteCarloSimulation:   0,  // No complex modeling
             },
         },
     }
@@ -165,32 +165,32 @@ func NewInvestmentCommitteeEngine() *InvestmentCommitteeEngine {
         role: "Investment Committee Chairperson",
         constraints: models.ToolConstraints{
             // Committee priorities - synthesis and decision-making
-            PreferredTools: []keys.Key{
-                keys.SynthesizeAnalysis,         // Combine all perspectives
-                keys.AssessRiskReward,           // Risk/reward evaluation
-                keys.GenerateRecommendation,     // Final investment thesis
+            PreferredTools: []bag.Key{
+                bag.SynthesizeAnalysis,         // Combine all perspectives
+                bag.AssessRiskReward,           // Risk/reward evaluation
+                bag.GenerateRecommendation,     // Final investment thesis
             },
 
             // Committee standards - must make decisions
-            RequiredTools: []keys.Key{
-                keys.SynthesizeAnalysis,         // Must synthesize all analysis
-                keys.AssessRiskReward,           // Must evaluate risk/reward
-                keys.GenerateRecommendation,     // Must provide recommendation
-                keys.CreateMonitoringPlan,       // Must establish review framework
+            RequiredTools: []bag.Key{
+                bag.SynthesizeAnalysis,         // Must synthesize all analysis
+                bag.AssessRiskReward,           // Must evaluate risk/reward
+                bag.GenerateRecommendation,     // Must provide recommendation
+                bag.CreateMonitoringPlan,       // Must establish review framework
             },
 
             // Committee thoroughness - comprehensive decision framework
-            MinCallsPerTool: map[keys.Key]int{
-                keys.SynthesizeAnalysis:     1,  // Complete synthesis required
-                keys.GenerateRecommendation: 1,  // Clear recommendation required
-                keys.GenerateReport:         1,  // Documentation required
+            MinCallsPerTool: map[bag.Key]int{
+                bag.SynthesizeAnalysis:     1,  // Complete synthesis required
+                bag.GenerateRecommendation: 1,  // Clear recommendation required
+                bag.GenerateReport:         1,  // Documentation required
             },
 
             // Committee boundaries - strategic focus
-            MaxCallsPerTool: map[keys.Key]int{
-                keys.GetMarketData:          0,  // No new data gathering
-                keys.AnalyzeIncomeStatement: 0,  // No detailed analysis (rely on team)
-                keys.BacktestStrategy:       0,  // No execution-level analysis
+            MaxCallsPerTool: map[bag.Key]int{
+                bag.GetMarketData:          0,  // No new data gathering
+                bag.AnalyzeIncomeStatement: 0,  // No detailed analysis (rely on team)
+                bag.BacktestStrategy:       0,  // No execution-level analysis
             },
         },
     }
@@ -210,15 +210,15 @@ func NewInvestmentCommitteeEngine() *InvestmentCommitteeEngine {
 
 ```go
 // This ensures professional thoroughness
-MinCallsPerTool: map[keys.Key]int{
-    keys.AnalyzeIncomeStatement: 2,  // Must do thorough P&L analysis
-    keys.GetValuationMetrics:    3,  // Must use multiple valuation methods
+MinCallsPerTool: map[bag.Key]int{
+    bag.AnalyzeIncomeStatement: 2,  // Must do thorough P&L analysis
+    bag.GetValuationMetrics:    3,  // Must use multiple valuation methods
 }
 
 // This maintains professional focus
-MaxCallsPerTool: map[keys.Key]int{
-    keys.GetMarketSentiment: 1,      // Limited market focus for fundamental analyst
-    keys.BacktestStrategy:   0,      // No backtesting outside quant role
+MaxCallsPerTool: map[bag.Key]int{
+    bag.GetMarketSentiment: 1,      // Limited market focus for fundamental analyst
+    bag.BacktestStrategy:   0,      // No backtesting outside quant role
 }
 ```
 
@@ -226,11 +226,11 @@ MaxCallsPerTool: map[keys.Key]int{
 
 ```go
 // PreferredTools creates natural professional workflow
-PreferredTools: []keys.Key{
-    keys.AnalyzeIncomeStatement,     // Start with revenue/profitability
-    keys.AnalyzeBalanceSheet,        // Then assess financial strength
-    keys.AnalyzeCashFlow,            // Then evaluate cash quality
-    keys.GetValuationMetrics,        // Finally determine value
+PreferredTools: []bag.Key{
+    bag.AnalyzeIncomeStatement,     // Start with revenue/profitability
+    bag.AnalyzeBalanceSheet,        // Then assess financial strength
+    bag.AnalyzeCashFlow,            // Then evaluate cash quality
+    bag.GetValuationMetrics,        // Finally determine value
 }
 ```
 

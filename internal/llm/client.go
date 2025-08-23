@@ -13,7 +13,6 @@ import (
 	llmopenai "github.com/amaurybrisou/mosychlos/internal/llm/openai"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	pkgopenai "github.com/amaurybrisou/mosychlos/pkg/openai"
 )
@@ -23,7 +22,7 @@ type Client struct {
 	batchManager models.BatchManager
 	syncProvider models.Provider
 
-	toolRegistry map[keys.Key]models.Tool
+	toolRegistry map[bag.Key]models.Tool
 	consumer     models.ToolConsumer
 
 	responsesStrat ResponsesStrategyInterface
@@ -57,7 +56,7 @@ func NewLLMClient(cfg *config.Config, sharedBag bag.SharedBag) (*Client, error) 
 		batchManager:   batchManager,
 		syncProvider:   respProvider,
 		responsesStrat: responsesStrat,
-		toolRegistry:   map[keys.Key]models.Tool{},
+		toolRegistry:   map[bag.Key]models.Tool{},
 	}, nil
 }
 

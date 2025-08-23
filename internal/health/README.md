@@ -35,7 +35,7 @@ healthMonitor.UpdateApplicationHealth()
 
 ```go
 // Get application health from shared bag
-if healthData, exists := sharedBag.Get(keys.KApplicationHealth); exists {
+if healthData, exists := sharedBag.Get(bag.KApplicationHealth); exists {
     if appHealth, ok := healthData.(models.ApplicationHealth); ok {
         fmt.Printf("System Status: %s\n", appHealth.Status)
         fmt.Printf("Uptime: %v\n", appHealth.Uptime)

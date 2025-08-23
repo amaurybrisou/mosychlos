@@ -5,7 +5,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -13,7 +12,7 @@ import (
 func GetToolConfigs(cfg *config.FMPAnalystEstimatesConfig) []models.ToolConfig {
 	return []models.ToolConfig{
 		{
-			Key: keys.FMPAnalystEstimates,
+			Key: bag.FMPAnalystEstimates,
 			Constructor: func(cfg any, sharedBag bag.SharedBag) (models.Tool, error) {
 				return NewAnalystEstimatesFromConfig(cfg.(*config.FMPAnalystEstimatesConfig), sharedBag)
 			},

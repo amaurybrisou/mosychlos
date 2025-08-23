@@ -98,8 +98,8 @@ func (p *Provider) Name() string {
 }
 
 // Key returns the unique tool key
-func (p *Provider) Key() keys.Key {
-    return keys.ToolName // Add to pkg/keys/keys.go
+func (p *Provider) Key() bag.Key {
+    return bag.ToolName // Add to pkg/keys/bag.go
 }
 
 // Description returns the tool description for AI
@@ -245,7 +245,7 @@ type ToolsConfig struct {
 
 ## **Step 4: Add Tool Key**
 
-Add to `pkg/keys/keys.go`:
+Add to `pkg/keys/bag.go`:
 
 ```go
 const (
@@ -300,7 +300,7 @@ func NewToolNameTool(cfg *config.Config) error {
         wrappedTool = NewMetricsWrapper(wrappedTool, sharedBag)
     }
 
-    tools[keys.ToolName] = wrappedTool
+    tools[bag.ToolName] = wrappedTool
 
     slog.Info("ToolName tool initialized",
         "cache_enabled", cfg.Tools.ToolName.CacheEnable,
@@ -472,7 +472,7 @@ func TestToolNameTool_Integration(t *testing.T) {
         t.Fatalf("Failed to create ToolName tool: %v", err)
     }
 
-    tool := GetTool(keys.ToolName)
+    tool := GetTool(bag.ToolName)
     if tool == nil {
         t.Fatal("ToolName tool not registered")
     }
@@ -632,7 +632,7 @@ Before submitting your tool:
 
 - [ ] Tool implements `models.Tool` interface correctly
 - [ ] Configuration added to `config.go`
-- [ ] Tool key added to `keys.go`
+- [ ] Tool key added to `bag.go`
 - [ ] Tool registered in `tools.go`
 - [ ] Comprehensive tests written
 - [ ] Documentation created

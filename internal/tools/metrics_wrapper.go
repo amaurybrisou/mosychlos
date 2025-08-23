@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -31,7 +30,7 @@ func (w *MetricsWrapper) Name() string {
 	return w.tool.Name()
 }
 
-func (w *MetricsWrapper) Key() keys.Key {
+func (w *MetricsWrapper) Key() bag.Key {
 	return w.tool.Key()
 }
 
@@ -88,7 +87,7 @@ func (w *MetricsWrapper) Run(ctx context.Context, args string) (string, error) {
 
 // recordComputation adds the computation to the shared bag
 func (w *MetricsWrapper) recordComputation(comp models.ToolComputation) {
-	w.sharedBag.Update(keys.KToolComputations, func(current any) any {
+	w.sharedBag.Update(bag.KToolComputations, func(current any) any {
 		var computations []models.ToolComputation
 		if current != nil {
 			if existing, ok := current.([]models.ToolComputation); ok {
@@ -101,7 +100,7 @@ func (w *MetricsWrapper) recordComputation(comp models.ToolComputation) {
 
 // updateMetrics updates the aggregated metrics in the shared bag
 func (w *MetricsWrapper) updateMetrics(comp models.ToolComputation) {
-	w.sharedBag.Update(keys.KToolMetrics, func(current any) any {
+	w.sharedBag.Update(bag.KToolMetrics, func(current any) any {
 		var metrics models.ToolMetrics
 		if current != nil {
 			if existing, ok := current.(models.ToolMetrics); ok {
@@ -167,7 +166,7 @@ func (w *MetricsWrapper) updateMetrics(comp models.ToolComputation) {
 // updateAPIHealth tracks API call health status for external data providers
 func (w *MetricsWrapper) updateAPIHealth(comp models.ToolComputation) {
 	// Update overall external data health (contains per-tool status)
-	w.sharedBag.Update(keys.KExternalDataHealth, func(current any) any {
+	w.sharedBag.Update(bag.KExternalDataHealth, func(current any) any {
 		var health models.ExternalDataHealth
 		if current != nil {
 			if existing, ok := current.(models.ExternalDataHealth); ok {

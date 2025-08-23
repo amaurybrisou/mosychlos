@@ -104,7 +104,7 @@ func (e *InvestmentResearchEngine) Execute(ctx context.Context, client models.Ai
 ```
 1. ProfileManager.LoadProfile(country, riskTolerance)
    ↓ (Stores InvestmentProfile with regional preferences)
-2. SharedBag.Set(keys.KProfile, investmentProfile)
+2. SharedBag.Set(bag.KProfile, investmentProfile)
    ↓
 3. Engine.Execute() reads profile from SharedBag
    ↓
@@ -114,7 +114,7 @@ func (e *InvestmentResearchEngine) Execute(ctx context.Context, client models.Ai
    ↓
 6. Structured result with all supporting models populated
    ↓
-7. SharedBag.Set(keys.InvestmentResearchResult, result)
+7. SharedBag.Set(bag.InvestmentResearchResult, result)
 ```
 
 ## Next Steps for Implementation

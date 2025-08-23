@@ -83,7 +83,7 @@ func (e *InvestmentResearchEngine) Execute(ctx context.Context, client models.Ai
 // executeResearch performs the investment research analysis
 func (e *InvestmentResearchEngine) executeResearch(ctx context.Context, client models.AiClient, sharedBag bag.SharedBag) error {
     // 1. Get investment profile from SharedBag (loaded by ProfileManager)
-    profileData, ok := sharedBag.Get(keys.KProfile)
+    profileData, ok := sharedBag.Get(bag.KProfile)
     if !ok {
         return fmt.Errorf("investment profile not found in shared bag")
     }
@@ -91,7 +91,7 @@ func (e *InvestmentResearchEngine) executeResearch(ctx context.Context, client m
     investmentProfile := profileData.(*models.InvestmentProfile)
 
     // 2. Extract portfolio from shared bag
-    portfolioData, ok := sharedBag.Get(keys.Portfolio)
+    portfolioData, ok := sharedBag.Get(bag.Portfolio)
     if !ok {
         return fmt.Errorf("portfolio not found in shared bag")
     }
@@ -124,7 +124,7 @@ func (e *InvestmentResearchEngine) executeResearch(ctx context.Context, client m
     }
 
     // 6. Store structured result in shared bag
-    sharedBag.Set(keys.InvestmentResearchResult, result)
+    sharedBag.Set(bag.InvestmentResearchResult, result)
 
     return nil
 }
@@ -142,45 +142,45 @@ func (e *InvestmentResearchEngine) executeResearch(ctx context.Context, client m
 // Tool constraints optimized for investment research
 func (e *InvestmentResearchEngine) getToolConstraints(researchDepth string) models.ToolConstraints {
     baseConstraints := models.ToolConstraints{
-        RequiredTools: []keys.Key{
-            keys.WebSearch,  // OpenAI web search for research
+        RequiredTools: []bag.Key{
+            bag.WebSearch,  // OpenAI web search for research
         },
-        PreferredTools: []keys.Key{
-            keys.FMP,        // Market data validation
-            keys.FRED,       // Economic context
-            keys.NewsAPI,    // News correlation
+        PreferredTools: []bag.Key{
+            bag.FMP,        // Market data validation
+            bag.FRED,       // Economic context
+            bag.NewsAPI,    // News correlation
         },
     }
 
     // Adjust tool usage based on research depth
     switch researchDepth {
     case "comprehensive":
-        baseConstraints.MaxCallsPerTool = map[keys.Key]int{
-            keys.WebSearch: 8,  // Deep research
-            keys.FMP:       4,  // Comprehensive data
-            keys.NewsAPI:   2,  // News context
+        baseConstraints.MaxCallsPerTool = map[bag.Key]int{
+            bag.WebSearch: 8,  // Deep research
+            bag.FMP:       4,  // Comprehensive data
+            bag.NewsAPI:   2,  // News context
         }
-        baseConstraints.MinCallsPerTool = map[keys.Key]int{
-            keys.WebSearch: 4,  // Minimum quality
+        baseConstraints.MinCallsPerTool = map[bag.Key]int{
+            bag.WebSearch: 4,  // Minimum quality
         }
 
     case "standard":
-        baseConstraints.MaxCallsPerTool = map[keys.Key]int{
-            keys.WebSearch: 5,  // Balanced research
-            keys.FMP:       2,
-            keys.NewsAPI:   1,
+        baseConstraints.MaxCallsPerTool = map[bag.Key]int{
+            bag.WebSearch: 5,  // Balanced research
+            bag.FMP:       2,
+            bag.NewsAPI:   1,
         }
-        baseConstraints.MinCallsPerTool = map[keys.Key]int{
-            keys.WebSearch: 3,
+        baseConstraints.MinCallsPerTool = map[bag.Key]int{
+            bag.WebSearch: 3,
         }
 
     case "basic":
-        baseConstraints.MaxCallsPerTool = map[keys.Key]int{
-            keys.WebSearch: 3,  // Light research
-            keys.FMP:       1,
+        baseConstraints.MaxCallsPerTool = map[bag.Key]int{
+            bag.WebSearch: 3,  // Light research
+            bag.FMP:       1,
         }
-        baseConstraints.MinCallsPerTool = map[keys.Key]int{
-            keys.WebSearch: 2,
+        baseConstraints.MinCallsPerTool = map[bag.Key]int{
+            bag.WebSearch: 2,
         }
     }
 
@@ -267,7 +267,7 @@ InvestmentResearchResult with localized recommendations
 ```
 ProfileManager.LoadProfile(country, riskTolerance)
 ↓
-InvestmentProfile stored in SharedBag (keys.KProfile)
+InvestmentProfile stored in SharedBag (bag.KProfile)
 ↓
 InvestmentResearchEngine.Execute() reads from SharedBag
 ↓
@@ -578,7 +578,7 @@ type RegionalConfigLoader struct {
 
 // NEW APPROACH (via ProfileManager):
 // Regional context comes from InvestmentProfile in SharedBag
-profile := sharedBag.Get(keys.KProfile).(*models.InvestmentProfile)
+profile := sharedBag.Get(bag.KProfile).(*models.InvestmentProfile)
 regionalContext := models.RegionalContext{
     Country:       profile.RegionalPreferences.Country,
     Language:      profile.RegionalPreferences.Language,

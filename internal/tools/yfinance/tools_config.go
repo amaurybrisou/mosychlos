@@ -5,7 +5,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -20,7 +19,7 @@ func GetToolConfigs(cfg *config.YFinanceConfig) []models.ToolConfig {
 
 	return []models.ToolConfig{
 		{
-			Key: keys.YFinanceStockData,
+			Key: bag.YFinanceStockData,
 			Constructor: func(cfg any, sharedBag bag.SharedBag) (models.Tool, error) {
 				return NewStockDataFromConfig(cfg.(*config.YFinanceConfig), sharedBag)
 			},
@@ -30,7 +29,7 @@ func GetToolConfigs(cfg *config.YFinanceConfig) []models.ToolConfig {
 			RateLimit:    yfinanceRateLimit,
 		},
 		{
-			Key: keys.YFinanceStockInfo,
+			Key: bag.YFinanceStockInfo,
 			Constructor: func(cfg any, sharedBag bag.SharedBag) (models.Tool, error) {
 				return NewStockInfoFromConfig(cfg.(*config.YFinanceConfig), sharedBag)
 			},
@@ -40,7 +39,7 @@ func GetToolConfigs(cfg *config.YFinanceConfig) []models.ToolConfig {
 			RateLimit:    yfinanceRateLimit,
 		},
 		{
-			Key: keys.YFinanceDividends,
+			Key: bag.YFinanceDividends,
 			Constructor: func(cfg any, sharedBag bag.SharedBag) (models.Tool, error) {
 				return NewDividendsFromConfig(cfg.(*config.YFinanceConfig), sharedBag)
 			},
@@ -50,7 +49,7 @@ func GetToolConfigs(cfg *config.YFinanceConfig) []models.ToolConfig {
 			RateLimit:    yfinanceRateLimit,
 		},
 		{
-			Key: keys.YFinanceFinancials,
+			Key: bag.YFinanceFinancials,
 			Constructor: func(cfg any, sharedBag bag.SharedBag) (models.Tool, error) {
 				return NewFinancialsFromConfig(cfg.(*config.YFinanceConfig), sharedBag)
 			},
@@ -60,7 +59,7 @@ func GetToolConfigs(cfg *config.YFinanceConfig) []models.ToolConfig {
 			RateLimit:    yfinanceRateLimit,
 		},
 		{
-			Key: keys.YFinanceMarketData,
+			Key: bag.YFinanceMarketData,
 			Constructor: func(cfg any, sharedBag bag.SharedBag) (models.Tool, error) {
 				return NewMarketDataFromConfig(cfg.(*config.YFinanceConfig), sharedBag)
 			},

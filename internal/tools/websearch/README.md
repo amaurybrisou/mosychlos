@@ -70,7 +70,7 @@ The web search integration includes a dedicated processing pipeline:
 
 - **Location**: `internal/tools/websearch/processor.go`
 - **Purpose**: Parse citations from OpenAI web search responses
-- **Storage**: Citations stored in SharedBag under `keys.WebSearch`
+- **Storage**: Citations stored in SharedBag under `bag.WebSearch`
 
 ### Processor Features
 
@@ -123,7 +123,7 @@ The AI can call web search like any other tool:
 
 ```json
 {
-  "name": keys.WebSearch,
+  "name": bag.WebSearch,
   "arguments": {
     "query": "current cryptocurrency market conditions PEPE BNB price volatility"
   }

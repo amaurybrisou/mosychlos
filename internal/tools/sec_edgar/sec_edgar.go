@@ -10,7 +10,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/amaurybrisou/mosychlos/pkg/sec"
 )
@@ -59,8 +58,8 @@ func (p *SecEdgarTool) Name() string {
 }
 
 // Key returns the unique tool key
-func (p *SecEdgarTool) Key() keys.Key {
-	return keys.SECFilings
+func (p *SecEdgarTool) Key() bag.Key {
+	return bag.SECFilings
 }
 
 // Description returns the tool description for AI

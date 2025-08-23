@@ -10,7 +10,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/cache"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -59,7 +58,7 @@ func (ct *CachedTool) Name() string {
 }
 
 // Key returns the wrapped tool's key
-func (ct *CachedTool) Key() keys.Key {
+func (ct *CachedTool) Key() bag.Key {
 	return ct.tool.Key()
 }
 

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
-	"github.com/amaurybrisou/mosychlos/pkg/keys"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -82,13 +81,13 @@ func TestProvider_Interface(t *testing.T) {
 	}
 
 	// Test Name
-	if provider.Name() != keys.NewsApi.String() {
-		t.Errorf("expected name %s, got %s", keys.NewsApi.String(), provider.Name())
+	if provider.Name() != bag.NewsApi.String() {
+		t.Errorf("expected name %s, got %s", bag.NewsApi.String(), provider.Name())
 	}
 
 	// Test Key
-	if provider.Key() != keys.NewsApi {
-		t.Errorf("expected key %v, got %v", keys.NewsApi, provider.Key())
+	if provider.Key() != bag.NewsApi {
+		t.Errorf("expected key %v, got %v", bag.NewsApi, provider.Key())
 	}
 
 	// Test Description
