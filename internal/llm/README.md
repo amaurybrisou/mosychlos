@@ -1,27 +1,47 @@
-# LLM Batch Processing System
+# LLM Processing System
 
 ## Overview
 
-The LLM Batch Processing system enables asynchronous AI analysis of portfolios and investment data using OpenAI's Batch API. This system provides significant cost savings (up to 50%) compared to synchronous API calls, making it ideal for non-time-critical batch analyses.
+The LLM Processing system provides both synchronous and asynchronous AI analysis of portfolios and investment data. It uses a hybrid approach with different OpenAI SDK implementations for different use cases:
+
+- **Synchronous Operations**: Uses speakeasy-sdks/openai-go-sdk for real-time chat completions
+- **Batch Operations**: Uses the official OpenAI SDK for asynchronous batch processing with up to 50% cost savings
 
 ## Architecture
 
+### OpenAI SDK Integration
+
+The system uses a hybrid approach for OpenAI integration:
+
+1. **Speakeasy SDK (`internal/llm/openai/speakeasy_client.go`)**: 
+   - Used for synchronous chat completions and real-time responses
+   - Provides a clean, generated SDK interface
+   - Handles authentication via custom HTTP client wrapper
+
+2. **Official OpenAI SDK (`internal/llm/openai/batch_client.go`)**:
+   - Used for batch processing operations (CreateBatch, ListBatches, etc.)
+   - Required for cost-effective bulk processing
+   - Provides access to the latest batch API features
+
 ### Core Components
 
+- **internal/llm/client.go**: Main LLM client with hybrid SDK integration
+- **internal/llm/openai/speakeasy_client.go**: Speakeasy SDK implementation for sync operations  
+- **internal/llm/openai/batch_client.go**: Official OpenAI SDK implementation for batch operations
 - **pkg/models/ai_batch.go**: Core contracts and interfaces for batch processing
 - **internal/llm/util.go**: Model classification and utility functions
-- **internal/llm/openai/**: OpenAI-specific batch processing implementation
 - **internal/llm/batch/**: Batch management, result aggregation, and CLI integration
 - **internal/llm/factory.go**: Factory for creating batch services
 - **cmd/mosychlos/batch.go**: CLI commands for batch operations
 
 ### Key Features
 
-1. **Model Class Detection**: Automatic detection of standard vs reasoning models (GPT-5 class models)
-2. **Cost Optimization**: Batch processing with 50% cost savings compared to sync calls
-3. **JSONL Format**: Proper formatting for OpenAI Batch API compliance
-4. **Result Aggregation**: Processing of batch results with error handling
-5. **CLI Integration**: Full command-line interface for batch job management
+1. **Hybrid SDK Architecture**: Speakeasy SDK for sync, Official SDK for batch operations
+2. **Model Class Detection**: Automatic detection of standard vs reasoning models (GPT-5 class models)
+3. **Cost Optimization**: Batch processing with 50% cost savings compared to sync calls
+4. **JSONL Format**: Proper formatting for OpenAI Batch API compliance
+5. **Result Aggregation**: Processing of batch results with error handling
+6. **CLI Integration**: Full command-line interface for batch job management
 
 ## Usage
 

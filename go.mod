@@ -7,16 +7,14 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/openai/openai-go/v2 v2.0.2
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
+	github.com/speakeasy-sdks/openai-go-sdk v1.11.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require (
-	github.com/cenkalti/backoff/v4 v4.2.0 // indirect
-	github.com/speakeasy-sdks/openai-go-sdk v1.11.0 // indirect
-)
+require github.com/cenkalti/backoff/v4 v4.2.0 // indirect
 
 require (
 	github.com/chzyer/readline v1.5.1 // indirect
