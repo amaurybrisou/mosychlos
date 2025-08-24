@@ -17,12 +17,14 @@ type HTTPDoer interface {
 }
 
 type Client struct {
+	cfg        config.OpenAIConfig
 	doer       HTTPDoer
 	middleware *MiddlewareChain
 }
 
 func NewClient(doer HTTPDoer, cfg config.OpenAIConfig) *Client {
 	return &Client{
+		cfg:        cfg,
 		doer:       doer,
 		middleware: NewDefaultMiddlewareChain(cfg),
 	}
@@ -35,16 +37,16 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 	})
 }
 
-// pkg/openai/client.go  (replace NewHTTPClient)
+// NewHTTPClient creates a new HTTP client with the specified middleware.
 func NewHTTPClient(mw ...RTMiddleware) *http.Client {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.DialContext = (&net.Dialer{
-		Timeout:   30 * time.Second,
+		Timeout:   300 * time.Second,
 		KeepAlive: 60 * time.Second,
 	}).DialContext
 	transport.TLSHandshakeTimeout = 10 * time.Second
 	transport.IdleConnTimeout = 90 * time.Second
-	transport.ResponseHeaderTimeout = 30 * time.Second
+	transport.ResponseHeaderTimeout = 300 * time.Second
 	transport.MaxIdleConns = 100
 	transport.MaxConnsPerHost = 0
 	transport.MaxIdleConnsPerHost = 100
@@ -53,5 +55,5 @@ func NewHTTPClient(mw ...RTMiddleware) *http.Client {
 	if len(mw) > 0 {
 		rt = ChainRoundTripper(rt, mw...)
 	}
-	return &http.Client{Transport: rt, Timeout: 30 * time.Second}
+	return &http.Client{Transport: rt, Timeout: 300 * time.Second}
 }

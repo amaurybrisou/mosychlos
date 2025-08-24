@@ -51,7 +51,9 @@ func TestNewRiskBatchEngine(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			engine := NewRiskBatchEngine(c.engineName, c.cfg, mockPB, c.constraints)
+			engine := NewRiskBatchEngine(c.engineName, Deps{
+				PromptBuilder: mockPB,
+			})
 
 			if engine == nil {
 				t.Fatal("expected engine but got nil")
@@ -321,13 +323,4 @@ func TestRiskBatchEngineHooks_InterfaceCompliance(t *testing.T) {
 
 	// Test interface compliance
 	var _ models.BatchEngineHooks = hooks
-}
-
-func findInString(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }

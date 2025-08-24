@@ -1,4 +1,4 @@
-// pkg/models/ai_batch.go
+// Package models
 package models
 
 import (
@@ -23,6 +23,7 @@ type PromptRequest struct {
 
 // LLMResponse represents a response from AI processing
 type LLMResponse struct {
+	CreatedAt      time.Time         `json:"created_at"`
 	ID             string            `json:"id"`
 	Model          string            `json:"model"`
 	Content        string            `json:"content"`

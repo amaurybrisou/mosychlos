@@ -2,11 +2,10 @@ package bag
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"sync"
-
-	"github.com/amaurybrisou/mosychlos/pkg/fs"
 )
 
 //go:generate mockgen -source=shared_bag.go -destination=mocks/shared_bag_mock.go -package=mocks
@@ -27,8 +26,6 @@ type SharedBag interface {
 type sharedBag struct {
 	data map[Key]any
 	mu   sync.RWMutex
-
-	fs fs.FS
 }
 
 // NewSharedBag creates a new thread-safe shared bag
@@ -64,7 +61,7 @@ func (sb *sharedBag) Get(k Key) (any, bool) {
 func (sb *sharedBag) MustGet(k Key) any {
 	v, ok := sb.Get(k)
 	if !ok {
-		panic("key not found")
+		panic(fmt.Errorf("key not found: %v", k))
 	}
 	return v
 }

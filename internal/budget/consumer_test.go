@@ -73,7 +73,7 @@ func TestHasCreditsFor(t *testing.T) {
 		},
 		{
 			name:         "tool with no limit",
-			toolKey:      bag.NewsApi, // not in constraints
+			toolKey:      bag.NewsAPI, // not in constraints
 			expectCredit: true,
 		},
 		{

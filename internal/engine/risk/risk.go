@@ -1,4 +1,4 @@
-// internal/engine/risk/risk.go
+// Package risk
 package risk
 
 import (

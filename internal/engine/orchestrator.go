@@ -10,37 +10,83 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
-	"github.com/amaurybrisou/mosychlos/internal/health"
 	"github.com/amaurybrisou/mosychlos/internal/llm"
 	"github.com/amaurybrisou/mosychlos/internal/tools"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/google/uuid"
+
+	_ "github.com/amaurybrisou/mosychlos/internal/toolsimpl" // registers all tools
 )
+
+type Orchestrator interface {
+	Init(ctx context.Context) error
+	ExecutePipeline(ctx context.Context) error
+	Bag() bag.SharedBag
+	Tools() models.ToolProvider
+}
 
 // engineOrchestrator owns shared state (SharedBag), builds shared services, and wires engines via a Builder.
 type engineOrchestrator struct {
-	ID         uuid.UUID
-	StartDate  time.Time
-	cfg        *config.Config
-	engines    []models.Engine // if provided directly (option 1)
-	builder    Builder         // if you prefer DI inside orchestrator (option 2)
-	sharedBag  bag.SharedBag
-	filesystem fs.FS
-	aiClient   *llm.Client
-	tools      []models.Tool
+	ID            uuid.UUID
+	StartDate     time.Time
+	cfg           *config.Config
+	engines       []models.Engine // if provided directly (option 1)
+	builder       Builder         // if you prefer DI inside orchestrator (option 2)
+	sharedBag     bag.SharedBag
+	toolManager   *tools.ToolManager
+	promptManager models.PromptBuilder
+	filesystem    fs.FS
+	aiClient      *llm.Client
+	// pluggable initialization steps
+	initSteps []InitStep
 }
 
-func New(cfg *config.Config, engines []models.Engine) *engineOrchestrator {
-	return &engineOrchestrator{
+// Option configures the orchestrator at construction time.
+type Option func(*engineOrchestrator)
+
+// WithFS overrides the default filesystem implementation.
+func WithFS(f fs.FS) Option { return func(o *engineOrchestrator) { o.filesystem = f } }
+
+// WithBag injects an existing shared bag instance.
+func WithBag(b bag.SharedBag) Option { return func(o *engineOrchestrator) { o.sharedBag = b } }
+
+// WithEngines sets a pre-built engines slice.
+func WithEngines(engs []models.Engine) Option {
+	return func(o *engineOrchestrator) { o.engines = engs }
+}
+
+// WithBuilder injects a custom engine builder.
+func WithBuilder(b Builder) Option { return func(o *engineOrchestrator) { o.builder = b } }
+
+// New constructs an engine orchestrator using functional options.
+func New(cfg *config.Config, opts ...Option) Orchestrator {
+	o := &engineOrchestrator{
 		ID:         uuid.New(),
 		StartDate:  time.Now(),
 		cfg:        cfg,
-		engines:    engines, // if empty, we'll fall back to a Builder
 		sharedBag:  bag.NewSharedBag(),
 		filesystem: fs.OS{},
 	}
+
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	if len(o.initSteps) == 0 {
+		o.initSteps = defaultInitSteps()
+	}
+
+	return o
+}
+
+func (o *engineOrchestrator) Bag() bag.SharedBag {
+	return o.sharedBag
+}
+
+func (o *engineOrchestrator) Tools() models.ToolProvider {
+	return o.toolManager
 }
 
 // UseBuilder lets you choose to wire engines inside the orchestrator.
@@ -53,69 +99,30 @@ func (o *engineOrchestrator) BatchManager() models.BatchManager {
 }
 
 func (o *engineOrchestrator) Init(ctx context.Context) error {
-
-	o.sharedBag.Set(bag.KVerboseMode, o.cfg.Logging.Level)
-
-	// Set up tools and services
-	if err := initializeTools(o.cfg, o.sharedBag); err != nil {
-		return fmt.Errorf("failed to initialize tools: %w", err)
-	}
-
-	// Start health monitoring
-	healthMonitor := health.NewApplicationMonitor(o.sharedBag)
-	healthMonitor.StartPeriodicHealthCheck(15 * time.Second)
-
-	// Load portfolio data
-	err := loadPortfolioData(ctx, o.cfg, o.filesystem, o.sharedBag)
-	if err != nil {
-		return fmt.Errorf("failed to load portfolio data: %w", err)
-	}
-
-	// Load investment profile for regional analysis
-	err = loadInvestmentProfile(ctx, o.cfg, o.filesystem, o.sharedBag)
-	if err != nil {
-		return fmt.Errorf("failed to load investment profile: %w", err)
-	}
-
-	// Load LocalizationConfig
-	err = loadRegionalConfig(ctx, o.cfg, o.filesystem, o.sharedBag)
-	if err != nil {
-		return fmt.Errorf("failed to load localization config: %w", err)
-	}
-
-	// Load AI client
-	aiClient, err := loadAiClient(ctx, o.cfg, o.sharedBag)
-	if err != nil {
-		return fmt.Errorf("failed to load AI client: %w", err)
-	}
-	o.aiClient = aiClient
-
-	// Tools
-	err = tools.NewTools(o.cfg)
-	if err != nil {
-		return fmt.Errorf("failed to initialize tools: %w", err)
-	}
-
-	o.tools = tools.GetTools()
-
-	if len(o.engines) == 0 {
-		// Build a PromptBuilder if your engines need prompts
-		pm, err := loadPromptManager(ctx, o.cfg, o.filesystem, o.sharedBag)
-		if err != nil {
-			return fmt.Errorf("failed to create prompt manager: %w", err)
+	// Execute pluggable init steps (tools, portfolio, profile...)
+	for i, step := range o.initSteps {
+		if err := step(ctx, o); err != nil {
+			return fmt.Errorf("init step %d failed: %w", i, err)
 		}
+	}
+
+	if len(o.engines) == 0 &&
+		o.promptManager != nil &&
+		o.aiClient != nil &&
+		o.toolManager != nil {
 
 		if o.builder == nil {
 			o.builder = DefaultBatchRegistry()
 		}
+
 		engs, err := o.builder.Build(ctx, Deps{
 			Ctx:       ctx,
 			Config:    o.cfg,
 			SharedBag: o.sharedBag,
 			FS:        o.filesystem,
 			AI:        o.aiClient,
-			Prompts:   pm,
-			Tools:     o.tools,
+			Prompts:   o.promptManager,
+			Tools:     o.toolManager,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to build engines: %w", err)

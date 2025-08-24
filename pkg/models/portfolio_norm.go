@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // Normalize converts a Portfolio to a NormalizedPortfolio for AI analysis.
@@ -119,7 +122,7 @@ func normalizeRegion(region string) string {
 	case "global", "worldwide":
 		return "Global"
 	default:
-		return strings.Title(region)
+		return cases.Title(language.Und).String(region)
 	}
 }
 

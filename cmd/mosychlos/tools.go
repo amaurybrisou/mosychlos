@@ -1,8 +1,8 @@
 package mosychlos
 
 import (
+	"context"
 	"fmt"
-	"log/slog"
 	"os"
 	"sort"
 	"strings"
@@ -11,37 +11,35 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
-	"github.com/amaurybrisou/mosychlos/internal/tools"
-	"github.com/amaurybrisou/mosychlos/pkg/bag"
+	"github.com/amaurybrisou/mosychlos/internal/engine"
 )
 
 // toolsCommand handles the tools command
-func toolsCommand(cmd *cobra.Command, args []string, cfg *config.Config) error {
+func toolsCommand(cmd *cobra.Command, _ []string, cfg *config.Config) error {
 	// Initialize shared bag for metrics tracking
-	sharedBag := bag.NewSharedBag()
-	tools.SetSharedBag(sharedBag)
+	orch := engine.New(cfg)
 
-	// Initialize tools
-	if err := tools.NewTools(cfg); err != nil {
-		slog.Error("Failed to initialize tools", "error", err)
-		return err
+	ctx := context.Background()
+	// 2) Initialize once (sets up tools, portfolio, profile, LLM, etc.)
+	if err := orch.Init(ctx); err != nil {
+		return fmt.Errorf("orchestrator init: %w", err)
 	}
 
 	// Get verbose flag
 	verbose, _ := cmd.Flags().GetBool("verbose")
 
 	// Display tools information
-	return displayTools(verbose)
+	return displayTools(orch, verbose)
 }
 
 // displayTools shows all available tools
-func displayTools(verbose bool) error {
+func displayTools(orch engine.Orchestrator, verbose bool) error {
 	fmt.Println("📊 Mosychlos Financial Data Tools")
 	fmt.Println("=================================")
 	fmt.Println()
 
 	// Get all registered tools
-	allTools := tools.GetTools()
+	allTools := orch.Tools().List()
 	if len(allTools) == 0 {
 		fmt.Println("❌ No tools are currently registered.")
 		fmt.Println("   Check your configuration file and ensure tool API keys are set.")

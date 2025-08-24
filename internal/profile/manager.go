@@ -18,15 +18,15 @@ type Manager interface {
 	SaveProfile(ctx context.Context, profile *models.InvestmentProfile, filename string) error
 }
 
-// ProfileManager implements the Manager interface
-type ProfileManager struct {
+// profileManager implements the Manager interface
+type profileManager struct {
 	fs        fs.FS
 	sharedBag bag.SharedBag
 	configDir string // For saving user profiles
 }
 
 // NewProfileManager creates a new profile manager
-func NewProfileManager(filesystem fs.FS, configDir string, sharedBag bag.SharedBag) (*ProfileManager, error) {
+func NewProfileManager(filesystem fs.FS, configDir string, sharedBag bag.SharedBag) (Manager, error) {
 	if filesystem == nil {
 		return nil, fmt.Errorf("filesystem cannot be nil")
 	}
@@ -35,7 +35,7 @@ func NewProfileManager(filesystem fs.FS, configDir string, sharedBag bag.SharedB
 		return nil, fmt.Errorf("dataDir cannot be empty")
 	}
 
-	return &ProfileManager{
+	return &profileManager{
 		fs:        filesystem,
 		sharedBag: sharedBag,
 		configDir: configDir,
@@ -45,7 +45,7 @@ func NewProfileManager(filesystem fs.FS, configDir string, sharedBag bag.SharedB
 // LoadProfile loads a profile for specific country and risk tolerance
 // Falls back to global profile if country-specific profile is not found
 // Follows the same caching pattern as tools
-func (pm *ProfileManager) LoadProfile(ctx context.Context, country, riskTolerance string) (*models.InvestmentProfile, error) {
+func (pm *profileManager) LoadProfile(ctx context.Context, country, riskTolerance string) (*models.InvestmentProfile, error) {
 	if country == "" || riskTolerance == "" {
 		return nil, fmt.Errorf("country and risk tolerance are required")
 	}
@@ -83,7 +83,7 @@ func (pm *ProfileManager) LoadProfile(ctx context.Context, country, riskToleranc
 }
 
 // loadFromPath loads and parses a profile from filesystem path
-func (pm *ProfileManager) loadFromPath(profilePath string) (*models.InvestmentProfile, error) {
+func (pm *profileManager) loadFromPath(profilePath string) (*models.InvestmentProfile, error) {
 	data, err := pm.fs.ReadFile(profilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read profile file %s: %w", profilePath, err)
@@ -93,7 +93,7 @@ func (pm *ProfileManager) loadFromPath(profilePath string) (*models.InvestmentPr
 }
 
 // parseProfileData parses YAML data into an InvestmentProfile
-func (pm *ProfileManager) parseProfileData(data []byte) (*models.InvestmentProfile, error) {
+func (pm *profileManager) parseProfileData(data []byte) (*models.InvestmentProfile, error) {
 	var profile models.InvestmentProfile
 	if err := yaml.Unmarshal(data, &profile); err != nil {
 		return nil, fmt.Errorf("failed to parse profile YAML: %w", err)
@@ -102,17 +102,17 @@ func (pm *ProfileManager) parseProfileData(data []byte) (*models.InvestmentProfi
 }
 
 // getProfilePath constructs the path for a country/risk combination
-func (pm *ProfileManager) getProfilePath(country, riskTolerance string) string {
+func (pm *profileManager) getProfilePath(country, riskTolerance string) string {
 	return filepath.Join(pm.configDir, "investment_profiles", "defaults", country, riskTolerance+".yaml")
 }
 
 // getGlobalProfilePath constructs the path for a global profile
-func (pm *ProfileManager) getGlobalProfilePath(riskTolerance string) string {
+func (pm *profileManager) getGlobalProfilePath(riskTolerance string) string {
 	return filepath.Join(pm.configDir, "investment_profiles", "defaults", "global", riskTolerance+".yaml")
 }
 
 // SaveProfile saves a user profile to DataDir/profiles
-func (pm *ProfileManager) SaveProfile(ctx context.Context, profile *models.InvestmentProfile, filename string) error {
+func (pm *profileManager) SaveProfile(ctx context.Context, profile *models.InvestmentProfile, filename string) error {
 	if profile == nil {
 		return fmt.Errorf("profile cannot be nil")
 	}

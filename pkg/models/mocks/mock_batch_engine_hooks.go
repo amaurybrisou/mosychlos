@@ -108,7 +108,7 @@ func (mr *MockBatchEngineHooksMockRecorder) ProcessFinalResult(arg0, arg1, arg2 
 }
 
 // ProcessToolResult mocks base method.
-func (m *MockBatchEngineHooks) ProcessToolResult(arg0, arg1, arg2 string, arg3 bag.SharedBag) error {
+func (m *MockBatchEngineHooks) ProcessToolResult(arg0, arg1 string, arg2 interface{}, arg3 bag.SharedBag) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessToolResult", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)

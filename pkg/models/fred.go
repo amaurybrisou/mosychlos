@@ -105,7 +105,7 @@ type FREDSearchResults struct {
 	Limit      int          `json:"limit"`
 }
 
-// FRED Error response
+// FREDError response
 type FREDError struct {
 	ErrorCode    int    `json:"error_code"`
 	ErrorMessage string `json:"error_message"`

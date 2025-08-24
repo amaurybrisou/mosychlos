@@ -35,7 +35,11 @@ func TestNewBatchEngine(t *testing.T) {
 			hooks := mocks.NewMockBatchEngineHooks(ctrl)
 			hooks.EXPECT().ResultKey().Return(bag.KRiskAnalysisResult).AnyTimes()
 
-			engine := NewBatchEngine(c.engineName, c.model, c.constraints, hooks)
+			engine := NewBatchEngine(c.engineName, Deps{
+				Model:       c.model,
+				Constraints: c.constraints,
+				Hooks:       hooks,
+			})
 
 			if engine == nil {
 				t.Fatal("expected engine but got nil")
@@ -60,7 +64,11 @@ func TestBatchEngine_Interface(t *testing.T) {
 
 	hooks.EXPECT().ResultKey().Return(bag.KRiskAnalysisResult).AnyTimes()
 
-	engine := NewBatchEngine("test", config.LLMModelGPT4o, models.BaseToolConstraints{}, hooks)
+	engine := NewBatchEngine("test", Deps{
+		Model:       config.LLMModelGPT4o,
+		Constraints: models.BaseToolConstraints{},
+		Hooks:       hooks,
+	})
 
 	// Test that it implements models.Engine interface
 	var _ models.Engine = engine

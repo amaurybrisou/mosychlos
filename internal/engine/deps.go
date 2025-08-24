@@ -1,4 +1,4 @@
-// internal/engine/deps.go
+// Package engine
 package engine
 
 import (
@@ -21,6 +21,6 @@ type Deps struct {
 	// Core services built by the orchestrator:
 	AI      *llm.Client
 	Prompts models.PromptBuilder // if some engines need prompt building
-	Tools   []models.Tool
+	Tools   models.ToolProvider
 	// Add other shared services here if needed (portfolio svc, news svc, etc.)
 }

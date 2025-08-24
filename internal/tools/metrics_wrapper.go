@@ -2,7 +2,6 @@ package tools
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
@@ -13,7 +12,6 @@ import (
 type MetricsWrapper struct {
 	tool      models.Tool
 	sharedBag bag.SharedBag
-	mu        sync.Mutex
 }
 
 // NewMetricsWrapper creates a wrapper that tracks tool execution metrics
@@ -38,8 +36,8 @@ func (w *MetricsWrapper) Description() string {
 	return w.tool.Description()
 }
 
-func (ct *MetricsWrapper) IsExternal() bool {
-	return ct.tool.IsExternal()
+func (w *MetricsWrapper) IsExternal() bool {
+	return w.tool.IsExternal()
 }
 
 func (w *MetricsWrapper) Tags() []string {

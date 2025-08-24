@@ -11,6 +11,8 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 //go:embed templates/*
@@ -469,6 +471,8 @@ func (g *Generator) renderWebSearchTemplate(args map[string]any, result map[stri
 
 // getInvestmentResearchTemplate returns the investment research template
 func (g *Generator) getInvestmentResearchTemplate() (*template.Template, error) {
+	titleCaser := cases.Title(language.Und)
+
 	funcMap := template.FuncMap{
 		"toUpper": strings.ToUpper,
 		"formatFloat": func(f float64, decimals int) string {
@@ -480,7 +484,7 @@ func (g *Generator) getInvestmentResearchTemplate() (*template.Template, error) 
 		},
 		"join":      strings.Join,
 		"hasPrefix": strings.HasPrefix,
-		"title":     strings.Title,
+		"title":     titleCaser.String,
 		"formatWebSearchData": func(toolName string, arguments string, result string) string {
 			return g.formatWebSearchData(toolName, arguments, result)
 		},

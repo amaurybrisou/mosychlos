@@ -25,7 +25,7 @@ type BatchEngineHooks interface {
 	PostIteration(iteration int, results *BatchResult) error
 
 	// ProcessToolResult is called when a tool call result is processed
-	ProcessToolResult(customID, toolName, result string, sharedBag bag.SharedBag) error
+	ProcessToolResult(customID, toolName string, result any, sharedBag bag.SharedBag) error
 
 	// ProcessFinalResult is called when a final result (no more tool calls) is processed
 	ProcessFinalResult(customID, content string, sharedBag bag.SharedBag) error

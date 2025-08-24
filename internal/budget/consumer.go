@@ -1,3 +1,4 @@
+// Package budget
 package budget
 
 import (

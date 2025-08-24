@@ -1,5 +1,5 @@
-// internal/llm/openai/sync_provider.go
-// File: internal/llm/openai/sync_provider.go
+// internal/llm/openai/strategy_response_session.go
+// Completely rewritten for the Responses API flow (create → tool calls → previous_response_id + function_call_output → loop).
 package openai
 
 import (
@@ -8,9 +8,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
-	"os"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
@@ -21,239 +21,305 @@ import (
 	"github.com/openai/openai-go/v2/responses"
 )
 
+// ------------------------------ Provider (business-side) ------------------------------
+
 type Provider struct {
 	name      string
 	cli       *pkgopenai.Client
 	cfg       config.LLMConfig
 	sharedBag bag.SharedBag
+
+	consumer  models.ToolConsumer     // optional; if you have one
+	toolByKey map[bag.Key]models.Tool // registered tools by name/key
 }
 
 func NewProvider(cli *pkgopenai.Client, cfg config.LLMConfig, sharedBag bag.SharedBag) *Provider {
-	return &Provider{name: "openai-responses", cli: cli, cfg: cfg, sharedBag: sharedBag}
+	return &Provider{
+		name:      "openai-responses",
+		cli:       cli,
+		cfg:       cfg,
+		sharedBag: sharedBag,
+		toolByKey: map[bag.Key]models.Tool{},
+	}
 }
 
 func (p *Provider) Name() string                                                  { return p.name }
 func (p *Provider) Embedding(ctx context.Context, text string) ([]float64, error) { return nil, nil }
+func (p *Provider) RegisterTool(t ...models.Tool) {
+	for _, tool := range t {
+		p.toolByKey[tool.Key()] = tool
+	}
+}
+func (p *Provider) SetToolConsumer(tc models.ToolConsumer) { p.consumer = tc }
 
-func (p *Provider) NewSession() models.Session {
-	return &session{p: p, messages: make([]map[string]any, 0, 8)}
+// ------------------------------ Engine (pure transport) ------------------------------
+//
+// Engine does the HTTP JSON for /v1/responses “create” and “continue” (with previous_response_id).
+// It does not know about your business logic or tool execution.
+
+type Engine struct {
+	http    *pkgopenai.Client
+	cfg     config.LLMConfig
+	baseURL string
 }
 
-type session struct {
-	p          *Provider
-	messages   []map[string]any // [{role, content}, ...]
-	toolChoice *models.ToolChoice
+func NewEngine(httpClient *pkgopenai.Client, cfg config.LLMConfig) *Engine {
+	base := cfg.BaseURL
+	if base == "" {
+		base = "https://api.openai.com"
+	}
+	return &Engine{http: httpClient, cfg: cfg, baseURL: normalizeBase(base)}
 }
 
-func (s *session) Add(role models.Role, content string) {
-	s.messages = append(s.messages, map[string]any{"role": string(role), "content": content})
+func normalizeBase(base string) string {
+	base = strings.TrimRight(base, "/")
+	if strings.HasSuffix(base, "/v1") {
+		base = strings.TrimSuffix(base, "/v1")
+	}
+	return base
+}
+func (e *Engine) build(path string) string {
+	path = strings.TrimLeft(path, "/")
+	return e.baseURL + "/v1/" + path
 }
 
-// AddFunctionCall adds a function call to the session
-func (s *session) AddFunctionCall(toolCall models.ToolCall) {
-	s.messages = append(s.messages, map[string]any{
-		"type":      "function_call",
-		"id":        toolCall.ID,
-		"call_id":   toolCall.CallID,
-		"name":      toolCall.Function.Name,
-		"arguments": toolCall.Function.Arguments,
-		"status":    toolCall.Status,
-	})
+// ----- request bodies (explicit JSON; independent from SDK helpers) -----
+
+type createReq struct {
+	Model             string   `json:"model"`
+	Input             any      `json:"input,omitempty"` // string or []messages
+	Tools             []any    `json:"tools,omitempty"`
+	MaxOutputTokens   int64    `json:"max_output_tokens,omitempty"`
+	Temperature       *float64 `json:"temperature,omitempty"`
+	ServiceTier       string   `json:"service_tier,omitempty"`
+	ParallelToolCalls *bool    `json:"parallel_tool_calls,omitempty"`
+	ResponseFormat    any      `json:"text,omitempty"`
+	Metadata          any      `json:"metadata,omitempty"`
+	Store             bool     `json:"store,omitempty"`
 }
 
-func (s *session) AddToolCall(toolCall models.ToolCall) {
-	s.messages = append(s.messages, map[string]any{
-		"type":    "custom_tool_call",
-		"id":      toolCall.ID,
-		"call_id": toolCall.CallID,
-		"name":    toolCall.Function.Name,
-		"input":   toolCall.Function.Arguments,
-	})
+// function_call_output item for continuation
+type funcCallOutputItem struct {
+	Type   string `json:"type"`    // "function_call_output"
+	CallID string `json:"call_id"` // the tool call's CallID
+	Output string `json:"output"`  // stringified JSON or plain text
 }
 
-func (s *session) AddFunctionCallResult(toolCall models.ToolCall, content string) {
-	s.messages = append(s.messages, map[string]any{
-		"type":    "function_call_output",
-		"call_id": toolCall.CallID,
-		"output":  content,
-	})
+type continueReq struct {
+	Model              string               `json:"model"`
+	PreviousResponseID string               `json:"previous_response_id"`
+	Input              []funcCallOutputItem `json:"input"`
 }
 
-func (s *session) AddToolResult(toolCall models.ToolCall, content string) {
-	s.messages = append(s.messages, map[string]any{
-		"role":         "tool",
-		"tool_call_id": toolCall.CallID,
-		"content":      content,
-	})
-}
-
-func (s *session) SetToolChoice(t *models.ToolChoice) { s.toolChoice = t }
-
-// filterResponsesSupported removes roles not supported by /v1/responses
-func filterResponsesSupported(ms []map[string]any) []map[string]any {
-	out := make([]map[string]any, 0, len(ms))
-	for _, m := range ms {
-		role, _ := m["role"].(string)
-		msgType, _ := m["type"].(string)
-
-		switch {
-		case role == "system" || role == "user" || role == "assistant" || role == "developer" || role == "tool":
-			out = append(out, m)
-		case msgType == "function_call_output" || msgType == "tool_call_output":
-			out = append(out, m) // Preserve function and tool call outputs
-		case msgType == "function_call" || msgType == "custom_tool_call":
-			out = append(out, m) // Preserve response output items
-		default:
-			// ignore other roles/types
+func (e *Engine) doJSON(ctx context.Context, method, url string, body any) (*responses.Response, error) {
+	var buf bytes.Buffer
+	if body != nil {
+		if err := json.NewEncoder(&buf).Encode(body); err != nil {
+			return nil, err
 		}
 	}
-	return out
-}
-
-// ---- Responses API payloads (minimal & correct) ----
-
-type responseApiReq struct {
-	Model             string                 `json:"model"`
-	Input             any                    `json:"input,omitempty"`             // string OR []message
-	MaxOutputTokens   int64                  `json:"max_output_tokens,omitempty"` // omit when nil
-	Temperature       *float64               `json:"temperature,omitempty"`
-	Tools             []any                  `json:"tools,omitempty"`               // supports function tools and built-ins like {"type":"web_search"}
-	ParallelToolCalls *bool                  `json:"parallel_tool_calls,omitempty"` // from cfg if you want
-	ServiceTier       string                 `json:"service_tier,omitempty"`        // "auto"|"default"|"flex"|"priority"
-	ResponseFormat    *models.ResponseFormat `json:"text,omitempty"`
-}
-
-type responseApiErr struct {
-	Error struct {
-		Message string `json:"message"`
-		Type    string `json:"type"`
-		Param   string `json:"param,omitempty"`
-		Code    string `json:"code,omitempty"`
-	} `json:"error"`
-}
-
-func (s *session) Next(ctx context.Context, tools []models.ToolDef, rf *models.ResponseFormat) (*models.AssistantTurn, error) {
-	body := responseApiReq{
-		Model: s.p.cfg.Model.String(),
-		Input: filterResponsesSupported(s.messages), // filter out unsupported roles like "tool"
-		Tools: toAnyTools(tools, nil),               // built-ins are appended by strategy via runtime (see runtime.go)
-	}
-
-	body.Tools = append(body.Tools, map[string]any{
-		"type":             "mcp",
-		"server_label":     "deepwiki",
-		"server_url":       "https://mcp.deepwiki.com/mcp",
-		"require_approval": "never",
-	})
-
-	// map cfg → request
-	if max := s.p.cfg.OpenAI.MaxCompletionTokens; max > 0 {
-		body.MaxOutputTokens = max
-	}
-	if s.p.cfg.OpenAI.Temperature != nil && !llmutils.IsReasoningModel(s.p.cfg.Model.String()) {
-		body.Temperature = s.p.cfg.OpenAI.Temperature
-	}
-	if rf != nil {
-		body.ResponseFormat = rf
-	}
-	if s.p.cfg.OpenAI.ServiceTier != nil && *s.p.cfg.OpenAI.ServiceTier != "auto" {
-		body.ServiceTier = *s.p.cfg.OpenAI.ServiceTier
-	}
-	if s.p.cfg.OpenAI.ParallelToolCalls {
-		t := true
-		body.ParallelToolCalls = &t
-	}
-
-	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(body); err != nil {
-		return nil, err
-	}
-
-	baseURL := s.p.cfg.BaseURL
-	if baseURL == "" {
-		baseURL = "https://api.openai.com"
-	}
-	req, err := http.NewRequest(http.MethodPost, baseURL+"/v1/responses", &buf)
+	req, err := http.NewRequest(method, url, &buf)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	if s.p.cfg.APIKey != "" {
-		req.Header.Set("Authorization", "Bearer "+s.p.cfg.APIKey)
+	if e.cfg.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+e.cfg.APIKey)
+	}
+	if e.cfg.OpenAI.OrganizationID != "" {
+		req.Header.Set("OpenAI-Organization", e.cfg.OpenAI.OrganizationID)
+	}
+	if e.cfg.OpenAI.ProjectID != "" {
+		req.Header.Set("OpenAI-Project", e.cfg.OpenAI.ProjectID)
 	}
 
-	resp, err := s.p.cli.Do(ctx, req)
+	resp, err := e.http.Do(ctx, req)
 	if err != nil {
-		slog.Error("responses request failed", slog.Any("err", err))
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		var errResp responseApiErr
-		err = json.NewDecoder(resp.Body).Decode(&errResp)
-		if err == nil {
-			return nil, fmt.Errorf("API error: %s (type: %s, param: %s, code: %s)", errResp.Error.Message, errResp.Error.Type, errResp.Error.Param, errResp.Error.Code)
-		}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		b, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("%s %s -> %d: %s", method, url, resp.StatusCode, string(b))
 	}
 
-	// TODO delete
-	f, err := os.OpenFile("/home/amaury/Documents/mosychlos-v2/testdata/openai-response-api.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
+	var out responses.Response
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	r := io.TeeReader(resp.Body, f)
-
-	// this dependency is intended since it has way too much body parsing helpers
-	var out *responses.Response
-	if err := json.NewDecoder(r).Decode(&out); err != nil {
-		return nil, err
-	}
-
-	return s.processResponsesAPIResult(out, time.Now())
+	return &out, nil
 }
 
-func toAnyTools(funcTools []models.ToolDef, extra []any) []any {
-	out := make([]any, 0, len(funcTools)+len(extra))
-	for i, t := range funcTools {
-		// Convert CustomToolDef to flattened format for OpenAI compatibility
+func (e *Engine) Create(ctx context.Context, body createReq) (*responses.Response, error) {
+	return e.doJSON(ctx, http.MethodPost, e.build("responses"), body)
+}
+
+// Continue: send the outputs of tool calls back to the model using previous_response_id
+func (e *Engine) Continue(ctx context.Context, model string, previousResponseID string, outputs []funcCallOutputItem) (*responses.Response, error) {
+	if previousResponseID == "" {
+		return nil, fmt.Errorf("previousResponseID is required")
+	}
+	u := e.build("responses")
+	body := continueReq{
+		Model:              model,
+		PreviousResponseID: url.PathEscape(previousResponseID),
+		Input:              outputs,
+	}
+	return e.doJSON(ctx, http.MethodPost, u, body)
+}
+
+// ------------------------------ Runner (SDK-like loop) ------------------------------
+//
+// Mirrors the Python Agents SDK run loop using the Responses API chaining:
+// 1) Create response
+// 2) If tool calls present in resp.Output → run tools, send function_call_output + previous_response_id
+// 3) Repeat until no tool calls remain, return final text.
+
+type Runner struct {
+	engine   *Engine
+	provider *Provider
+}
+
+func NewRunner(engine *Engine, provider *Provider) *Runner {
+	return &Runner{engine: engine, provider: provider}
+}
+
+func (r *Runner) RegisterTool(t ...models.Tool)          { r.provider.RegisterTool(t...) }
+func (r *Runner) SetToolConsumer(tc models.ToolConsumer) { r.provider.SetToolConsumer(tc) }
+
+func (r *Runner) Run(ctx context.Context, req models.PromptRequest) (*models.LLMResponse, error) {
+	// Build create request
+	isReasoning := llmutils.IsReasoningModel(r.provider.cfg.Model.String())
+	create := createReq{
+		Model: req.Model,
+		Input: req.Messages, // your code already formats Responses "messages" style
+	}
+	if create.Model == "" {
+		create.Model = r.provider.cfg.Model.String()
+	}
+	// knobs
+	if max := r.provider.cfg.OpenAI.MaxCompletionTokens; max > 0 {
+		create.MaxOutputTokens = max
+	}
+	if r.provider.cfg.OpenAI.Temperature != nil && !isReasoning {
+		create.Temperature = r.provider.cfg.OpenAI.Temperature
+	}
+	if r.provider.cfg.OpenAI.ServiceTier != nil && *r.provider.cfg.OpenAI.ServiceTier != "auto" {
+		create.ServiceTier = *r.provider.cfg.OpenAI.ServiceTier
+	}
+	if r.provider.cfg.OpenAI.ParallelToolCalls {
+		t := true
+		create.ParallelToolCalls = &t
+	}
+	if req.ResponseFormat != nil {
+		create.ResponseFormat = req.ResponseFormat
+	}
+	if req.Tools != nil && len(req.Tools) > 0 {
+		create.Tools = toAnyTools(req.Tools)
+	}
+
+	start := time.Now()
+
+	var (
+		last     *responses.Response
+		err      error
+		turns    int
+		maxTurns = 32
+	)
+	for {
+		turns++
+		if turns > maxTurns {
+			return nil, fmt.Errorf("max agent turns exceeded (%d)", maxTurns)
+		}
+
+		if last == nil {
+			last, err = r.engine.Create(ctx, create)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		// Parse model output for text + tool calls
+		turn, err := processResponsesAPIResult(last, start)
+		if err != nil {
+			return nil, err
+		}
+
+		// If no tool calls → final
+		if len(turn.ToolCalls) == 0 {
+			return &models.LLMResponse{
+				CreatedAt: time.Now(),
+				Model:     create.Model,
+				Content:   turn.Content,
+				Usage:     &turn.Usage,
+			}, nil
+		}
+
+		// There are tool calls: run each, then continue with previous_response_id
+		items := make([]funcCallOutputItem, 0, len(turn.ToolCalls))
+		for _, call := range turn.ToolCalls {
+			// Find tool by name; fall back to consumer if provided
+			key := bag.Key(call.Function.Name)
+			var outStr string
+
+			if tool, ok := r.provider.toolByKey[key]; ok {
+				outStr, err = tool.Run(ctx, call.Function.Arguments)
+				if err != nil {
+					return nil, fmt.Errorf("tool %s failed: %w", call.Function.Name, err)
+				}
+				if r.provider.consumer != nil {
+					// If your ToolConsumer returns a string, use that here.
+					// Adjust if your interface differs.
+					err = r.provider.consumer.ConsumeTools(ctx, bag.Key(call.Function.Name))
+					if err != nil {
+						return nil, fmt.Errorf("consumer failed for tool %s: %w", call.Function.Name, err)
+					}
+				}
+			} else {
+				return nil, fmt.Errorf("no tool or consumer registered for %s", call.Function.Name)
+			}
+
+			// Build function_call_output item
+			items = append(items, funcCallOutputItem{
+				Type:   "function_call_output",
+				CallID: call.CallID, // IMPORTANT: use external CallID, not internal ID
+				Output: outStr,      // JSON string or plain text
+			})
+		}
+
+		// Continue the same response chain
+		next, err := r.engine.Continue(ctx, create.Model, last.ID, items)
+		if err != nil {
+			return nil, err
+		}
+		last = next
+		// loop continues
+	}
+}
+
+// toAnyTools converts your ToolDef types into the Responses API function tool schema.
+func toAnyTools(funcTools []models.ToolDef) []any {
+	out := make([]any, 0, len(funcTools))
+	for _, t := range funcTools {
 		switch tool := t.(type) {
 		case *models.CustomToolDef:
-			// OpenAI API expects flattened structure with top-level name, not nested function
-			flatTool := map[string]any{
+			out = append(out, map[string]any{
 				"type":        "function",
 				"name":        tool.Name,
 				"description": tool.Description,
 				"parameters":  tool.Parameters,
-			}
-			slog.Debug("Converting CustomToolDef to flat format",
-				"index", i,
-				"original_type", tool.Type,
-				"original_name", tool.Name,
-				"converted_name", tool.Name)
-			out = append(out, flatTool)
+			})
 		case *models.FunctionToolDef:
-			// Convert nested FunctionToolDef to flattened format
-			flatTool := map[string]any{
-				"type":        tool.Type,
+			out = append(out, map[string]any{
+				"type":        tool.Type, // "function"
 				"name":        tool.Function.Name,
 				"description": tool.Function.Description,
 				"parameters":  tool.Function.Parameters,
-			}
-			slog.Debug("Converting FunctionToolDef to flat format",
-				"index", i,
-				"nested_name", tool.Function.Name,
-				"converted_name", tool.Function.Name)
-			out = append(out, flatTool)
+			})
 		default:
-			// Use as-is for other types
-			slog.Debug("Using tool as-is",
-				"index", i,
-				"type", fmt.Sprintf("%T", t))
-			out = append(out, t)
+			out = append(out, tool)
 		}
 	}
-	out = append(out, extra...)
 	return out
 }

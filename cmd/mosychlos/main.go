@@ -1,3 +1,4 @@
+// Package mosychlos
 package mosychlos
 
 import (
