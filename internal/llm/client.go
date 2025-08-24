@@ -14,7 +14,6 @@ import (
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
-	pkgopenai "github.com/amaurybrisou/mosychlos/pkg/openai"
 )
 
 type Client struct {
@@ -45,16 +44,15 @@ func NewLLMClient(cfg *config.Config, sharedBag bag.SharedBag) (*Client, error) 
 		return nil, fmt.Errorf("failed to create batch manager: %w", err)
 	}
 
-	// --- Sync path (Responses) ---
-	doer := pkgopenai.NewHTTPClient()
-	po := pkgopenai.NewClient(doer, cfg.LLM.OpenAI)
-	respProvider := llmopenai.NewProvider(po, cfg.LLM, sharedBag)
-	responsesStrat := llmopenai.NewResponsesStrategy(respProvider, &cfg.LLM)
+	// --- Sync path (Speakeasy SDK) ---
+	// Use the new speakeasy provider for sync operations
+	speakeasyProvider := llmopenai.NewSpeakeasyProvider(cfg.LLM, sharedBag)
+	responsesStrat := llmopenai.NewResponsesStrategy(speakeasyProvider, &cfg.LLM)
 
 	return &Client{
 		config:         &cfg.LLM,
 		batchManager:   batchManager,
-		syncProvider:   respProvider,
+		syncProvider:   speakeasyProvider,
 		responsesStrat: responsesStrat,
 		toolRegistry:   map[bag.Key]models.Tool{},
 	}, nil
