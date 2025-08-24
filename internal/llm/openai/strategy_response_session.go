@@ -211,7 +211,15 @@ func (s *session) Next(ctx context.Context, tools []models.ToolDef, rf *models.R
 		return nil, err
 	}
 
-	return s.processResponsesAPIResult(out, time.Now())
+	result, err := s.processResponsesAPIResult(out, time.Now())
+	if err != nil {
+		return nil, err
+	}
+
+	// Add the assistant's response to message history
+	s.Add(models.RoleAssistant, result.Content)
+
+	return result, nil
 }
 
 func toAnyTools(funcTools []models.ToolDef, extra []any) []any {
