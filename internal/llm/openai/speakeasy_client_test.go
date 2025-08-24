@@ -50,11 +50,16 @@ func TestSpeakeasyProvider_NewSession(t *testing.T) {
 	session.AddFunctionCallResult(models.ToolCall{}, "function result")
 	session.SetToolChoice(&models.ToolChoice{})
 
-	// Test that streaming returns appropriate error
+	// Test that streaming works (even with fallback implementation)
 	stream, err := session.NextStream(context.Background(), nil, nil)
-	assert.Error(t, err)
-	assert.Nil(t, stream)
-	assert.Contains(t, err.Error(), "streaming not implemented")
+	// The new implementation uses Next() fallback, which will try to make an HTTP call
+	// In test environment, this will fail with network error, but that's expected
+	if err != nil {
+		// In test environment, we expect network errors since we don't have real API access
+		assert.Contains(t, err.Error(), "speakeasy chat completion failed")
+	} else {
+		assert.NotNil(t, stream)
+	}
 }
 
 func TestSpeakeasySession_Add(t *testing.T) {

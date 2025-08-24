@@ -2,10 +2,14 @@
 package openai
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
@@ -71,8 +75,79 @@ func NewSpeakeasyProvider(cfg config.LLMConfig, sharedBag bag.SharedBag) *Speake
 func (p *SpeakeasyProvider) Name() string { return p.name }
 
 func (p *SpeakeasyProvider) Embedding(ctx context.Context, text string) ([]float64, error) {
-	// TODO: Implement embedding using speakeasy SDK
-	return nil, fmt.Errorf("embedding not implemented for speakeasy provider")
+	// The old Speakeasy SDK doesn't have embedding support, so we'll make a direct HTTP call
+	return p.getEmbeddingViaHTTP(ctx, text)
+}
+
+// getEmbeddingViaHTTP gets embeddings using direct HTTP call
+func (p *SpeakeasyProvider) getEmbeddingViaHTTP(ctx context.Context, text string) ([]float64, error) {
+	payload := map[string]any{
+		"model": "text-embedding-ada-002", // Default embedding model
+		"input": text,
+	}
+
+	reqBody, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal embedding request: %w", err)
+	}
+
+	baseURL := p.cfg.BaseURL
+	if baseURL == "" {
+		baseURL = "https://api.openai.com"
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", baseURL+"/v1/embeddings", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create embedding request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+p.cfg.APIKey)
+
+	httpClient := NewAuthenticatedClient(p.cfg.APIKey)
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("embedding HTTP request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("embedding API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var embeddingResponse map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&embeddingResponse); err != nil {
+		return nil, fmt.Errorf("failed to decode embedding response: %w", err)
+	}
+
+	// Extract the embedding vector
+	data, ok := embeddingResponse["data"].([]any)
+	if !ok || len(data) == 0 {
+		return nil, fmt.Errorf("no data in embedding response")
+	}
+
+	firstItem, ok := data[0].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid data format in embedding response")
+	}
+
+	embedding, ok := firstItem["embedding"].([]any)
+	if !ok {
+		return nil, fmt.Errorf("no embedding in response")
+	}
+
+	// Convert to float64 slice
+	result := make([]float64, len(embedding))
+	for i, val := range embedding {
+		if floatVal, ok := val.(float64); ok {
+			result[i] = floatVal
+		} else {
+			return nil, fmt.Errorf("invalid embedding value at index %d", i)
+		}
+	}
+
+	return result, nil
 }
 
 func (p *SpeakeasyProvider) NewSession() models.Session {
@@ -108,18 +183,60 @@ func (s *speakeasySession) Add(role models.Role, content string) {
 }
 
 func (s *speakeasySession) AddToolResult(toolCall models.ToolCall, content string) {
-	// TODO: Implement tool result handling for speakeasy SDK
-	slog.Debug("AddToolResult not fully implemented for speakeasy provider", "tool_name", toolCall.Function.Name)
+	// Since the old Speakeasy SDK doesn't support tool role, we'll store tool results
+	// as user messages with a special format that our direct HTTP call handler can understand
+	toolMessage := shared.ChatCompletionRequestMessage{
+		Role:    shared.ChatCompletionRequestMessageRoleEnumUser,
+		Content: fmt.Sprintf("TOOL_RESULT[%s]: %s", toolCall.Function.Name, content),
+	}
+	s.messages = append(s.messages, toolMessage)
+	
+	slog.Debug("Added tool result to speakeasy session", 
+		"tool_name", toolCall.Function.Name,
+		"content_length", len(content),
+	)
 }
 
 func (s *speakeasySession) AddFunctionCallResult(toolCall models.ToolCall, content string) {
-	// TODO: Implement function call result handling for speakeasy SDK
-	slog.Debug("AddFunctionCallResult not fully implemented for speakeasy provider", "tool_name", toolCall.Function.Name)
+	// For speakeasy session, treat function call results the same as tool results
+	s.AddToolResult(toolCall, content)
+	
+	slog.Debug("Added function call result to speakeasy session", 
+		"function_name", toolCall.Function.Name,
+		"content_length", len(content),
+	)
 }
 
 func (s *speakeasySession) NextStream(ctx context.Context, tools []models.ToolDef, rf *models.ResponseFormat) (<-chan models.StreamChunk, error) {
-	// TODO: Implement streaming for speakeasy SDK
-	return nil, fmt.Errorf("streaming not implemented for speakeasy provider")
+	// The old Speakeasy SDK doesn't support streaming properly
+	// We'll provide a basic implementation that returns the complete response as a single chunk
+	slog.Debug("Speakeasy streaming support is limited - using non-streaming fallback")
+	
+	// Get the complete response
+	result, err := s.Next(ctx, tools, rf)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a channel and send the result as a single chunk
+	ch := make(chan models.StreamChunk, 1)
+	go func() {
+		defer close(ch)
+		ch <- models.StreamChunk{
+			Content:      result.Content,
+			ToolCalls:    result.ToolCalls,
+			IsComplete:   true,
+			Error:        nil,
+			FinishReason: stringPtr("stop"),
+		}
+	}()
+
+	return ch, nil
+}
+
+// stringPtr creates a pointer to a string
+func stringPtr(s string) *string {
+	return &s
 }
 
 func (s *speakeasySession) SetToolChoice(t *models.ToolChoice) {
@@ -130,9 +247,17 @@ func (s *speakeasySession) Next(ctx context.Context, tools []models.ToolDef, rf 
 	slog.Debug("Creating chat completion with speakeasy SDK",
 		"message_count", len(s.messages),
 		"model", s.p.cfg.Model.String(),
+		"tools_count", len(tools),
+		"response_format", rf != nil,
 	)
 
-	// Build the chat completion request
+	// If tools or structured output are needed, use direct HTTP call
+	// since Speakeasy SDK v1.11.0 doesn't support these features
+	if len(tools) > 0 || rf != nil {
+		return s.nextWithModernFeatures(ctx, tools, rf)
+	}
+
+	// Use Speakeasy SDK for basic chat completion without tools
 	request := shared.CreateChatCompletionRequest{
 		Model:    s.p.cfg.Model.String(),
 		Messages: s.messages,
@@ -147,11 +272,6 @@ func (s *speakeasySession) Next(ctx context.Context, tools []models.ToolDef, rf 
 	if s.p.cfg.OpenAI.Temperature != nil {
 		request.Temperature = s.p.cfg.OpenAI.Temperature
 	}
-
-	// TODO: Convert tools to speakeasy format
-	// if len(tools) > 0 {
-	//     request.Tools = convertToolsToSpeakeasyFormat(tools)
-	// }
 
 	// Make the API call
 	response, err := s.p.client.OpenAI.CreateChatCompletion(ctx, request)
@@ -175,9 +295,8 @@ func (s *speakeasySession) Next(ctx context.Context, tools []models.ToolDef, rf 
 
 	// Convert the response back to our format
 	result := &models.AssistantTurn{
-		Content: choice.Message.Content,
-		// TODO: Handle tool calls if present
-		ToolCalls: nil,
+		Content:   choice.Message.Content,
+		ToolCalls: nil, // No tool calls in basic mode
 	}
 
 	// Add the assistant's response to our message history
@@ -196,8 +315,227 @@ func (s *speakeasySession) Next(ctx context.Context, tools []models.ToolDef, rf 
 	return result, nil
 }
 
-// TODO: Add helper functions to convert between formats
-// func convertToolsToSpeakeasyFormat(tools []models.ToolDef) []shared.Tool {
-//     // Implementation to convert our tool definitions to speakeasy format
-//     return nil
-// }
+// nextWithModernFeatures handles chat completion with tools and structured output
+// using direct HTTP calls since Speakeasy SDK v1.11.0 doesn't support these features
+func (s *speakeasySession) nextWithModernFeatures(ctx context.Context, tools []models.ToolDef, rf *models.ResponseFormat) (*models.AssistantTurn, error) {
+	slog.Debug("Using direct HTTP calls for modern OpenAI features",
+		"tools_count", len(tools),
+		"has_response_format", rf != nil,
+	)
+
+	// Convert messages to OpenAI API format
+	apiMessages := make([]map[string]any, len(s.messages))
+	for i, msg := range s.messages {
+		apiMessages[i] = convertSpeakeasyMessageToAPI(msg)
+	}
+
+	// Build the request payload
+	payload := map[string]any{
+		"model":    s.p.cfg.Model.String(),
+		"messages": apiMessages,
+	}
+
+	// Add optional parameters
+	if s.p.cfg.OpenAI.MaxCompletionTokens > 0 {
+		payload["max_tokens"] = s.p.cfg.OpenAI.MaxCompletionTokens
+	}
+	if s.p.cfg.OpenAI.Temperature != nil {
+		payload["temperature"] = *s.p.cfg.OpenAI.Temperature
+	}
+
+	// Add tools if provided
+	if len(tools) > 0 {
+		apiTools := make([]map[string]any, 0, len(tools))
+		for _, tool := range tools {
+			apiTool := convertToolDefToAPI(tool)
+			if apiTool != nil {
+				apiTools = append(apiTools, apiTool)
+			}
+		}
+		if len(apiTools) > 0 {
+			payload["tools"] = apiTools
+		}
+	}
+
+	// Add structured output if provided
+	if rf != nil {
+		payload["response_format"] = map[string]any{
+			"type":   rf.Format.Type,
+			"schema": rf.Format.Schema,
+		}
+		if rf.Format.Name != "" {
+			responseFormat := payload["response_format"].(map[string]any)
+			responseFormat["name"] = rf.Format.Name
+		}
+	}
+
+	// Make direct HTTP call using the authenticated client
+	result, err := s.makeDirectHTTPCall(ctx, payload)
+	if err != nil {
+		return nil, fmt.Errorf("direct HTTP call failed: %w", err)
+	}
+
+	// Add the assistant's response to our message history
+	s.Add(models.RoleAssistant, result.Content)
+
+	return result, nil
+}
+
+// Helper functions for converting between formats
+
+// convertSpeakeasyMessageToAPI converts a speakeasy message to OpenAI API format
+func convertSpeakeasyMessageToAPI(msg shared.ChatCompletionRequestMessage) map[string]any {
+	role := string(msg.Role)
+	content := msg.Content
+	
+	// Handle special tool result format for direct API calls
+	if role == "user" && strings.HasPrefix(content, "TOOL_RESULT[") {
+		// Extract tool name and content for proper API format
+		if endBracket := strings.Index(content, "]: "); endBracket != -1 {
+			toolContent := content[endBracket+3:]
+			return map[string]any{
+				"role":    "tool", // Use proper tool role for API
+				"content": toolContent,
+			}
+		}
+	}
+	
+	return map[string]any{
+		"role":    role,
+		"content": content,
+	}
+}
+
+// convertToolDefToAPI converts our ToolDef to OpenAI API format
+func convertToolDefToAPI(tool models.ToolDef) map[string]any {
+	switch t := tool.(type) {
+	case *models.FunctionToolDef:
+		return map[string]any{
+			"type": "function",
+			"function": map[string]any{
+				"name":        t.Function.Name,
+				"description": t.Function.Description,
+				"parameters":  t.Function.Parameters,
+			},
+		}
+	case *models.CustomToolDef:
+		return map[string]any{
+			"type": "function",
+			"function": map[string]any{
+				"name":        t.Name,
+				"description": t.Description,
+				"parameters":  t.Parameters,
+			},
+		}
+	default:
+		slog.Debug("Unknown tool type, skipping", "type", fmt.Sprintf("%T", tool))
+		return nil
+	}
+}
+
+// makeDirectHTTPCall makes a direct HTTP call to OpenAI API
+func (s *speakeasySession) makeDirectHTTPCall(ctx context.Context, payload map[string]any) (*models.AssistantTurn, error) {
+	// Need to import required packages first
+	reqBody, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	baseURL := s.p.cfg.BaseURL
+	if baseURL == "" {
+		baseURL = "https://api.openai.com"
+	}
+	
+	req, err := http.NewRequestWithContext(ctx, "POST", baseURL+"/v1/chat/completions", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+s.p.cfg.APIKey)
+
+	// Make the request using the authenticated client
+	httpClient := NewAuthenticatedClient(s.p.cfg.APIKey)
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("HTTP request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body) 
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	// Parse the response
+	var apiResponse map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	// Extract the response content and tool calls
+	return s.parseAPIResponse(apiResponse)
+}
+
+// parseAPIResponse parses the OpenAI API response into our AssistantTurn format
+func (s *speakeasySession) parseAPIResponse(apiResponse map[string]any) (*models.AssistantTurn, error) {
+	choices, ok := apiResponse["choices"].([]any)
+	if !ok || len(choices) == 0 {
+		return nil, fmt.Errorf("no choices in API response")
+	}
+
+	choice, ok := choices[0].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid choice format")
+	}
+
+	message, ok := choice["message"].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid message format")
+	}
+
+	// Extract content
+	content, _ := message["content"].(string)
+	
+	// Extract tool calls if present
+	var toolCalls []models.ToolCall
+	if apiToolCalls, ok := message["tool_calls"].([]any); ok {
+		toolCalls = make([]models.ToolCall, 0, len(apiToolCalls))
+		for _, tc := range apiToolCalls {
+			if toolCall, ok := tc.(map[string]any); ok {
+				if parsedCall := parseToolCall(toolCall); parsedCall != nil {
+					toolCalls = append(toolCalls, *parsedCall)
+				}
+			}
+		}
+	}
+
+	return &models.AssistantTurn{
+		Content:   content,
+		ToolCalls: toolCalls,
+	}, nil
+}
+
+// parseToolCall converts an API tool call to our ToolCall format
+func parseToolCall(apiCall map[string]any) *models.ToolCall {
+	id, _ := apiCall["id"].(string)
+	callType, _ := apiCall["type"].(string)
+	
+	function, ok := apiCall["function"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	
+	name, _ := function["name"].(string)
+	arguments, _ := function["arguments"].(string)
+	
+	return &models.ToolCall{
+		ID:   id,
+		Type: callType,
+		Function: models.ToolCallFunction{
+			Name:      name,
+			Arguments: arguments,
+		},
+	}
+}
