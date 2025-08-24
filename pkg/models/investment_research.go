@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// pkg/models/investment_research.go
+// InvestmentResearchResult represents the result of an investment research query
 type InvestmentResearchResult struct {
 	ExecutiveSummary   ExecutiveSummary    `json:"executive_summary"`
 	RegionalContext    RegionalContext     `json:"regional_context"`
@@ -15,6 +15,7 @@ type InvestmentResearchResult struct {
 	Metadata           AnalysisMetadata    `json:"metadata"`
 }
 
+// ExecutiveSummary provides a summary of the investment research findings
 type ExecutiveSummary struct {
 	KeyTakeaways       []string `json:"key_takeaways"`
 	MarketOutlook      string   `json:"market_outlook"` // "bullish", "bearish", "neutral"
@@ -22,6 +23,7 @@ type ExecutiveSummary struct {
 	TimeHorizon        string   `json:"time_horizon"` // "short_term", "medium_term", "long_term"
 }
 
+// RegionalContext provides context about the region being analyzed
 type RegionalContext struct {
 	Country           string            `json:"country"`
 	Language          string            `json:"language"`
@@ -30,6 +32,7 @@ type RegionalContext struct {
 	LocalMarketAccess []MarketAccess    `json:"local_market_access"`
 }
 
+// ResearchFinding represents a key finding from the investment research
 type ResearchFinding struct {
 	Title           string `json:"title"`
 	AssetClass      string `json:"asset_class"`      // "equities", "bonds", "alternatives", "crypto"

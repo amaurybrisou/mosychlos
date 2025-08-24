@@ -97,7 +97,7 @@ func (s *service) validatePortfolio(ctx context.Context, portfolio *models.Portf
 
 		if err := validator.Validate(ctx, portfolio); err != nil {
 			record.ErrorMessage = err.Error()
-			validationRecords = append(validationRecords, record)
+			// validationRecords = append(validationRecords, record)
 			return fmt.Errorf("validation failed with %s: %w", record.ValidatorName, err)
 		}
 

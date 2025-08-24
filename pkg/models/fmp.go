@@ -208,7 +208,7 @@ type FMPMarketCap struct {
 	EnterpriseValue int64  `json:"enterpriseValue"`
 }
 
-// FMP Error response
+// FMPError response
 type FMPError struct {
 	Error struct {
 		Message string `json:"message"`

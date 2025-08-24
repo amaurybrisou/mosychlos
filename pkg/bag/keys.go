@@ -106,7 +106,7 @@ const (
 	WebSearch Key = "web_search_preview" // Web search functionality
 
 	// News & Information
-	NewsApi Key = "news_api" // NewsAPI service
+	NewsAPI Key = "news_api" // NewsAPI service
 
 	// Economic Data
 	Fred Key = "fred" // Federal Reserve Economic Data

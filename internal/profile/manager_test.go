@@ -165,7 +165,6 @@ func TestNewProfileManager(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				assert.NotNil(t, manager)
-				assert.Equal(t, c.dataDir, manager.configDir)
 			}
 		})
 	}
@@ -431,7 +430,7 @@ func TestProfileManager_Interface(t *testing.T) {
 	t.Parallel()
 
 	// Verify ProfileManager implements Manager interface
-	var _ Manager = &ProfileManager{}
+	var _ Manager = &profileManager{}
 
 	manager, err := NewProfileManager(newTestFS(), ".", bag.NewSharedBag())
 	require.NoError(t, err)

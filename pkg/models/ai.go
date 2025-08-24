@@ -151,7 +151,7 @@ type AiClient interface {
 }
 
 // ToolConstructor is a function that creates a tool from config
-type ToolConstructor func(cfg any, sharedBag bag.SharedBag) (Tool, error)
+type ToolConstructor func() (Tool, error)
 
 // ToolsRateLimit holds rate limiting configuration
 type ToolsRateLimit struct {
@@ -174,12 +174,12 @@ func (trl *ToolsRateLimit) Validate() error {
 
 	// Burst must be non-negative
 	if trl.Burst < 0 {
-		return fmt.Errorf("Burst must be non-negative, got: %d", trl.Burst)
+		return fmt.Errorf("burst must be non-negative, got: %d", trl.Burst)
 	}
 
 	// Burst should not exceed RequestsPerSecond if both are positive
 	if trl.RequestsPerSecond > 0 && trl.Burst > 0 && trl.Burst > trl.RequestsPerSecond*10 {
-		return fmt.Errorf("Burst (%d) should not be excessively larger than RequestsPerSecond (%d)", trl.Burst, trl.RequestsPerSecond)
+		return fmt.Errorf("burst (%d) should not be excessively larger than RequestsPerSecond (%d)", trl.Burst, trl.RequestsPerSecond)
 	}
 
 	// If RequestsPerDay is set, it should be reasonable compared to RequestsPerSecond
@@ -212,12 +212,12 @@ type ToolConfig struct {
 func (tc *ToolConfig) Validate() error {
 	// Key cannot be empty
 	if tc.Key == "" {
-		return fmt.Errorf("Key cannot be empty")
+		return fmt.Errorf("key cannot be empty")
 	}
 
 	// Constructor is required
 	if tc.Constructor == nil {
-		return fmt.Errorf("Constructor cannot be nil")
+		return fmt.Errorf("constructor cannot be nil")
 	}
 
 	// CacheTTL must be non-negative

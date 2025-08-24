@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/models"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // loadRegionalOverlay loads regional template overlay with fallback strategy
@@ -97,7 +99,7 @@ func (rm *regionalManager) tmplFuncMap() template.FuncMap {
 		},
 		"upper": strings.ToUpper,
 		"lower": strings.ToLower,
-		"title": strings.Title, // note: deprecated behavior; use cases are simple here
+		"title": cases.Title(language.Und).String, // note: deprecated behavior; use cases are simple here
 		"trim":  strings.TrimSpace,
 		"now":   time.Now,
 		"iso8601": func(t time.Time) string {

@@ -1,4 +1,4 @@
-// pkg/models/ai_batch.go
+// Package models
 package models
 
 import (

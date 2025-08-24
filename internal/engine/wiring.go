@@ -1,4 +1,3 @@
-// internal/engine/wiring.go
 package engine
 
 import (
@@ -7,8 +6,8 @@ import (
 	"sort"
 
 	"github.com/amaurybrisou/mosychlos/internal/budget"
+	"github.com/amaurybrisou/mosychlos/internal/engine/base"
 	"github.com/amaurybrisou/mosychlos/internal/engine/risk"
-	"github.com/amaurybrisou/mosychlos/internal/tools"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
@@ -136,13 +135,13 @@ func DefaultBatchRegistry() *RegistryBuilder {
 			}
 
 			// Base tools for risk analysis
-			preferredTools := []bag.Key{bag.FMP, bag.NewsApi}
+			preferredTools := []bag.Key{bag.FMP, bag.NewsAPI}
 			minCalls := map[bag.Key]int{
-				bag.NewsApi: 2,
+				bag.NewsAPI: 2,
 				bag.FMP:     1,
 			}
 			maxCalls := map[bag.Key]int{
-				bag.NewsApi: 2,
+				bag.NewsAPI: 2,
 				bag.FMP:     2,
 			}
 
@@ -155,7 +154,7 @@ func DefaultBatchRegistry() *RegistryBuilder {
 
 			// Example: per-engine tool constraints (tweak to your needs)
 			constraints := models.BaseToolConstraints{
-				Tools:           tools.ToolsToToolDefs(d.Tools),
+				Tools:           d.Tools.Defs(),
 				PreferredTools:  preferredTools,
 				MinCallsPerTool: minCalls,
 				MaxCallsPerTool: maxCalls,
@@ -163,9 +162,16 @@ func DefaultBatchRegistry() *RegistryBuilder {
 			// Option 1: set consumer globally here
 			d.AI.SetToolConsumer(budget.NewToolConsumer(&constraints))
 			// Option 2: or let the engine set one inside Execute()
-			d.AI.RegisterTool(d.Tools...)
+			d.AI.RegisterTool(d.Tools.List()...)
 
-			return risk.NewRiskBatchEngine("batch-risk-engine", d.Config.LLM, d.Prompts, constraints), nil
+			return risk.NewRiskBatchEngine("batch-risk-engine", risk.Deps{
+				Deps: base.Deps{
+					Tools:       d.Tools,
+					Model:       d.Config.LLM.Model,
+					Constraints: constraints,
+				},
+				PromptBuilder: d.Prompts,
+			}), nil
 		})
 
 	// .Register("news", func(d Deps) (models.Engine, error) { ... })
@@ -194,21 +200,21 @@ func DefaultRegistry() *RegistryBuilder {
 			}
 			// Example: per-engine tool constraints (tweak to your needs)
 			constraints := models.BaseToolConstraints{
-				Tools:          tools.ToolsToToolDefs(d.Tools),
-				PreferredTools: []bag.Key{bag.FMP, bag.NewsApi},
+				Tools:          d.Tools.Defs(),
+				PreferredTools: []bag.Key{bag.FMP, bag.NewsAPI},
 				MinCallsPerTool: map[bag.Key]int{
-					bag.NewsApi: 2,
+					bag.NewsAPI: 2,
 					bag.FMP:     1,
 				},
 				MaxCallsPerTool: map[bag.Key]int{
-					bag.NewsApi: 2,
+					bag.NewsAPI: 2,
 					bag.FMP:     2,
 				},
 			}
 			// Option 1: set consumer globally here
 			d.AI.SetToolConsumer(budget.NewToolConsumer(&constraints))
 			// Option 2: or let the engine set one inside Execute()
-			d.AI.RegisterTool(d.Tools...)
+			d.AI.RegisterTool(d.Tools.List()...)
 
 			return risk.New("risk-engine", d.Prompts, constraints), nil
 		})

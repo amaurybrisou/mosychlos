@@ -25,10 +25,10 @@ type LocalizationConfig struct {
 func (lc *LocalizationConfig) Validate() error {
 	// Country is required and must be valid ISO 3166-1 alpha-2
 	if strings.TrimSpace(lc.Country) == "" {
-		return fmt.Errorf("Country cannot be empty")
+		return fmt.Errorf("country cannot be empty")
 	}
 	if len(lc.Country) != 2 {
-		return fmt.Errorf("Country must be ISO 3166-1 alpha-2 code (2 characters), got: %s", lc.Country)
+		return fmt.Errorf("country must be ISO 3166-1 alpha-2 code (2 characters), got: %s", lc.Country)
 	}
 
 	// Language is required and must be valid ISO 639-1

@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"maps"
 
-	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/internal/engine/base"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
@@ -18,25 +17,30 @@ type RiskBatchEngine struct {
 	promptBuilder     models.PromptBuilder
 }
 
+type Deps struct {
+	base.Deps
+	PromptBuilder models.PromptBuilder
+}
+
 var _ models.Engine = &RiskBatchEngine{}
 
 // NewRiskBatchEngine creates a new risk batch engine using base batch engine
-func NewRiskBatchEngine(name string, cfg config.LLMConfig, pb models.PromptBuilder, constraints models.BaseToolConstraints) *RiskBatchEngine {
+func NewRiskBatchEngine(name string, deps Deps) *RiskBatchEngine {
 	if name == "" {
 		name = "risk-batch-engine"
 	}
 
 	// Create hooks implementation for risk analysis
-	hooks := &RiskBatchEngineHooks{
-		promptBuilder: pb,
+	deps.Hooks = &RiskBatchEngineHooks{
+		promptBuilder: deps.PromptBuilder,
 	}
 
 	// Create base batch engine
-	baseEngine := base.NewBatchEngine(name, cfg.Model, constraints, hooks)
+	baseEngine := base.NewBatchEngine(name, deps.Deps)
 
 	return &RiskBatchEngine{
 		BatchEngine:   baseEngine,
-		promptBuilder: pb,
+		promptBuilder: deps.PromptBuilder,
 	}
 }
 
@@ -82,7 +86,7 @@ func (h *RiskBatchEngineHooks) PostIteration(iteration int, results *models.Batc
 }
 
 // ProcessToolResult is called when a tool call result is processed
-func (h *RiskBatchEngineHooks) ProcessToolResult(customID, toolName, result string, sharedBag bag.SharedBag) error {
+func (h *RiskBatchEngineHooks) ProcessToolResult(customID, toolName string, result any, sharedBag bag.SharedBag) error {
 	// Store tool results in the shared bag for risk analysis
 	sharedBag.Update(bag.KRiskAnalysisResult, func(a any) any {
 		resultMap, ok := a.(map[string]any)
@@ -97,7 +101,7 @@ func (h *RiskBatchEngineHooks) ProcessToolResult(customID, toolName, result stri
 	slog.Debug("Risk tool result processed",
 		"tool", toolName,
 		"custom_id", customID,
-		"result_length", len(result))
+		"result", result)
 
 	return nil
 }

@@ -15,6 +15,12 @@ type EngineConfig struct {
 	Constraints ToolConstraints
 }
 
+type ToolProvider interface {
+	Get(name string) Tool // returns nil if unknown
+	List() []Tool
+	Defs() []ToolDef
+}
+
 // ToolConsumer manages tool execution with credit/limit tracking
 type ToolConsumer interface {
 	// ConsumeTools executes tools based on constraints until credits are exhausted

@@ -13,6 +13,71 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
+// MockToolProvider is a mock of ToolProvider interface.
+type MockToolProvider struct {
+	ctrl     *gomock.Controller
+	recorder *MockToolProviderMockRecorder
+}
+
+// MockToolProviderMockRecorder is the mock recorder for MockToolProvider.
+type MockToolProviderMockRecorder struct {
+	mock *MockToolProvider
+}
+
+// NewMockToolProvider creates a new mock instance.
+func NewMockToolProvider(ctrl *gomock.Controller) *MockToolProvider {
+	mock := &MockToolProvider{ctrl: ctrl}
+	mock.recorder = &MockToolProviderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockToolProvider) EXPECT() *MockToolProviderMockRecorder {
+	return m.recorder
+}
+
+// Defs mocks base method.
+func (m *MockToolProvider) Defs() []models.ToolDef {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Defs")
+	ret0, _ := ret[0].([]models.ToolDef)
+	return ret0
+}
+
+// Defs indicates an expected call of Defs.
+func (mr *MockToolProviderMockRecorder) Defs() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Defs", reflect.TypeOf((*MockToolProvider)(nil).Defs))
+}
+
+// Get mocks base method.
+func (m *MockToolProvider) Get(name string) models.Tool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", name)
+	ret0, _ := ret[0].(models.Tool)
+	return ret0
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockToolProviderMockRecorder) Get(name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockToolProvider)(nil).Get), name)
+}
+
+// List mocks base method.
+func (m *MockToolProvider) List() []models.Tool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List")
+	ret0, _ := ret[0].([]models.Tool)
+	return ret0
+}
+
+// List indicates an expected call of List.
+func (mr *MockToolProviderMockRecorder) List() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockToolProvider)(nil).List))
+}
+
 // MockToolConsumer is a mock of ToolConsumer interface.
 type MockToolConsumer struct {
 	ctrl     *gomock.Controller

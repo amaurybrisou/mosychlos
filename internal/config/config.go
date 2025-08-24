@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
@@ -177,7 +178,7 @@ func (c *Config) Validate() error {
 
 	// validate localization config
 	if err := c.Localization.Validate(); err != nil {
-		return fmt.Errorf("Localization config validation failed: %w", err)
+		return fmt.Errorf("localization config validation failed: %w", err)
 	}
 
 	// populate computed fields from centralized localization
@@ -185,12 +186,12 @@ func (c *Config) Validate() error {
 
 	// validate jurisdiction config
 	if err := c.Jurisdiction.Validate(); err != nil {
-		return fmt.Errorf("Jurisdiction config validation failed: %w", err)
+		return fmt.Errorf("jurisdiction config validation failed: %w", err)
 	}
 
 	// validate binance config if provided
 	if err := c.Binance.Validate(); err != nil {
-		return fmt.Errorf("Binance config validation failed: %w", err)
+		return fmt.Errorf("binance config validation failed: %w", err)
 	}
 
 	// validate LLM config
@@ -200,7 +201,7 @@ func (c *Config) Validate() error {
 
 	// validate report config
 	if err := c.Report.Validate(c.DataDir); err != nil {
-		return fmt.Errorf("Report config validation failed: %w", err)
+		return fmt.Errorf("report config validation failed: %w", err)
 	}
 
 	// mark as validated
@@ -268,12 +269,38 @@ func (c *Config) validateDirectory(dir string) error {
 }
 
 type ToolsConfig struct {
+	EnabledTools        []string                   `mapstructure:"enabled_tools" yaml:"enabled_tools"`
 	NewsAPI             *NewsAPIConfig             `mapstructure:"newsapi" yaml:"newsapi"`
 	FRED                *FREDConfig                `mapstructure:"fred" yaml:"fred"`
 	FMP                 *FMPConfig                 `mapstructure:"fmp" yaml:"fmp"`
 	FMPAnalystEstimates *FMPAnalystEstimatesConfig `mapstructure:"fmp_analyst_estimates" yaml:"fmp_analyst_estimates"`
 	YFinance            *YFinanceConfig            `mapstructure:"yfinance" yaml:"yfinance"`
 	SECEdgar            *SECEdgarConfig            `mapstructure:"sec_edgar" yaml:"sec_edgar"`
+}
+
+func (c *Config) GetToolConfig(name string) any {
+	switch name {
+	case bag.NewsAPI.String():
+		return c.Tools.NewsAPI
+	case bag.Fred.String():
+		return c.Tools.FRED
+	case bag.FMP.String():
+		return c.Tools.FMP
+	case bag.FMPAnalystEstimates.String():
+		return c.Tools.FMPAnalystEstimates
+	case bag.YFinanceDividends.String(),
+		bag.YFinanceFinancials.String(),
+		bag.YFinanceMarketData.String(),
+		bag.YFinanceStockData.String(),
+		bag.YFinanceStockInfo.String():
+		return c.Tools.YFinance
+	case bag.SECFilings.String():
+		return c.Tools.SECEdgar
+	case bag.WebSearch.String():
+		return &c.LLM.OpenAI
+	default:
+		return nil
+	}
 }
 
 type NewsAPIConfig struct {
@@ -304,7 +331,6 @@ type FREDSeriesConfig struct {
 type FMPConfig struct {
 	APIKey      string `mapstructure:"api_key"`
 	Provider    string `mapstructure:"provider"`
-	CacheDir    string `mapstructure:"cache_dir"`
 	MaxDaily    int    `mapstructure:"max_daily"`
 	CacheEnable bool   `mapstructure:"cache_enable"`
 }
@@ -381,16 +407,16 @@ type JurisdictionConfig struct {
 func (jc *JurisdictionConfig) Validate() error {
 	// country code is required (should be populated from centralized localization)
 	if jc.Country == "" {
-		return fmt.Errorf("Country code cannot be empty")
+		return fmt.Errorf("country code cannot be empty")
 	}
 
 	// validate country code format (2-letter ISO code)
 	countryStr := string(jc.Country)
 	if len(countryStr) != 2 {
-		return fmt.Errorf("Country code must be 2 characters (ISO 3166-1 alpha-2), got: %s", countryStr)
+		return fmt.Errorf("country code must be 2 characters (ISO 3166-1 alpha-2), got: %s", countryStr)
 	}
 	if strings.ToUpper(countryStr) != countryStr {
-		return fmt.Errorf("Country code must be uppercase, got: %s", countryStr)
+		return fmt.Errorf("country code must be uppercase, got: %s", countryStr)
 	}
 
 	// validate custom schema path if provided
@@ -455,11 +481,11 @@ type LLMConfig struct {
 // Validate validates the LLM configuration
 func (lc *LLMConfig) Validate() error {
 	if strings.TrimSpace(lc.Provider) == "" {
-		return fmt.Errorf("Provider cannot be empty")
+		return fmt.Errorf("provider cannot be empty")
 	}
 
 	if strings.TrimSpace(string(lc.Model)) == "" {
-		return fmt.Errorf("Model cannot be empty")
+		return fmt.Errorf("model cannot be empty")
 	}
 
 	// validate lc.Model is in our defined models
@@ -474,7 +500,7 @@ func (lc *LLMConfig) Validate() error {
 	}
 	valid := slices.Contains(validModels, lc.Model)
 	if !valid {
-		return fmt.Errorf("Model must be one of %v, got: %s", validModels, lc.Model)
+		return fmt.Errorf("model must be one of %v, got: %s", validModels, lc.Model)
 	}
 
 	if strings.TrimSpace(lc.APIKey) == "" {
@@ -536,7 +562,7 @@ type OpenAIConfig struct {
 func (oc *OpenAIConfig) Validate() error {
 	// validate temperature range
 	if oc.Temperature != nil && (*oc.Temperature < 0 || *oc.Temperature > 2) {
-		return fmt.Errorf("Temperature must be between 0 and 2, got: %f", *oc.Temperature)
+		return fmt.Errorf("temperature must be between 0 and 2, got: %f", *oc.Temperature)
 	}
 
 	// validate top_p range
@@ -570,7 +596,7 @@ func (oc *OpenAIConfig) Validate() error {
 			}
 		}
 		if !valid {
-			return fmt.Errorf("Verbosity must be one of %v, got: %s", validVerbosities, *oc.Verbosity)
+			return fmt.Errorf("verbosity must be one of %v, got: %s", validVerbosities, *oc.Verbosity)
 		}
 	}
 

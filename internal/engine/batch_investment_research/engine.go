@@ -1,3 +1,4 @@
+// Package batchinvestmentresearch provides an engine for batch investment research
 package batchinvestmentresearch
 
 import (
@@ -7,7 +8,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/internal/prompt"
-	"github.com/amaurybrisou/mosychlos/internal/tools"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/amaurybrisou/mosychlos/pkg/openai"
@@ -17,14 +17,14 @@ import (
 // This engine generates OpenAI Batch API requests that include tools and proper prompts
 type BatchInvestmentResearchEngine struct {
 	regionalPromptManager prompt.RegionalManager
-	toolRegistry          map[bag.Key]models.Tool
+	tools                 models.ToolProvider
 	researchDepth         string // "basic", "standard", "comprehensive"
 }
 
 // NewBatchEngine creates a new batch investment research engine
 func NewBatchEngine(
 	regionalPromptManager prompt.RegionalManager,
-	toolRegistry map[bag.Key]models.Tool,
+	tools models.ToolProvider,
 	researchDepth string,
 ) *BatchInvestmentResearchEngine {
 	if researchDepth == "" {
@@ -33,7 +33,7 @@ func NewBatchEngine(
 
 	return &BatchInvestmentResearchEngine{
 		regionalPromptManager: regionalPromptManager,
-		toolRegistry:          toolRegistry,
+		tools:                 tools,
 		researchDepth:         researchDepth,
 	}
 }
@@ -145,11 +145,11 @@ func (e *BatchInvestmentResearchEngine) generateRegionalPrompt(
 // getToolConstraints returns tool constraints based on research depth (same as regular engine)
 func (e *BatchInvestmentResearchEngine) getToolConstraints() models.BaseToolConstraints {
 	baseConstraints := models.BaseToolConstraints{
-		Tools: tools.GetToolsDef(),
+		Tools: e.tools.Defs(),
 		RequiredTools: []bag.Key{
 			bag.WebSearch,
 			bag.FMP,     // Market data for research
-			bag.NewsApi, // News and market intelligence
+			bag.NewsAPI, // News and market intelligence
 		},
 		PreferredTools: []bag.Key{
 			bag.Fred,                // Economic context
@@ -164,7 +164,7 @@ func (e *BatchInvestmentResearchEngine) getToolConstraints() models.BaseToolCons
 		baseConstraints.MaxCallsPerTool = map[bag.Key]int{
 			bag.WebSearch: 8, // Deep research
 			bag.FMP:       4, // Comprehensive data
-			bag.NewsApi:   2, // News context
+			bag.NewsAPI:   2, // News context
 		}
 		baseConstraints.MinCallsPerTool = map[bag.Key]int{
 			bag.WebSearch: 4, // Minimum quality
@@ -174,7 +174,7 @@ func (e *BatchInvestmentResearchEngine) getToolConstraints() models.BaseToolCons
 		baseConstraints.MaxCallsPerTool = map[bag.Key]int{
 			bag.WebSearch: 5, // Balanced research
 			bag.FMP:       2,
-			bag.NewsApi:   1,
+			bag.NewsAPI:   1,
 		}
 		baseConstraints.MinCallsPerTool = map[bag.Key]int{
 			bag.WebSearch: 3,
@@ -184,7 +184,7 @@ func (e *BatchInvestmentResearchEngine) getToolConstraints() models.BaseToolCons
 		baseConstraints.MaxCallsPerTool = map[bag.Key]int{
 			bag.WebSearch: 3, // Light research
 			bag.FMP:       1,
-			bag.NewsApi:   1,
+			bag.NewsAPI:   1,
 		}
 		baseConstraints.MinCallsPerTool = map[bag.Key]int{
 			bag.WebSearch: 2,

@@ -1,10 +1,8 @@
-// cmd/mosychlos/batch.go
 package mosychlos
 
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -143,7 +141,7 @@ func getBatchManager(cfg *config.Config) (models.BatchManager, error) {
 	return llm.NewBatchServiceFactory(cfg, fs.OS{}, sharedBag).CreateManager()
 }
 
-func runBatchSubmit(cmd *cobra.Command, args []string, cfg *config.Config) error {
+func runBatchSubmit(cmd *cobra.Command, _ []string, cfg *config.Config) error {
 	ctx := context.Background()
 
 	// Parse arguments
@@ -184,7 +182,7 @@ func runBatchSubmit(cmd *cobra.Command, args []string, cfg *config.Config) error
 	return nil
 }
 
-func runBatchStatus(cmd *cobra.Command, args []string, cfg *config.Config) error {
+func runBatchStatus(_ *cobra.Command, args []string, cfg *config.Config) error {
 	jobID := args[0]
 	ctx := context.Background()
 
@@ -202,7 +200,7 @@ func runBatchStatus(cmd *cobra.Command, args []string, cfg *config.Config) error
 	return nil
 }
 
-func runBatchResults(cmd *cobra.Command, args []string, cfg *config.Config) error {
+func runBatchResults(_ *cobra.Command, args []string, cfg *config.Config) error {
 	jobID := args[0]
 	ctx := context.Background()
 
@@ -220,7 +218,7 @@ func runBatchResults(cmd *cobra.Command, args []string, cfg *config.Config) erro
 	return nil
 }
 
-func runBatchErrors(cmd *cobra.Command, args []string, cfg *config.Config) error {
+func runBatchErrors(_ *cobra.Command, args []string, cfg *config.Config) error {
 	jobID := args[0]
 	ctx := context.Background()
 
@@ -268,7 +266,7 @@ func runBatchWait(cmd *cobra.Command, args []string, cfg *config.Config) error {
 	return nil
 }
 
-func runBatchCancel(cmd *cobra.Command, args []string, cfg *config.Config) error {
+func runBatchCancel(_ *cobra.Command, args []string, cfg *config.Config) error {
 	jobID := args[0]
 	ctx := context.Background()
 
@@ -285,26 +283,7 @@ func runBatchCancel(cmd *cobra.Command, args []string, cfg *config.Config) error
 	return nil
 }
 
-func isAnalysisType(arg string) bool {
-	validTypes := []string{
-		"risk",
-		"allocation",
-		"performance",
-		"compliance",
-		"reallocation",
-		"investment_research",
-	}
-
-	arg = strings.ToLower(arg)
-	for _, t := range validTypes {
-		if arg == t {
-			return true
-		}
-	}
-	return false
-}
-
-func runBatchList(cmd *cobra.Command, args []string, cfg *config.Config) error {
+func runBatchList(cmd *cobra.Command, _ []string, cfg *config.Config) error {
 	ctx := context.Background()
 
 	// Get flags

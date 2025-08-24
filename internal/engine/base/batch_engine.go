@@ -1,3 +1,4 @@
+// Package base provides a base implementation for batch processing engines
 package base
 
 import (
@@ -7,7 +8,6 @@ import (
 
 	"github.com/amaurybrisou/mosychlos/internal/budget"
 	"github.com/amaurybrisou/mosychlos/internal/config"
-	"github.com/amaurybrisou/mosychlos/internal/tools"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
@@ -18,22 +18,30 @@ type BatchEngine struct {
 	constraints models.BaseToolConstraints
 	model       config.LLMModel
 	hooks       models.BatchEngineHooks
+	tools       models.ToolProvider
 }
 
 var _ models.Engine = &BatchEngine{}
 
+type Deps struct {
+	// … other deps (cfg, fs, bag snapshot, logger, LLM, etc.)
+	Tools       models.ToolProvider
+	Model       config.LLMModel
+	Constraints models.BaseToolConstraints
+	Hooks       models.BatchEngineHooks
+}
+
 // NewBatchEngine creates a new base batch engine with hooks for customization
 func NewBatchEngine(
 	name string,
-	model config.LLMModel,
-	constraints models.BaseToolConstraints,
-	hooks models.BatchEngineHooks,
+	deps Deps,
 ) *BatchEngine {
 	return &BatchEngine{
 		name:        name,
-		model:       model,
-		constraints: constraints,
-		hooks:       hooks,
+		model:       deps.Model,
+		constraints: deps.Constraints,
+		hooks:       deps.Hooks,
+		tools:       deps.Tools,
 	}
 }
 
@@ -254,7 +262,13 @@ func (b *BatchEngine) processJobResults(
 
 // processToolCalls processes tool calls and creates next job if needed
 func (b *BatchEngine) processToolCalls(
-	ctx context.Context, job models.BatchJob, toolCalls []models.ToolCall, customID string, iteration int, sharedBag bag.SharedBag) (*models.BatchJob, error) {
+	ctx context.Context,
+	job models.BatchJob,
+	toolCalls []models.ToolCall,
+	customID string,
+	iteration int,
+	sharedBag bag.SharedBag,
+) (*models.BatchJob, error) {
 	// Process each tool call and collect results
 	messages := append(job.Messages, map[string]any{
 		"role":       "assistant",
@@ -280,7 +294,7 @@ func (b *BatchEngine) processToolCalls(
 		slog.Debug("Tool execution completed",
 			"tool", toolCall.Function.Name,
 			"custom_id", customID,
-			"result_length", len(result))
+			"result", result)
 
 		// Hook: Process tool result
 		if err := b.hooks.ProcessToolResult(customID, toolCall.Function.Name, result, sharedBag); err != nil {
@@ -314,24 +328,17 @@ func (b *BatchEngine) processToolCalls(
 }
 
 // executeToolCall is a helper method that can be overridden by embedding engines
-func (b *BatchEngine) executeToolCall(ctx context.Context, toolCall models.ToolCall) (string, error) {
+func (b *BatchEngine) executeToolCall(ctx context.Context, toolCall models.ToolCall) (any, error) {
 	slog.Debug("Looking up tool",
 		"tool_name", toolCall.Function.Name,
-		"available_tools", len(tools.GetToolsMap()))
+		"available_tools", len(b.tools.List()))
 
-	allTools := tools.GetToolsMap()
-	tool, exists := allTools[bag.Key(toolCall.Function.Name)]
-	if !exists {
+	tool := b.tools.Get(toolCall.Function.Name)
+	if tool == nil {
 		slog.Error("Tool not found",
 			"tool_name", toolCall.Function.Name,
-			"available_tools", func() []string {
-				var names []string
-				for k := range allTools {
-					names = append(names, string(k))
-				}
-				return names
-			}())
-		return "", fmt.Errorf("tool not found: %s", toolCall.Function.Name)
+			"available_tools", b.tools.List())
+		return nil, nil
 	}
 
 	slog.Debug("Tool found, checking if external",
