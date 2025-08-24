@@ -64,7 +64,7 @@ func TestSpeakeasyProvider_StructuredOutputWithSchema(t *testing.T) {
 	// In test environment, we expect network errors, but the important thing is
 	// that the schema integration and request formation works
 	if err != nil {
-		assert.Contains(t, err.Error(), "direct HTTP call failed")
+		assert.Contains(t, err.Error(), "speakeasy v4 chat completion failed")
 	}
 }
 
@@ -118,7 +118,7 @@ func TestSpeakeasyProvider_ToolsWithStructuredOutput(t *testing.T) {
 	
 	// In test environment, we expect network errors
 	if err != nil {
-		assert.Contains(t, err.Error(), "direct HTTP call failed")
+		assert.Contains(t, err.Error(), "speakeasy v4 chat completion failed")
 		// The key is that it gets to the HTTP call, meaning the request was properly formed
 	}
 }
@@ -180,7 +180,7 @@ func TestSpeakeasyProvider_ComplexStructuredOutput(t *testing.T) {
 	_, err := session.Next(context.Background(), nil, responseFormat)
 	
 	if err != nil {
-		assert.Contains(t, err.Error(), "direct HTTP call failed")
+		assert.Contains(t, err.Error(), "speakeasy v4 chat completion failed")
 	}
 }
 
@@ -210,6 +210,6 @@ func TestSpeakeasyProvider_SchemaIntegrationEdgeCases(t *testing.T) {
 	_, err := session.Next(context.Background(), nil, emptyResponseFormat)
 	
 	if err != nil {
-		assert.Contains(t, err.Error(), "direct HTTP call failed")
+		assert.Contains(t, err.Error(), "speakeasy v4 chat completion failed")
 	}
 }
