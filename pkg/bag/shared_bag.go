@@ -19,6 +19,7 @@ type SharedBag interface {
 	Update(k Key, fn func(any) any)
 	Has(k Key) bool
 	Snapshot() Bag
+	Incr(k Key) int
 	MarshalJSON() ([]byte, error)
 }
 
@@ -64,6 +65,26 @@ func (sb *sharedBag) MustGet(k Key) any {
 		panic(fmt.Errorf("key not found: %v", k))
 	}
 	return v
+}
+
+func (sb *sharedBag) Incr(k Key) int {
+	sb.mu.Lock()
+	defer sb.mu.Unlock()
+
+	v, ok := sb.data[k]
+	if !ok {
+		sb.data[k] = 1
+		return 1
+	}
+
+	switch vv := v.(type) {
+	case int:
+		sb.data[k] = vv + 1
+		return vv + 1
+	default:
+		sb.data[k] = 1
+		return 1
+	}
 }
 
 func (sb *sharedBag) GetAs(k Key, out any) bool {
@@ -130,8 +151,27 @@ func (sb *sharedBag) Update(k Key, fn func(any) any) {
 	}
 
 	newValue := fn(current)
+	if newValue == nil {
+		return
+	}
 
-	slog.Debug("Updating bag key", "key", k, "old", current, "new", newValue)
+	vToLog := newValue
+	switch v := newValue.(type) {
+	case string:
+		vToLog = v
+	case []byte:
+		vToLog = string(v)
+	default:
+		if b, err := json.Marshal(v); err == nil {
+			vToLog = string(b)
+		}
+	}
+
+	slog.Debug("Updating bag key",
+		slog.String("key", string(k)),
+		// slog.Any("old", current),
+		slog.Any("new", vToLog),
+	)
 
 	sb.data[k] = newValue
 }

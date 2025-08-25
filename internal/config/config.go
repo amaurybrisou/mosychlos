@@ -310,6 +310,7 @@ type NewsAPIConfig struct {
 	// Locale is computed at runtime from centralized localization.language
 	Locale      string
 	CacheEnable bool `mapstructure:"cache_enable"`
+	Persisting  bool `mapstructure:"persisting" yaml:"persisting"`
 }
 
 type FREDConfig struct {
@@ -318,6 +319,7 @@ type FREDConfig struct {
 	Country     string
 	Series      FREDSeriesConfig `mapstructure:"series"`
 	CacheEnable bool             `mapstructure:"cache_enable"`
+	Persisting  bool             `mapstructure:"persisting" yaml:"persisting"`
 }
 
 type FREDSeriesConfig struct {
@@ -326,6 +328,7 @@ type FREDSeriesConfig struct {
 	InterestRate   string `mapstructure:"interest_rate"`
 	Unemployment   string `mapstructure:"unemployment"`
 	InflationUnits string `mapstructure:"inflation_units"`
+	Persisting     bool   `mapstructure:"persisting" yaml:"persisting"`
 }
 
 type FMPConfig struct {
@@ -333,6 +336,7 @@ type FMPConfig struct {
 	Provider    string `mapstructure:"provider"`
 	MaxDaily    int    `mapstructure:"max_daily"`
 	CacheEnable bool   `mapstructure:"cache_enable"`
+	Persisting  bool   `mapstructure:"persisting" yaml:"persisting"`
 }
 
 // FMPAnalystEstimatesConfig holds the configuration for FMP Analyst Estimates tool
@@ -342,6 +346,7 @@ type FMPAnalystEstimatesConfig struct {
 	CacheDir    string `mapstructure:"cache_dir"`
 	CacheEnable bool   `mapstructure:"cache_enable"`
 	MaxDaily    int    `mapstructure:"max_daily"`
+	Persisting  bool   `mapstructure:"persisting" yaml:"persisting"`
 }
 
 type YFinanceConfig struct {
@@ -350,6 +355,7 @@ type YFinanceConfig struct {
 	MaxDaily    int    `mapstructure:"max_daily" yaml:"max_daily"`
 	Timeout     int    `mapstructure:"timeout" yaml:"timeout"`
 	MaxRequests int    `mapstructure:"max_requests" yaml:"max_requests"`
+	Persisting  bool   `mapstructure:"persisting" yaml:"persisting"`
 }
 
 // BinanceConfig holds the configuration for Binance API
@@ -366,6 +372,7 @@ type SECEdgarConfig struct {
 	BaseURL     string `mapstructure:"base_url" yaml:"base_url"`
 	CacheEnable bool   `mapstructure:"cache_enable" yaml:"cache_enable"`
 	MaxDaily    int    `mapstructure:"max_daily" yaml:"max_daily"`
+	Persisting  bool   `mapstructure:"persisting" yaml:"persisting"`
 }
 
 // Validate validates the Binance configuration

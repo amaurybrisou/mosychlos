@@ -33,27 +33,27 @@ func (lc *LocalizationConfig) Validate() error {
 
 	// Language is required and must be valid ISO 639-1
 	if strings.TrimSpace(lc.Language) == "" {
-		return fmt.Errorf("Language cannot be empty")
+		return fmt.Errorf("language cannot be empty")
 	}
 	if len(lc.Language) != 2 {
-		return fmt.Errorf("Language must be ISO 639-1 code (2 characters), got: %s", lc.Language)
+		return fmt.Errorf("language must be ISO 639-1 code (2 characters), got: %s", lc.Language)
 	}
 
 	// Timezone is required and must be valid IANA timezone
 	if strings.TrimSpace(lc.Timezone) == "" {
-		return fmt.Errorf("Timezone cannot be empty")
+		return fmt.Errorf("timezone cannot be empty")
 	}
 	// Basic format check for IANA timezone (should contain at least one slash)
 	if !strings.Contains(lc.Timezone, "/") {
-		return fmt.Errorf("Timezone must be valid IANA timezone (e.g., 'America/New_York'), got: %s", lc.Timezone)
+		return fmt.Errorf("timezone must be valid IANA timezone (e.g., 'America/New_York'), got: %s", lc.Timezone)
 	}
 
 	// Currency is required and must be valid ISO 4217
 	if strings.TrimSpace(lc.Currency) == "" {
-		return fmt.Errorf("Currency cannot be empty")
+		return fmt.Errorf("currency cannot be empty")
 	}
 	if len(lc.Currency) != 3 {
-		return fmt.Errorf("Currency must be ISO 4217 code (3 characters), got: %s", lc.Currency)
+		return fmt.Errorf("currency must be ISO 4217 code (3 characters), got: %s", lc.Currency)
 	}
 
 	// Convert to uppercase for consistency

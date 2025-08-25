@@ -25,6 +25,7 @@ const (
 
 type ToolDef interface {
 	ToAny() any
+	ToMap() map[string]any
 }
 
 type FunctionDef struct {
@@ -42,6 +43,10 @@ func (f *FunctionToolDef) ToAny() any {
 	return f
 }
 
+func (f *FunctionToolDef) ToMap() map[string]any {
+	return f.Function.Parameters
+}
+
 type CustomToolDef struct {
 	Type        string `json:"type" default:"custom"`
 	FunctionDef `json:",inline"`
@@ -51,6 +56,10 @@ func (c *CustomToolDef) ToAny() any {
 	return c
 }
 
+func (c *CustomToolDef) ToMap() map[string]any {
+	return c.Parameters
+}
+
 type Tool interface {
 	Name() string
 	Key() bag.Key
@@ -58,7 +67,14 @@ type Tool interface {
 	Definition() ToolDef
 	Tags() []string
 	IsExternal() bool
-	Run(ctx context.Context, args string) (string, error)
+	Run(ctx context.Context, args any) (any, error)
+	// Optional error handling function. When the tool invocation returns an error,
+	// this function is called with the original error and its return value is sent
+	// back to the LLM. If not set, a default function returning a generic error
+	// message is used. To disable error handling and propagate the original error,
+	// explicitly set this to a pointer to a nil ToolErrorFunction.
+	// TODO: enable this and take decisions
+	// FailureErrorFunction(ctx context.Context, err error) (any, error)
 }
 
 type Format struct {
@@ -201,12 +217,16 @@ type ChatMessage struct {
 
 // ToolConfig holds configuration for a tool
 type ToolConfig struct {
-	Key          bag.Key
-	Constructor  ToolConstructor
-	Config       any
+	Key         bag.Key
+	Constructor ToolConstructor
+	Config      any
+	// Caching wrapper
 	CacheEnabled bool
 	CacheTTL     time.Duration
-	RateLimit    *ToolsRateLimit
+	// Rate Limiting wrapper
+	RateLimit *ToolsRateLimit
+	// I/O Persisting wrapper
+	Persisting bool
 }
 
 // Validate validates the ToolConfig

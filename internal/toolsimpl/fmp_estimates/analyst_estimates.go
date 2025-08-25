@@ -101,14 +101,14 @@ func (p *FMPAnalystEstimatesProvider) Definition() models.ToolDef {
 }
 
 // Run executes the tool with given arguments
-func (p *FMPAnalystEstimatesProvider) Run(ctx context.Context, args string) (string, error) {
+func (p *FMPAnalystEstimatesProvider) Run(ctx context.Context, args any) (any, error) {
 	// Parse input arguments
 	var input struct {
 		Tickers []string `json:"tickers"`
 	}
 
-	if args != "" {
-		if err := json.Unmarshal([]byte(args), &input); err != nil {
+	if args != nil {
+		if err := json.Unmarshal([]byte(fmt.Sprintf("%v", args)), &input); err != nil {
 			return "", fmt.Errorf("invalid JSON arguments: %w", err)
 		}
 	}

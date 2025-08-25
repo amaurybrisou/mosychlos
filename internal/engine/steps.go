@@ -17,6 +17,7 @@ import (
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/binance"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
+	"github.com/amaurybrisou/mosychlos/pkg/normalize"
 )
 
 // WithInitSteps replaces the default init steps with custom steps.
@@ -42,7 +43,9 @@ func defaultInitSteps() []InitStep {
 
 // StepInitToolManager sets up tools with shared bag for metrics tracking and caches list to orchestrator
 func StepInitToolManager(_ context.Context, o *engineOrchestrator) error {
-	tm, err := tools.NewToolManager(o.cfg, o.sharedBag)
+	reg := normalize.DefaultRegistry()
+
+	tm, err := tools.NewToolManager(o.cfg, o.sharedBag, reg)
 	if err != nil {
 		return fmt.Errorf("failed to load tool manager: %w", err)
 	}

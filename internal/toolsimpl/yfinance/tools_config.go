@@ -27,6 +27,7 @@ func GetYFinanceStockDataToolConfig(_cfg any, sharedBag bag.SharedBag) models.To
 		CacheEnabled: cfg.CacheEnable,
 		CacheTTL:     6 * time.Hour,
 		RateLimit:    yfinanceRateLimit,
+		Persisting:   cfg.Persisting,
 	}
 }
 
@@ -47,6 +48,7 @@ func GetYFinanceStockInfoToolConfig(_cfg any, sharedBag bag.SharedBag) models.To
 		CacheEnabled: cfg.CacheEnable,
 		CacheTTL:     24 * time.Hour,
 		RateLimit:    yfinanceRateLimit,
+		Persisting:   cfg.Persisting,
 	}
 }
 
@@ -67,6 +69,7 @@ func GetYFinanceDividendsToolConfig(_cfg any, sharedBag bag.SharedBag) models.To
 		CacheEnabled: cfg.CacheEnable,
 		CacheTTL:     24 * time.Hour,
 		RateLimit:    yfinanceRateLimit,
+		Persisting:   cfg.Persisting,
 	}
 }
 
@@ -87,6 +90,7 @@ func GetYFinanceFinancialsToolConfig(_cfg any, sharedBag bag.SharedBag) models.T
 		CacheEnabled: cfg.CacheEnable,
 		CacheTTL:     24 * time.Hour,
 		RateLimit:    yfinanceRateLimit,
+		Persisting:   cfg.Persisting,
 	}
 }
 
@@ -107,6 +111,7 @@ func GetYFinanceMarketDataToolConfig(_cfg any, sharedBag bag.SharedBag) models.T
 		CacheEnabled: cfg.CacheEnable,
 		CacheTTL:     6 * time.Hour,
 		RateLimit:    yfinanceRateLimit,
+		Persisting:   cfg.Persisting,
 	}
 }
 

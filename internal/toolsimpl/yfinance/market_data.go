@@ -108,7 +108,7 @@ func (t *YFinanceMarketDataTool) Tags() []string {
 }
 
 // Run executes the tool with the given arguments
-func (t *YFinanceMarketDataTool) Run(ctx context.Context, args string) (string, error) {
+func (t *YFinanceMarketDataTool) Run(ctx context.Context, args any) (any, error) {
 	slog.Debug("Running yfinance market data tool",
 		"tool", t.Name(),
 		"args", args,
@@ -120,7 +120,7 @@ func (t *YFinanceMarketDataTool) Run(ctx context.Context, args string) (string, 
 		Period  string   `json:"period,omitempty"`
 	}
 
-	if err := json.Unmarshal([]byte(args), &params); err != nil {
+	if err := json.Unmarshal([]byte(fmt.Sprintf("%v", args)), &params); err != nil {
 		return "", fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
@@ -168,7 +168,7 @@ func (t *YFinanceMarketDataTool) Run(ctx context.Context, args string) (string, 
 		"result_size", len(response),
 	)
 
-	return string(response), nil
+	return result, nil
 }
 
 // getMarketData retrieves market data for multiple symbols using the client
@@ -200,19 +200,19 @@ func (t *YFinanceMarketDataTool) getMarketData(ctx context.Context, symbols []st
 
 	// Convert the entire response to map using JSON marshaling/unmarshaling
 	// This automatically handles all fields without manual enumeration
-	jsonData, err := json.Marshal(marketData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal market data: %w", err)
-	}
+	// jsonData, err := json.Marshal(marketData)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to marshal market data: %w", err)
+	// }
 
-	var result map[string]any
-	if err := json.Unmarshal(jsonData, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
-	}
+	// var result map[string]any
+	// if err := json.Unmarshal(jsonData, &result); err != nil {
+	// 	return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
+	// }
 
-	// Add metadata about the number of results available
-	result["results_count"] = len(marketData.QuoteResponse.Result)
-	result["requested_period"] = period
+	// // Add metadata about the number of results available
+	// result["results_count"] = len(marketData.QuoteResponse.Result)
+	// result["requested_period"] = period
 
-	return result, nil
+	return marketData, nil
 }

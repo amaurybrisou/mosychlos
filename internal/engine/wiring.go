@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"github.com/amaurybrisou/mosychlos/internal/budget"
-	"github.com/amaurybrisou/mosychlos/internal/engine/agents"
 	"github.com/amaurybrisou/mosychlos/internal/engine/base"
 	"github.com/amaurybrisou/mosychlos/internal/engine/risk"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
@@ -131,7 +130,7 @@ func DefaultBatchRegistry() *RegistryBuilder {
 		// 	return risk.New("risk-engine", d.Prompts, constraints), nil
 		// }).
 		Register("batch-risk-engine", func(d Deps) (models.Engine, error) {
-			if d.Prompts == nil {
+			if d.PromptBuilder == nil {
 				return nil, fmt.Errorf("batch-risk-engine requires Deps.Prompts")
 			}
 
@@ -155,7 +154,7 @@ func DefaultBatchRegistry() *RegistryBuilder {
 
 			// Example: per-engine tool constraints (tweak to your needs)
 			constraints := models.BaseToolConstraints{
-				Tools:           d.Tools.Defs(),
+				Tools:           d.ToolProvider.Defs(),
 				PreferredTools:  preferredTools,
 				MinCallsPerTool: minCalls,
 				MaxCallsPerTool: maxCalls,
@@ -163,15 +162,15 @@ func DefaultBatchRegistry() *RegistryBuilder {
 			// Option 1: set consumer globally here
 			d.AI.SetToolConsumer(budget.NewToolConsumer(&constraints))
 			// Option 2: or let the engine set one inside Execute()
-			d.AI.RegisterTool(d.Tools.List()...)
+			d.AI.RegisterTool(d.ToolProvider.List()...)
 
 			return risk.NewRiskBatchEngine("batch-risk-engine", risk.Deps{
-				Deps: base.Deps{
-					Tools:       d.Tools,
+				BaseBatchEngineConfig: base.BaseBatchEngineConfig{
+					Tools:       d.ToolProvider,
 					Model:       d.Config.LLM.Model,
 					Constraints: constraints,
 				},
-				PromptBuilder: d.Prompts,
+				PromptBuilder: d.PromptBuilder,
 			}), nil
 		})
 
@@ -196,12 +195,12 @@ func DefaultBatchRegistry() *RegistryBuilder {
 func DefaultRegistry() *RegistryBuilder {
 	return NewRegistryBuilder().
 		Register("risk", func(d Deps) (models.Engine, error) {
-			if d.Prompts == nil {
+			if d.PromptBuilder == nil {
 				return nil, fmt.Errorf("risk engine requires Deps.Prompts")
 			}
 			// Example: per-engine tool constraints (tweak to your needs)
 			constraints := models.BaseToolConstraints{
-				Tools:          d.Tools.Defs(),
+				Tools:          d.ToolProvider.Defs(),
 				PreferredTools: []bag.Key{bag.FMP, bag.NewsAPI},
 				MinCallsPerTool: map[bag.Key]int{
 					bag.NewsAPI: 2,
@@ -215,9 +214,9 @@ func DefaultRegistry() *RegistryBuilder {
 			// Option 1: set consumer globally here
 			d.AI.SetToolConsumer(budget.NewToolConsumer(&constraints))
 			// Option 2: or let the engine set one inside Execute()
-			d.AI.RegisterTool(d.Tools.List()...)
+			d.AI.RegisterTool(d.ToolProvider.List()...)
 
-			return risk.New("risk-engine", d.Prompts, constraints), nil
+			return risk.New("risk-engine", d.PromptBuilder, constraints), nil
 		})
 }
 
@@ -226,21 +225,31 @@ func DefaultRegistry() *RegistryBuilder {
 func DefaultAgentsRegistry() *RegistryBuilder {
 	return NewRegistryBuilder().
 		Register("agent-risk", func(d Deps) (models.Engine, error) {
-			if d.Prompts == nil {
+			if d.PromptBuilder == nil {
 				return nil, fmt.Errorf("agent risk engine requires Deps.Prompts")
 			}
-			if d.Tools == nil {
+			if d.ToolProvider == nil {
 				return nil, fmt.Errorf("agent risk engine requires Deps.Tools")
 			}
 
-			// Convert Mosychlos tools to agent tools
-			converter := agents.NewToolConverter()
-			
-			// Select preferred tools for risk analysis
-			preferredToolNames := []string{"fmp", "newsapi", "fred"}
-			agentTools := converter.ConvertSelectedTools(d.Tools, preferredToolNames...)
-
 			// Create the agent-based risk engine
-			return agents.NewAgentRiskEngine("agent-risk-engine", d.Prompts, agentTools), nil
+			return risk.NewRiskAgentEngine(d.SharedBag, d.PromptBuilder, d.ToolProvider), nil
 		})
+	// Register("agent-triage", func(d Deps) (models.Engine, error) {
+	// 	if d.Prompts == nil {
+	// 		return nil, fmt.Errorf("agent triage engine requires Deps.Prompts")
+	// 	}
+	// 	if d.Tools == nil {
+	// 		return nil, fmt.Errorf("agent triage engine requires Deps.Tools")
+	// 	}
+
+	// 	// Convert Mosychlos tools to agent tools
+	// 	converter := agents.NewToolConverter()
+
+	// 	// Provide comprehensive tool access for triage decisions
+	// 	agentTools := converter.ConvertToolProvider(d.Tools)
+
+	// 	// Create the agent-based triage engine with handoff capabilities
+	// 	return agents.NewAgentTriageEngine("agent-triage-engine", d.Prompts, agentTools), nil
+	// })
 }

@@ -120,7 +120,7 @@ func TestAnalystEstimatesProvider_Run_Integration(t *testing.T) {
 		t.Error("Run() returned empty result")
 	}
 
-	t.Logf("Result length: %d characters", len(result))
+	// t.Logf("Result length: %d characters", len(result))
 }
 
 func TestAnalystEstimatesProvider_Run_InvalidArgs(t *testing.T) {

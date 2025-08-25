@@ -1,3 +1,4 @@
+// Package yfinance provides a client for accessing the Yahoo Finance API
 package yfinance
 
 import (
@@ -71,7 +72,9 @@ func (c *Client) GetStockData(ctx context.Context, symbol string, period string,
 	}
 
 	return &response, nil
-} // GetStockInfo retrieves company information and key statistics
+}
+
+// GetStockInfo retrieves company information and key statistics
 func (c *Client) GetStockInfo(ctx context.Context, symbol string) (*models.StockInfoResponse, error) {
 	endpoint := "/v8/finance/chart/" + symbol
 	params := url.Values{
@@ -105,7 +108,9 @@ func (c *Client) GetDividends(ctx context.Context, symbol string, startDate, end
 	}
 
 	return &response, nil
-} // GetFinancials retrieves financial statements
+}
+
+// GetFinancials retrieves financial statements
 func (c *Client) GetFinancials(ctx context.Context, symbol string) (*models.FinancialsResponse, error) {
 	endpoint := "/v10/finance/quoteSummary/" + symbol
 	params := url.Values{
@@ -209,7 +214,7 @@ func (c *Client) makeRequest(ctx context.Context, endpoint string, params url.Va
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Yahoo Finance API returned status %d: %s", resp.StatusCode, resp.Status)
+		return fmt.Errorf("yahoo finance API returned status %d: %s", resp.StatusCode, resp.Status)
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(result); err != nil {

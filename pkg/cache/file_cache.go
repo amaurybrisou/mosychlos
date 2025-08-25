@@ -58,7 +58,7 @@ func NewFileCache(baseDir string) *FileCache {
 func NewFileCacheWithOptions(baseDir string, opts FileCacheOptions) *FileCache {
 	// Ensure the base directory exists
 	if err := os.MkdirAll(baseDir, 0755); err != nil {
-		slog.Warn("failed to create cache directory", "dir", baseDir, "err", err)
+		panic(fmt.Sprintf("failed to create cache directory: dir=%s err=%v", baseDir, err))
 	}
 
 	// Create regex pattern for filename sanitization

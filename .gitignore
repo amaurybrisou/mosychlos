@@ -18,3 +18,4 @@ external/finrobot/
 services/finrobot-api/venv
 services/finrobot-api/__pycache__/
 services/finrobot-api/.cache/
+./mosychlos

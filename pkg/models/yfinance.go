@@ -321,7 +321,7 @@ type QuoteResult struct {
 	Exchange                          string  `json:"exchange,omitempty"`
 	ShortName                         string  `json:"shortName,omitempty"`
 	LongName                          string  `json:"longName,omitempty"`
-	MessageBoardId                    string  `json:"messageBoardId,omitempty"`
+	MessageBoardID                    string  `json:"messageBoardId,omitempty"`
 	ExchangeTimezoneName              string  `json:"exchangeTimezoneName,omitempty"`
 	ExchangeTimezoneShortName         string  `json:"exchangeTimezoneShortName,omitempty"`
 	GmtOffSetMilliseconds             int64   `json:"gmtOffSetMilliseconds,omitempty"`
@@ -410,7 +410,7 @@ func (v YFinanceValue) IsValid() bool {
 	return v.Fmt != "" || v.Raw != 0
 }
 
-// Helper function to convert Unix timestamp to time.Time
+// UnixToTime function to convert Unix timestamp to time.Time
 func UnixToTime(timestamp int64) time.Time {
 	return time.Unix(timestamp, 0)
 }

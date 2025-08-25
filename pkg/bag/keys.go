@@ -10,7 +10,8 @@ func (k Key) String() string {
 
 const (
 	// === APPLICATION STATE & CONFIGURATION ===
-	KVerboseMode       Key = "verbose_mode"        // Whether verbose logging is enabled
+	KEngineRunID Key = "engine_run_id"
+
 	KBatchMode         Key = "batch_mode"          // Whether current run is in batch mode
 	KRegionalConfig    Key = "localization_config" // Localization configuration
 	KAnalysisConfig    Key = "analysis_config"     // Analysis configuration
@@ -106,7 +107,8 @@ const (
 	WebSearch Key = "web_search_preview" // Web search functionality
 
 	// News & Information
-	NewsAPI Key = "news_api" // NewsAPI service
+	NewsAPI       Key = "news_api"       // NewsAPI service
+	SummarizeNews Key = "summarize_news" // News summarization tool
 
 	// Economic Data
 	Fred Key = "fred" // Federal Reserve Economic Data

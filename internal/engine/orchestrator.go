@@ -16,6 +16,7 @@ import (
 	"github.com/amaurybrisou/mosychlos/pkg/fs"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 	"github.com/google/uuid"
+	"github.com/nlpodyssey/openai-agents-go/agents"
 
 	_ "github.com/amaurybrisou/mosychlos/internal/toolsimpl" // registers all tools
 )
@@ -62,11 +63,15 @@ func WithBuilder(b Builder) Option { return func(o *engineOrchestrator) { o.buil
 
 // New constructs an engine orchestrator using functional options.
 func New(cfg *config.Config, opts ...Option) Orchestrator {
+	sharedBag := bag.NewSharedBag()
+
+	engineID := uuid.New()
+
 	o := &engineOrchestrator{
-		ID:         uuid.New(),
+		ID:         engineID,
 		StartDate:  time.Now(),
 		cfg:        cfg,
-		sharedBag:  bag.NewSharedBag(),
+		sharedBag:  sharedBag,
 		filesystem: fs.OS{},
 	}
 
@@ -77,6 +82,10 @@ func New(cfg *config.Config, opts ...Option) Orchestrator {
 	if len(o.initSteps) == 0 {
 		o.initSteps = defaultInitSteps()
 	}
+
+	// runID is always set
+	o.sharedBag.Set(bag.KEngineRunID, engineID.String())
+	slog.SetDefault(slog.With("engine_id", engineID.String()))
 
 	return o
 }
@@ -116,13 +125,14 @@ func (o *engineOrchestrator) Init(ctx context.Context) error {
 		}
 
 		engs, err := o.builder.Build(ctx, Deps{
-			Ctx:       ctx,
-			Config:    o.cfg,
-			SharedBag: o.sharedBag,
-			FS:        o.filesystem,
-			AI:        o.aiClient,
-			Prompts:   o.promptManager,
-			Tools:     o.toolManager,
+			RunID:         o.ID.String(),
+			Ctx:           ctx,
+			Config:        o.cfg,
+			SharedBag:     o.sharedBag,
+			FS:            o.filesystem,
+			AI:            o.aiClient,
+			PromptBuilder: o.promptManager,
+			ToolProvider:  o.toolManager,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to build engines: %w", err)
@@ -141,6 +151,8 @@ func (o *engineOrchestrator) ExecutePipeline(ctx context.Context) error {
 	if len(o.engines) == 0 {
 		return fmt.Errorf("no engines configured")
 	}
+
+	agents.SetDefaultOpenaiKey(o.cfg.LLM.APIKey, false)
 
 	// DumpSharedBag every 10s
 	go func() {

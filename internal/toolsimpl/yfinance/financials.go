@@ -111,7 +111,7 @@ func (t *YFinanceFinancialsTool) Tags() []string {
 }
 
 // Run executes the tool with the given arguments
-func (t *YFinanceFinancialsTool) Run(ctx context.Context, args string) (string, error) {
+func (t *YFinanceFinancialsTool) Run(ctx context.Context, args any) (any, error) {
 	slog.Debug("Running yfinance financials tool",
 		"tool", t.Name(),
 		"args", args,
@@ -124,7 +124,7 @@ func (t *YFinanceFinancialsTool) Run(ctx context.Context, args string) (string, 
 		Frequency     string `json:"frequency,omitempty"`
 	}
 
-	if err := json.Unmarshal([]byte(args), &params); err != nil {
+	if err := json.Unmarshal([]byte(fmt.Sprintf("%v", args)), &params); err != nil {
 		return "", fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
@@ -179,7 +179,7 @@ func (t *YFinanceFinancialsTool) Run(ctx context.Context, args string) (string, 
 		"result_size", len(response),
 	)
 
-	return string(response), nil
+	return result, nil
 }
 
 // getFinancials retrieves financial statements from Yahoo Finance
@@ -209,22 +209,22 @@ func (t *YFinanceFinancialsTool) getFinancials(ctx context.Context, symbol, stat
 		}, nil
 	}
 
-	// Convert the entire response to map using JSON marshaling/unmarshaling
-	// This automatically handles all fields without manual enumeration
-	jsonData, err := json.Marshal(financialsData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal financial data: %w", err)
-	}
+	// // Convert the entire response to map using JSON marshaling/unmarshaling
+	// // This automatically handles all fields without manual enumeration
+	// jsonData, err := json.Marshal(financialsData)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to marshal financial data: %w", err)
+	// }
 
-	var result map[string]any
-	if err := json.Unmarshal(jsonData, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
-	}
+	// var result map[string]any
+	// if err := json.Unmarshal(jsonData, &result); err != nil {
+	// 	return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
+	// }
 
-	// Add metadata about the number of results available and requested parameters
-	result["results_count"] = len(financialsData.QuoteSummary.Result)
-	result["requested_statement_type"] = statementType
-	result["requested_frequency"] = frequency
+	// // Add metadata about the number of results available and requested parameters
+	// result["results_count"] = len(financialsData.QuoteSummary.Result)
+	// result["requested_statement_type"] = statementType
+	// result["requested_frequency"] = frequency
 
-	return result, nil
+	return financialsData, nil
 }

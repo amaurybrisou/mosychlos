@@ -2,6 +2,9 @@ package tools
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
@@ -48,7 +51,7 @@ func (w *MetricsWrapper) Definition() models.ToolDef {
 	return w.tool.Definition()
 }
 
-func (w *MetricsWrapper) Run(ctx context.Context, args string) (string, error) {
+func (w *MetricsWrapper) Run(ctx context.Context, args any) (any, error) {
 	startTime := time.Now()
 
 	// Execute the wrapped tool
@@ -57,18 +60,33 @@ func (w *MetricsWrapper) Run(ctx context.Context, args string) (string, error) {
 	duration := time.Since(startTime)
 	success := err == nil
 
+	// parse args in map[string]any using json
+	argsMap := map[string]any{}
+	if err := json.Unmarshal([]byte(args.(string)), &argsMap); err != nil {
+		return nil, fmt.Errorf("metrics_wrapper: failed to parse tool args: %w", err)
+	}
+
+	resultBytes, err := json.Marshal(result)
+	if err != nil {
+		return nil, fmt.Errorf("metrics_wrapper: failed to marshal tool result: %w", err)
+	}
+
+	resultMap := map[string]any{}
+	if err := json.Unmarshal(resultBytes, &resultMap); err != nil {
+		slog.Error("metrics_wrapper: failed to unmarshal tool result", "error", err, "result", string(resultBytes))
+		// Continue even if unmarshaling fails
+	} else {
+		result = resultMap
+	}
+
 	// Create computation record
 	computation := models.ToolComputation{
 		ToolName:  w.tool.Name(),
-		Arguments: args,
+		Arguments: argsMap,
 		Result:    result,
 		StartTime: startTime,
 		Duration:  duration,
 		Success:   success,
-	}
-
-	if err != nil {
-		computation.Error = err.Error()
 	}
 
 	// Record the computation

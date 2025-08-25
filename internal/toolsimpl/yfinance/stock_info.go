@@ -101,7 +101,7 @@ func (t *YFinanceStockInfoTool) Tags() []string {
 }
 
 // Run executes the tool with the given arguments
-func (t *YFinanceStockInfoTool) Run(ctx context.Context, args string) (string, error) {
+func (t *YFinanceStockInfoTool) Run(ctx context.Context, args any) (any, error) {
 	slog.Debug("Running yfinance stock info tool",
 		"tool", t.Name(),
 		"args", args,
@@ -112,7 +112,7 @@ func (t *YFinanceStockInfoTool) Run(ctx context.Context, args string) (string, e
 		Symbol string `json:"symbol"`
 	}
 
-	if err := json.Unmarshal([]byte(args), &params); err != nil {
+	if err := json.Unmarshal([]byte(fmt.Sprintf("%v", args)), &params); err != nil {
 		return "", fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
@@ -133,27 +133,27 @@ func (t *YFinanceStockInfoTool) Run(ctx context.Context, args string) (string, e
 	}
 
 	// Return JSON response
-	response, err := json.Marshal(map[string]any{
-		"status": "success",
-		"symbol": params.Symbol,
-		"data":   result,
-		"metadata": map[string]any{
-			"timestamp": time.Now().UTC(),
-			"source":    "yahoo_finance",
-			"tool":      t.Name(),
-		},
-	})
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal response: %w", err)
-	}
+	// response, err := json.Marshal(map[string]any{
+	// 	"status": "success",
+	// 	"symbol": params.Symbol,
+	// 	"data":   result,
+	// 	"metadata": map[string]any{
+	// 		"timestamp": time.Now().UTC(),
+	// 		"source":    "yahoo_finance",
+	// 		"tool":      t.Name(),
+	// 	},
+	// })
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to marshal response: %w", err)
+	// }
 
-	slog.Info("Stock info retrieved successfully",
-		"tool", t.Name(),
-		"symbol", params.Symbol,
-		"result_size", len(response),
-	)
+	// slog.Info("Stock info retrieved successfully",
+	// 	"tool", t.Name(),
+	// 	"symbol", params.Symbol,
+	// 	"result_size", len(response),
+	// )
 
-	return string(response), nil
+	return result, nil
 }
 
 // getStockInfo retrieves company information from Yahoo Finance
@@ -185,18 +185,18 @@ func (t *YFinanceStockInfoTool) getStockInfo(ctx context.Context, symbol string)
 
 	// Convert the entire response to map using JSON marshaling/unmarshaling
 	// This automatically handles all fields without manual enumeration
-	jsonData, err := json.Marshal(stockInfo)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal stock info: %w", err)
-	}
+	// jsonData, err := json.Marshal(stockInfo)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to marshal stock info: %w", err)
+	// }
 
-	var result map[string]any
-	if err := json.Unmarshal(jsonData, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
-	}
+	// var result map[string]any
+	// if err := json.Unmarshal(jsonData, &result); err != nil {
+	// 	return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
+	// }
 
-	// Add metadata about the number of results available
-	result["results_count"] = len(stockInfo.Chart.Result)
+	// // Add metadata about the number of results available
+	// result["results_count"] = len(stockInfo.Chart.Result)
 
-	return result, nil
+	return stockInfo, nil
 }

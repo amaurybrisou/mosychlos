@@ -13,12 +13,12 @@ import (
 
 // RiskBatchEngine implements risk analysis using the base batch engine with embedding
 type RiskBatchEngine struct {
-	*base.BatchEngine // Embed the base engine
-	promptBuilder     models.PromptBuilder
+	*base.BaseBatchEngine // Embed the base engine
+	promptBuilder         models.PromptBuilder
 }
 
 type Deps struct {
-	base.Deps
+	base.BaseBatchEngineConfig
 	PromptBuilder models.PromptBuilder
 }
 
@@ -36,11 +36,11 @@ func NewRiskBatchEngine(name string, deps Deps) *RiskBatchEngine {
 	}
 
 	// Create base batch engine
-	baseEngine := base.NewBatchEngine(name, deps.Deps)
+	baseEngine := base.NewBatchEngine(name, deps.BaseBatchEngineConfig)
 
 	return &RiskBatchEngine{
-		BatchEngine:   baseEngine,
-		promptBuilder: deps.PromptBuilder,
+		BaseBatchEngine: baseEngine,
+		promptBuilder:   deps.PromptBuilder,
 	}
 }
 

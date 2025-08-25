@@ -6,8 +6,8 @@ import "time"
 type ToolComputation struct {
 	ToolName     string        `json:"tool_name"`
 	CallID       string        `json:"call_id,omitempty"`
-	Arguments    string        `json:"arguments"`
-	Result       string        `json:"result"`
+	Arguments    any           `json:"arguments"`
+	Result       any           `json:"result"`
 	StartTime    time.Time     `json:"start_time"`
 	Duration     time.Duration `json:"duration"`
 	Success      bool          `json:"success"`

@@ -80,13 +80,13 @@ func (p *Provider) IsExternal() bool {
 }
 
 // Run executes the tool with the given arguments
-func (p *Provider) Run(ctx context.Context, args string) (string, error) {
+func (p *Provider) Run(ctx context.Context, args any) (any, error) {
 	// Parse arguments for logging/debugging purposes
 	var params struct {
 		Query string `json:"query"`
 	}
 
-	if err := json.Unmarshal([]byte(args), &params); err != nil {
+	if err := json.Unmarshal([]byte(fmt.Sprintf("%v", args)), &params); err != nil {
 		return "", fmt.Errorf("failed to parse web search arguments: %w", err)
 	}
 

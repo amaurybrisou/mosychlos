@@ -73,17 +73,17 @@ func NewReportCommand(cfg *config.Config) *cobra.Command {
 				return fmt.Errorf("failed to load bag: %w", err)
 			}
 
-			fsys := fs.New()
+			if outputDir == "" {
+				outputDir = filepath.Join(cfg.DataDir, "reports")
+			}
+
+			fsys := fs.New(outputDir)
 			loader := report.NewBagLoader(fsys)
 			ctx := context.Background()
 
 			fullData, err := loader.LoadFullData(ctx, sharedBag)
 			if err != nil {
 				return fmt.Errorf("failed to extract report data: %w", err)
-			}
-
-			if outputDir == "" {
-				outputDir = "mosychlos-data/reports"
 			}
 
 			if len(formats) == 0 {

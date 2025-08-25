@@ -123,7 +123,7 @@ func (p *FredTool) Definition() models.ToolDef {
 }
 
 // Run executes the tool with given arguments
-func (p *FredTool) Run(ctx context.Context, args string) (string, error) {
+func (p *FredTool) Run(ctx context.Context, args any) (any, error) {
 	// Parse input arguments
 	var input struct {
 		SeriesGroup string `json:"series_group"`
@@ -134,8 +134,8 @@ func (p *FredTool) Run(ctx context.Context, args string) (string, error) {
 		Season      string `json:"season"`
 	}
 
-	if args != "" {
-		if err := json.Unmarshal([]byte(args), &input); err != nil {
+	if args != nil {
+		if err := json.Unmarshal([]byte(fmt.Sprintf("%v", args)), &input); err != nil {
 			return "", fmt.Errorf("invalid JSON arguments: %w", err)
 		}
 	}
@@ -168,35 +168,35 @@ func (p *FredTool) Run(ctx context.Context, args string) (string, error) {
 
 	// Convert the entire response to map using JSON marshaling/unmarshaling
 	// This automatically handles all fields without manual enumeration
-	jsonData, err := json.Marshal(result)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal response: %w", err)
-	}
+	// jsonData, err := json.Marshal(result)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to marshal response: %w", err)
+	// }
 
-	var response map[string]any
-	if err := json.Unmarshal(jsonData, &response); err != nil {
-		return "", fmt.Errorf("failed to unmarshal to map: %w", err)
-	}
+	// var response map[string]any
+	// if err := json.Unmarshal(jsonData, &response); err != nil {
+	// 	return "", fmt.Errorf("failed to unmarshal to map: %w", err)
+	// }
 
-	// Add metadata
-	response["metadata"] = map[string]any{
-		"timestamp":    time.Now().UTC(),
-		"source":       "fred_geofred",
-		"series_group": input.SeriesGroup,
-		"date":         input.Date,
-		"region_type":  input.RegionType,
-		"units":        input.Units,
-		"frequency":    input.Frequency,
-		"season":       input.Season,
-	}
+	// // Add metadata
+	// response["metadata"] = map[string]any{
+	// 	"timestamp":    time.Now().UTC(),
+	// 	"source":       "fred_geofred",
+	// 	"series_group": input.SeriesGroup,
+	// 	"date":         input.Date,
+	// 	"region_type":  input.RegionType,
+	// 	"units":        input.Units,
+	// 	"frequency":    input.Frequency,
+	// 	"season":       input.Season,
+	// }
 
 	// Convert back to JSON string for AI response
-	resultJSON, err := json.Marshal(response)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal final response: %w", err)
-	}
+	// resultJSON, err := json.Marshal(response)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to marshal final response: %w", err)
+	// }
 
-	return string(resultJSON), nil
+	return result, nil
 }
 
 // fetchWithClient uses the FRED provider client to fetch regional data

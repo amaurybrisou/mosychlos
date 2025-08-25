@@ -13,14 +13,15 @@ import (
 
 // Deps is the dependency bundle passed to engine builders/constructors.
 type Deps struct {
+	RunID     string
 	Ctx       context.Context
 	Config    *config.Config
 	SharedBag bag.SharedBag
 	FS        fs.FS
 
 	// Core services built by the orchestrator:
-	AI      *llm.Client
-	Prompts models.PromptBuilder // if some engines need prompt building
-	Tools   models.ToolProvider
+	AI            *llm.Client
+	PromptBuilder models.PromptBuilder // if some engines need prompt building
+	ToolProvider  models.ToolProvider
 	// Add other shared services here if needed (portfolio svc, news svc, etc.)
 }

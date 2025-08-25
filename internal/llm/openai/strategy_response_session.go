@@ -264,10 +264,11 @@ func (r *Runner) Run(ctx context.Context, req models.PromptRequest) (*models.LLM
 			var outStr string
 
 			if tool, ok := r.provider.toolByKey[key]; ok {
-				outStr, err = tool.Run(ctx, call.Function.Arguments)
-				if err != nil {
-					return nil, fmt.Errorf("tool %s failed: %w", call.Function.Name, err)
-				}
+				_ = tool
+				// outStr, err = tool.Run(ctx, call.Function.Arguments)
+				// if err != nil {
+				// 	return nil, fmt.Errorf("tool %s failed: %w", call.Function.Name, err)
+				// }
 				if r.provider.consumer != nil {
 					// If your ToolConsumer returns a string, use that here.
 					// Adjust if your interface differs.
