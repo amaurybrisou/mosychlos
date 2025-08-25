@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/amaurybrisou/mosychlos/internal/budget"
+	"github.com/amaurybrisou/mosychlos/internal/engine/agents"
 	"github.com/amaurybrisou/mosychlos/internal/engine/base"
 	"github.com/amaurybrisou/mosychlos/internal/engine/risk"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
@@ -217,5 +218,29 @@ func DefaultRegistry() *RegistryBuilder {
 			d.AI.RegisterTool(d.Tools.List()...)
 
 			return risk.New("risk-engine", d.Prompts, constraints), nil
+		})
+}
+
+// DefaultAgentsRegistry returns a registry configured to use agent-based engines
+// This demonstrates the integration of the OpenAI Agents Go SDK
+func DefaultAgentsRegistry() *RegistryBuilder {
+	return NewRegistryBuilder().
+		Register("agent-risk", func(d Deps) (models.Engine, error) {
+			if d.Prompts == nil {
+				return nil, fmt.Errorf("agent risk engine requires Deps.Prompts")
+			}
+			if d.Tools == nil {
+				return nil, fmt.Errorf("agent risk engine requires Deps.Tools")
+			}
+
+			// Convert Mosychlos tools to agent tools
+			converter := agents.NewToolConverter()
+			
+			// Select preferred tools for risk analysis
+			preferredToolNames := []string{"fmp", "newsapi", "fred"}
+			agentTools := converter.ConvertSelectedTools(d.Tools, preferredToolNames...)
+
+			// Create the agent-based risk engine
+			return agents.NewAgentRiskEngine("agent-risk-engine", d.Prompts, agentTools), nil
 		})
 }
