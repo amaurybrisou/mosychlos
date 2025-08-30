@@ -1,3 +1,4 @@
+// Package bag provides an key/value store with typed accessors.
 package bag
 
 import (

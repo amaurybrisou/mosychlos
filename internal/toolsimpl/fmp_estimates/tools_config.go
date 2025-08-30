@@ -33,6 +33,7 @@ func GetToolConfigs(_cfg any, sharedBag bag.SharedBag) models.ToolConfig {
 			RequestsPerDay:    250, // Shares FMP quota
 			Burst:             5,
 		},
+		Persisting: cfg.Persisting,
 	}
 }
 

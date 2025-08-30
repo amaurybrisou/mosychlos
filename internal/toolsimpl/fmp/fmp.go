@@ -83,6 +83,7 @@ func (p *FMPTool) Definition() models.ToolDef {
 			Name:        p.Name(),
 			Description: p.Description(),
 			Parameters: map[string]any{
+				"title":                p.Name(),
 				"type":                 "object",
 				"additionalProperties": false,
 				"properties": map[string]any{
@@ -103,14 +104,14 @@ func (p *FMPTool) Definition() models.ToolDef {
 }
 
 // Run executes the tool with given arguments
-func (p *FMPTool) Run(ctx context.Context, args string) (string, error) {
+func (p *FMPTool) Run(ctx context.Context, args any) (any, error) {
 	// Parse input arguments
 	var input struct {
 		Tickers []string `json:"tickers"`
 	}
 
-	if args != "" {
-		if err := json.Unmarshal([]byte(args), &input); err != nil {
+	if args != nil {
+		if err := json.Unmarshal([]byte(fmt.Sprintf("%v", args)), &input); err != nil {
 			return "", fmt.Errorf("invalid JSON arguments: %w", err)
 		}
 	}
@@ -128,36 +129,36 @@ func (p *FMPTool) Run(ctx context.Context, args string) (string, error) {
 
 	// Convert the entire response to map using JSON marshaling/unmarshaling
 	// This automatically handles all fields without manual enumeration
-	jsonData, err := json.Marshal(result)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal response: %w", err)
-	}
+	// jsonData, err := json.Marshal(result)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to marshal response: %w", err)
+	// }
 
-	var response map[string]any
-	if err := json.Unmarshal(jsonData, &response); err != nil {
-		return "", fmt.Errorf("failed to unmarshal to map: %w", err)
-	}
+	// var response map[string]any
+	// if err := json.Unmarshal(jsonData, &response); err != nil {
+	// 	return "", fmt.Errorf("failed to unmarshal to map: %w", err)
+	// }
 
-	// Add metadata
-	response["metadata"] = map[string]any{
-		"timestamp": time.Now().UTC(),
-		"source":    "fmp",
-		"tickers":   input.Tickers,
-		"count":     len(input.Tickers),
-	}
+	// // Add metadata
+	// response["metadata"] = map[string]any{
+	// 	"timestamp": time.Now().UTC(),
+	// 	"source":    "fmp",
+	// 	"tickers":   input.Tickers,
+	// 	"count":     len(input.Tickers),
+	// }
 
-	// Convert back to JSON string for AI response
-	resultJSON, err := json.Marshal(response)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal final response: %w", err)
-	}
+	// // Convert back to JSON string for AI response
+	// resultJSON, err := json.Marshal(response)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to marshal final response: %w", err)
+	// }
 
-	return string(resultJSON), nil
+	return result, nil
 }
 
 // fetchWithClient uses the FMP provider client to fetch company profiles
-func (p *FMPTool) fetchWithClient(ctx context.Context, tickers []string) (map[string]any, error) {
-	result := make(map[string]any)
+func (p *FMPTool) fetchWithClient(ctx context.Context, tickers []string) (map[string]*models.FMPCompanyProfile, error) {
+	result := make(map[string]*models.FMPCompanyProfile)
 
 	for _, ticker := range tickers {
 		// Clean the ticker
@@ -171,9 +172,6 @@ func (p *FMPTool) fetchWithClient(ctx context.Context, tickers []string) (map[st
 		if err != nil {
 			// Log error but continue with other tickers
 			slog.Warn("Failed to get company profile", "ticker", ticker, "error", err)
-			result[ticker] = map[string]any{
-				"error": fmt.Sprintf("failed to get profile: %v", err),
-			}
 			continue
 		}
 

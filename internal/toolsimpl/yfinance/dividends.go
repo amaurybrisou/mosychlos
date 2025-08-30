@@ -106,7 +106,7 @@ func (t *YFinanceDividendsTool) Tags() []string {
 }
 
 // Run executes the tool with the given arguments
-func (t *YFinanceDividendsTool) Run(ctx context.Context, args string) (string, error) {
+func (t *YFinanceDividendsTool) Run(ctx context.Context, args any) (any, error) {
 	slog.Debug("Running yfinance dividends tool",
 		"tool", t.Name(),
 		"args", args,
@@ -118,7 +118,7 @@ func (t *YFinanceDividendsTool) Run(ctx context.Context, args string) (string, e
 		Period string `json:"period,omitempty"`
 	}
 
-	if err := json.Unmarshal([]byte(args), &params); err != nil {
+	if err := json.Unmarshal([]byte(fmt.Sprintf("%v", args)), &params); err != nil {
 		return "", fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
@@ -167,7 +167,7 @@ func (t *YFinanceDividendsTool) Run(ctx context.Context, args string) (string, e
 		"result_size", len(response),
 	)
 
-	return string(response), nil
+	return result, nil
 }
 
 // getDividends retrieves dividend data from Yahoo Finance
@@ -227,20 +227,20 @@ func (t *YFinanceDividendsTool) getDividends(ctx context.Context, symbol, period
 		}, nil
 	}
 
-	// Convert the entire response to map using JSON marshaling/unmarshaling
-	// This automatically handles all fields without manual enumeration
-	jsonData, err := json.Marshal(dividendData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal dividend data: %w", err)
-	}
+	// // Convert the entire response to map using JSON marshaling/unmarshaling
+	// // This automatically handles all fields without manual enumeration
+	// jsonData, err := json.Marshal(dividendData)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to marshal dividend data: %w", err)
+	// }
 
-	var result map[string]any
-	if err := json.Unmarshal(jsonData, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
-	}
+	// var result map[string]any
+	// if err := json.Unmarshal(jsonData, &result); err != nil {
+	// 	return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
+	// }
 
-	// Add metadata about the number of results available
-	result["results_count"] = len(dividendData.Chart.Result)
+	// // Add metadata about the number of results available
+	// result["results_count"] = len(dividendData.Chart.Result)
 
-	return result, nil
+	return dividendData, nil
 }

@@ -90,14 +90,14 @@ func RunConversation(
 			}
 
 			// Execute local tool
-			out, err := tool.Run(ctx, call.Function.Arguments)
-			if err != nil {
-				slog.Warn("tool failed", "tool", call.Function.Name, "err", err)
-				out = fmt.Sprintf("error: %v", err)
-			}
+			// out, err := tool.Run(ctx, call.Function.Arguments)
+			// if err != nil {
+			// 	slog.Warn("tool failed", "tool", call.Function.Name, "err", err)
+			// 	out = fmt.Sprintf("error: %v", err)
+			// }
 
 			// Feed result to the model
-			sess.AddFunctionCallResult(call, out)
+			// sess.AddFunctionCallResult(call, out)
 		}
 
 		// Next model turn (rf forwarded)

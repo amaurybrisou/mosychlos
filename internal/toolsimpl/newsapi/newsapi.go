@@ -75,6 +75,8 @@ func (p *NewsAPITool) Definition() models.ToolDef {
 						"type":        "array",
 						"items":       map[string]any{"type": "string"},
 						"description": "News topics or categories to search for (e.g., 'business', 'technology', 'AAPL', 'Tesla')",
+						"minItems":    1,
+						"maxItems":    1,
 					},
 				},
 				"required": []string{"topics"},
@@ -83,7 +85,7 @@ func (p *NewsAPITool) Definition() models.ToolDef {
 	}
 }
 
-func (p *NewsAPITool) Run(ctx context.Context, args string) (string, error) {
+func (p *NewsAPITool) Run(ctx context.Context, args any) (any, error) {
 	slog.Debug("Running NewsAPI tool",
 		"tool", p.Name(),
 		"args", args,
@@ -93,7 +95,7 @@ func (p *NewsAPITool) Run(ctx context.Context, args string) (string, error) {
 		Topics []string `json:"topics"`
 	}
 
-	if err := json.Unmarshal([]byte(args), &params); err != nil {
+	if err := json.Unmarshal(fmt.Appendf(nil, "%v", args), &params); err != nil {
 		return "", fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
@@ -112,32 +114,32 @@ func (p *NewsAPITool) Run(ctx context.Context, args string) (string, error) {
 	}
 
 	// Convert to map for Marshal/Unmarshal pattern
-	dataMap, err := json.Marshal(newsData)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal news data: %w", err)
-	}
+	// dataMap, err := json.Marshal(newsData)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to marshal news data: %w", err)
+	// }
 
-	var result map[string]any
-	if err := json.Unmarshal(dataMap, &result); err != nil {
-		return "", fmt.Errorf("failed to unmarshal to map: %w", err)
-	}
+	// var result map[string]any
+	// if err := json.Unmarshal(dataMap, &result); err != nil {
+	// 	return "", fmt.Errorf("failed to unmarshal to map: %w", err)
+	// }
 
-	response, err := json.Marshal(result)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal response: %w", err)
-	}
+	// response, err := json.Marshal(result)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to marshal response: %w", err)
+	// }
 
-	slog.Info("NewsAPI tool executed successfully",
-		"tool", p.Name(),
-		"topics", params.Topics,
-		"articles_count", len(newsData.Articles),
-	)
+	// slog.Info("NewsAPI tool executed successfully",
+	// 	"tool", p.Name(),
+	// 	"topics", params.Topics,
+	// 	"articles_count", len(newsData.Articles),
+	// )
 
-	return string(response), nil
+	return newsData, nil
 }
 
 // fetch retrieves news data for the given topics using NewsAPI
-func (p *NewsAPITool) fetch(ctx context.Context, topics []string) (*models.NewsData, error) {
+func (p *NewsAPITool) fetch(ctx context.Context, topics []string) (*newsapi.NewsAPIResponse, error) {
 	slog.Debug("Fetching news",
 		"topics", topics,
 		"locale", p.locale,
@@ -251,5 +253,5 @@ func (p *NewsAPITool) fetch(ctx context.Context, topics []string) (*models.NewsD
 		"articles_retrieved", len(newsData.Articles),
 	)
 
-	return newsData, nil
+	return finalResponse, nil
 }

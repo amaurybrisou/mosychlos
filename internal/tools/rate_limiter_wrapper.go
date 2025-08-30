@@ -170,7 +170,7 @@ func (rt *RateLimitedTool) Tags() []string {
 }
 
 // Run implements the Tool interface with rate limiting
-func (rt *RateLimitedTool) Run(ctx context.Context, args string) (string, error) {
+func (rt *RateLimitedTool) Run(ctx context.Context, args any) (any, error) {
 	// Check rate limit before executing
 	err := rt.rateLimiter.Wait(ctx)
 	if err != nil {

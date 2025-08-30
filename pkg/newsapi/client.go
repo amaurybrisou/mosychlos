@@ -1,3 +1,4 @@
+// Package newsapi
 package newsapi
 
 import (
@@ -143,7 +144,7 @@ func (c *Client) GetEverything(ctx context.Context, params EverythingParams) (*N
 	return &result, nil
 }
 
-// ConvertToNewsData converts NewsAPIResponse to models.NewsData
+// ToNewsData converts NewsAPIResponse to models.NewsData
 func (r *NewsAPIResponse) ToNewsData() *models.NewsData {
 	data := &models.NewsData{
 		LastUpdated: time.Now().UTC(),
@@ -179,7 +180,11 @@ type NewsArticle struct {
 	Source struct {
 		Name string `json:"name"`
 	} `json:"source"`
+	Author      string `json:"author"`
+	Content     string `json:"content"`
+	Description string `json:"description"`
 	Title       string `json:"title"`
 	PublishedAt string `json:"publishedAt"`
 	URL         string `json:"url"`
+	URLToImage  string `json:"urlToImage"`
 }

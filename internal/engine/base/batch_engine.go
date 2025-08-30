@@ -12,8 +12,8 @@ import (
 	"github.com/amaurybrisou/mosychlos/pkg/models"
 )
 
-// BatchEngine implements models.Engine interface with template method pattern
-type BatchEngine struct {
+// BaseBatchEngine implements models.Engine interface with template method pattern
+type BaseBatchEngine struct {
 	name        string
 	constraints models.BaseToolConstraints
 	model       config.LLMModel
@@ -21,9 +21,9 @@ type BatchEngine struct {
 	tools       models.ToolProvider
 }
 
-var _ models.Engine = &BatchEngine{}
+var _ models.Engine = &BaseBatchEngine{}
 
-type Deps struct {
+type BaseBatchEngineConfig struct {
 	// … other deps (cfg, fs, bag snapshot, logger, LLM, etc.)
 	Tools       models.ToolProvider
 	Model       config.LLMModel
@@ -34,9 +34,9 @@ type Deps struct {
 // NewBatchEngine creates a new base batch engine with hooks for customization
 func NewBatchEngine(
 	name string,
-	deps Deps,
-) *BatchEngine {
-	return &BatchEngine{
+	deps BaseBatchEngineConfig,
+) *BaseBatchEngine {
+	return &BaseBatchEngine{
 		name:        name,
 		model:       deps.Model,
 		constraints: deps.Constraints,
@@ -46,17 +46,17 @@ func NewBatchEngine(
 }
 
 // Name returns the engine name
-func (b *BatchEngine) Name() string {
+func (b *BaseBatchEngine) Name() string {
 	return b.name
 }
 
 // ResultKey returns the result key from hooks
-func (b *BatchEngine) ResultKey() bag.Key {
+func (b *BaseBatchEngine) ResultKey() bag.Key {
 	return b.hooks.ResultKey()
 }
 
 // Execute implements the template method pattern with hooks for customization
-func (b *BatchEngine) Execute(ctx context.Context, aiClient models.AiClient, sharedBag bag.SharedBag) error {
+func (b *BaseBatchEngine) Execute(ctx context.Context, aiClient models.AiClient, sharedBag bag.SharedBag) error {
 	// Set up tool consumer
 	aiClient.SetToolConsumer(budget.NewToolConsumer(&b.constraints))
 
@@ -144,7 +144,7 @@ func (b *BatchEngine) Execute(ctx context.Context, aiClient models.AiClient, sha
 }
 
 // submitAndWaitForBatch submits jobs to AI client and waits for completion
-func (b *BatchEngine) submitAndWaitForBatch(
+func (b *BaseBatchEngine) submitAndWaitForBatch(
 	ctx context.Context,
 	aiClient models.AiClient,
 	jobs []models.BatchJob,
@@ -186,7 +186,7 @@ func (b *BatchEngine) submitAndWaitForBatch(
 }
 
 // processJobResults processes batch results and generates next jobs if needed
-func (b *BatchEngine) processJobResults(
+func (b *BaseBatchEngine) processJobResults(
 	ctx context.Context,
 	jobs []models.BatchJob,
 	results *models.BatchResult,
@@ -261,7 +261,7 @@ func (b *BatchEngine) processJobResults(
 }
 
 // processToolCalls processes tool calls and creates next job if needed
-func (b *BatchEngine) processToolCalls(
+func (b *BaseBatchEngine) processToolCalls(
 	ctx context.Context,
 	job models.BatchJob,
 	toolCalls []models.ToolCall,
@@ -328,7 +328,7 @@ func (b *BatchEngine) processToolCalls(
 }
 
 // executeToolCall is a helper method that can be overridden by embedding engines
-func (b *BatchEngine) executeToolCall(ctx context.Context, toolCall models.ToolCall) (any, error) {
+func (b *BaseBatchEngine) executeToolCall(ctx context.Context, toolCall models.ToolCall) (any, error) {
 	slog.Debug("Looking up tool",
 		"tool_name", toolCall.Function.Name,
 		"available_tools", len(b.tools.List()))

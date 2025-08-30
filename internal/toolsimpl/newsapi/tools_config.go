@@ -21,10 +21,11 @@ func GetToolConfigs(_cfg any, sharedBag bag.SharedBag) models.ToolConfig {
 		CacheEnabled: cfg.CacheEnable,
 		CacheTTL:     6 * time.Hour,
 		RateLimit: &models.ToolsRateLimit{
-			RequestsPerSecond: 5,    // Conservative rate
-			RequestsPerDay:    1000, // NewsAPI free tier
+			RequestsPerSecond: 1,   // Conservative rate
+			RequestsPerDay:    100, // NewsAPI free tier
 			Burst:             10,
 		},
+		Persisting: cfg.Persisting,
 	}
 }
 

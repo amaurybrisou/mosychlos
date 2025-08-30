@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"time"
@@ -83,7 +84,7 @@ func (ct *CachedTool) Tags() []string {
 
 // Run executes the tool with caching
 // First checks cache for existing result, otherwise executes the tool and caches the result
-func (ct *CachedTool) Run(ctx context.Context, args string) (string, error) {
+func (ct *CachedTool) Run(ctx context.Context, args any) (any, error) {
 	// Generate cache key based on tool name, date, and parameter hash
 	cacheKey := ct.generateCacheKey(args)
 
@@ -99,21 +100,26 @@ func (ct *CachedTool) Run(ctx context.Context, args string) (string, error) {
 		return result, err
 	}
 
+	jsonData, err := json.Marshal(result)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal result: %w", err)
+	}
+
 	// Cache the successful result
-	ct.cache.Set(cacheKey, []byte(result), ct.ttl)
+	ct.cache.Set(cacheKey, jsonData, ct.ttl)
 
 	return result, nil
 }
 
 // generateCacheKey creates a deterministic cache key based on tool name, date, and arguments
 // Format: "tool:{toolname}:{date}:{args_hash}"
-func (ct *CachedTool) generateCacheKey(args string) string {
+func (ct *CachedTool) generateCacheKey(args any) string {
 	// Include date for daily invalidation
 	date := time.Now().Format("2006-01-02")
 
 	// Create hash of arguments for deterministic, compact keys
 	hasher := sha256.New()
-	hasher.Write([]byte(args))
+	hasher.Write([]byte(fmt.Sprintf("%v", args)))
 	argsHash := hex.EncodeToString(hasher.Sum(nil))[:16] // Use first 16 chars for compact key
 
 	return fmt.Sprintf("tool:%s:%s:%s", ct.tool.Name(), date, argsHash)

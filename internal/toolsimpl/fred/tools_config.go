@@ -34,6 +34,7 @@ func GetToolConfigs(_cfg any, sharedBag bag.SharedBag) models.ToolConfig {
 			RequestsPerDay:    10000, // High limit
 			Burst:             20,
 		},
+		Persisting: cfg.Persisting,
 	}
 }
 

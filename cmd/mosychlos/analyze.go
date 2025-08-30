@@ -32,6 +32,8 @@ func NewAnalyzeCommand(cfg *config.Config) *cobra.Command {
 	analyzeCmd.Flags().BoolP("verbose", "v", false, "Show detailed analysis process including prompts and AI conversation")
 	// Add batch flag to analyze command
 	analyzeCmd.Flags().Bool("batch", false, "Use batch processing for analysis (50% cost savings, longer processing time)")
+	// Add agents flag to use the new agent-based engines
+	analyzeCmd.Flags().Bool("agents", false, "Use agent-based analysis with OpenAI Agents Go SDK (experimental)")
 	// Add report generation flags
 	analyzeCmd.Flags().Bool("reports", false, "Generate reports after analysis")
 	analyzeCmd.Flags().Bool("all-formats", false, "Generate reports in all formats (markdown, PDF, JSON)")
@@ -44,13 +46,19 @@ func NewAnalyzeCommand(cfg *config.Config) *cobra.Command {
 
 func runAnalyzeCommand(cmd *cobra.Command, _ []string, cfg *config.Config) error {
 	batch, _ := cmd.Flags().GetBool("batch")
+	useAgents, _ := cmd.Flags().GetBool("agents")
 
-	builder := engine.DefaultRegistry() // or build your own registry programmatically
-	if batch {
+	var builder *engine.RegistryBuilder
+	
+	if useAgents {
+		slog.Info("Using agent-based analysis with OpenAI Agents Go SDK")
+		builder = engine.DefaultAgentsRegistry()
+	} else if batch {
 		slog.Debug("using batch engine builder", "builder", builder)
-		builder = engine.DefaultBatchRegistry() // or build your own registry programmatically
+		builder = engine.DefaultBatchRegistry()
 	} else {
 		slog.Debug("using default engine builder", "builder", builder)
+		builder = engine.DefaultRegistry()
 	}
 
 	// Recreate orchestrator with builder injected

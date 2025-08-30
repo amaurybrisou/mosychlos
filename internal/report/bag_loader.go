@@ -33,16 +33,16 @@ func NewBagLoader(filesystem fs.FS) BagLoader {
 	}
 }
 
-func (r *bagLoader) LoadData(ctx context.Context, bag bag.SharedBag, reportType string) (interface{}, error) {
+func (l *bagLoader) LoadData(ctx context.Context, bag bag.SharedBag, reportType string) (any, error) {
 	switch reportType {
 	case "customer":
-		return r.LoadCustomerData(ctx, bag)
+		return l.LoadCustomerData(ctx, bag)
 	case "system":
-		return r.LoadSystemData(ctx, bag)
+		return l.LoadSystemData(ctx, bag)
 	case "full":
-		return r.LoadFullData(ctx, bag)
+		return l.LoadFullData(ctx, bag)
 	default:
-		return r.LoadFullData(ctx, bag)
+		return l.LoadFullData(ctx, bag)
 	}
 }
 
@@ -168,5 +168,6 @@ func (l *bagLoader) LoadFullData(ctx context.Context, sharedBag bag.SharedBag) (
 
 // IsBatchMode returns true if the bag is in batch mode
 func (l *bagLoader) IsBatchMode(sharedBag bag.SharedBag) bool {
-	return sharedBag.MustGet(bag.KBatchMode).(bool)
+	value, _ := sharedBag.Get(bag.KBatchMode)
+	return value.(bool)
 }

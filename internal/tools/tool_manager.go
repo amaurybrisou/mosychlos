@@ -4,24 +4,29 @@ package tools
 import (
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/amaurybrisou/mosychlos/internal/config"
 	"github.com/amaurybrisou/mosychlos/pkg/bag"
 	"github.com/amaurybrisou/mosychlos/pkg/models"
+	"github.com/amaurybrisou/mosychlos/pkg/normalize"
 )
 
 type ToolManager struct {
 	tools     map[string]models.Tool
 	sharedBag bag.SharedBag
+	reg       normalize.Registry
 }
 
 // NewToolManager creates a fresh manager, wires caching/metrics wrappers,
 // and initializes tools based on config.
-func NewToolManager(cfg *config.Config, sharedBag bag.SharedBag) (*ToolManager, error) {
+func NewToolManager(cfg *config.Config, sharedBag bag.SharedBag, reg normalize.Registry) (*ToolManager, error) {
 	m := &ToolManager{
 		tools:     make(map[string]models.Tool),
 		sharedBag: sharedBag,
+		reg:       reg,
 	}
 
 	// Example: iterate config to decide which tools to create
@@ -38,7 +43,7 @@ func NewToolManager(cfg *config.Config, sharedBag bag.SharedBag) (*ToolManager, 
 			return nil, fmt.Errorf("failed to build tool: %w", err)
 		}
 
-		tool = wrapTool(tool, &toolConfig, cfg.CacheDir, sharedBag)
+		tool = wrapTool(tool, &toolConfig, cfg.DataDir, cfg.CacheDir, sharedBag, reg)
 		m.tools[toolConfig.Key.String()] = tool
 	}
 
@@ -85,7 +90,13 @@ func (m *ToolManager) Close() error {
 }
 
 // wrapTool applies all configured wrappers to a tool
-func wrapTool(tool models.Tool, config *models.ToolConfig, cacheDir string, sharedBag bag.SharedBag) models.Tool {
+func wrapTool(
+	tool models.Tool,
+	config *models.ToolConfig,
+	dataDir, cacheDir string,
+	sharedBag bag.SharedBag,
+	reg normalize.Registry,
+) models.Tool {
 	wrapped := tool
 
 	// Apply rate limiting if configured
@@ -109,6 +120,32 @@ func wrapTool(tool models.Tool, config *models.ToolConfig, cacheDir string, shar
 		slog.Debug("Applied caching",
 			"tool", tool.Name(),
 			"cache_ttl", config.CacheTTL,
+		)
+	}
+
+	// Apply Input/Output Persiting in config.DataDir (especially useful for debugging & generating test fixtures)
+	if runID := sharedBag.MustGet(bag.KEngineRunID).(string); config.Persisting && runID != "" {
+		wrapped = NewIOPersistingTool(wrapped,
+			filepath.Join(dataDir, "tools_i_o", fmt.Sprintf("run_%s_%s", runID, time.Now().Format("20060102_150405"))))
+		slog.Debug("Applied I/O persisting",
+			"tool", tool.Name(),
+			"data_dir", dataDir,
+		)
+	}
+
+	// 4) Normalize to a stable envelope (side-channel into SharedBag)
+	if sharedBag != nil && reg != nil {
+		wrapped = NewNormalizeWrapper(wrapped, reg, sharedBag)
+		slog.Debug("Applied normalization wrapper",
+			"tool", tool.Name(),
+		)
+	}
+
+	// 5) Wire-minify for the LLM (return compact JSON)
+	if sharedBag != nil && reg != nil {
+		wrapped = NewWireMinWrapper(wrapped, reg, sharedBag)
+		slog.Debug("Applied wire-minification wrapper",
+			"tool", tool.Name(),
 		)
 	}
 

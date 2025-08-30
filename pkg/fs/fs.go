@@ -1,4 +1,4 @@
-// New returns a default OS filesystem instance
+// Package fs provides an abstraction over file system operations
 package fs
 
 import (
@@ -8,8 +8,11 @@ import (
 )
 
 // New returns a default OS filesystem instance
-func New() FS {
-	return OS{}
+func New(dir string) FS {
+	if dir == "" {
+		dir = os.TempDir()
+	}
+	return OS{RootPath: dir}
 }
 
 //go:generate mockgen -source=fs.go -destination=mocks/fs_mock.go -package=mocks

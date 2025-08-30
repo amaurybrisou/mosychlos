@@ -35,7 +35,7 @@ func TestNewBatchEngine(t *testing.T) {
 			hooks := mocks.NewMockBatchEngineHooks(ctrl)
 			hooks.EXPECT().ResultKey().Return(bag.KRiskAnalysisResult).AnyTimes()
 
-			engine := NewBatchEngine(c.engineName, Deps{
+			engine := NewBatchEngine(c.engineName, BaseBatchEngineConfig{
 				Model:       c.model,
 				Constraints: c.constraints,
 				Hooks:       hooks,
@@ -64,7 +64,7 @@ func TestBatchEngine_Interface(t *testing.T) {
 
 	hooks.EXPECT().ResultKey().Return(bag.KRiskAnalysisResult).AnyTimes()
 
-	engine := NewBatchEngine("test", Deps{
+	engine := NewBatchEngine("test", BaseBatchEngineConfig{
 		Model:       config.LLMModelGPT4o,
 		Constraints: models.BaseToolConstraints{},
 		Hooks:       hooks,

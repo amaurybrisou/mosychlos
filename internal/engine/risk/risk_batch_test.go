@@ -67,7 +67,7 @@ func TestNewRiskBatchEngine(t *testing.T) {
 			var _ models.Engine = engine
 
 			// Test that the embedded BatchEngine is accessible
-			if engine.BatchEngine == nil {
+			if engine.BaseBatchEngine == nil {
 				t.Error("BatchEngine should not be nil")
 			}
 

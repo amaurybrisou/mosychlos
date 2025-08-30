@@ -1,4 +1,4 @@
-// GenerateReport generates a report from FullReportData, outputDir, and format (for CLI use)
+// Package report provides functionality for generating reports
 package report
 
 import (
@@ -237,7 +237,7 @@ func (g *Generator) generateMarkdownFilePath(reportType models.ReportType, outpu
 
 func GenerateReport(fullData *models.FullReportData, outputDir, format string) error {
 	// Minimal dependencies for file writing
-	fsys := fs.New()
+	fsys := fs.New(outputDir)
 	deps := Dependencies{
 		Config:     nil, // Not needed for direct CLI
 		DataBag:    nil, // Not used here
@@ -261,7 +261,6 @@ func GenerateReport(fullData *models.FullReportData, outputDir, format string) e
 	}
 
 	filename := "full_report_" + time.Now().Format("20060102_150405") + ext
-	filePath := filepath.Join(outputDir, filename)
 
 	// Write file
 	if format == "json" {
@@ -274,8 +273,8 @@ func GenerateReport(fullData *models.FullReportData, outputDir, format string) e
 		if err != nil {
 			return err
 		}
-		return fsys.WriteFile(filePath, data, 0644)
+		return fsys.WriteFile(filename, data, 0644)
 	}
 
-	return fsys.WriteFile(filePath, []byte(content), 0644)
+	return fsys.WriteFile(filename, []byte(content), 0644)
 }

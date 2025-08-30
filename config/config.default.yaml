@@ -161,12 +161,14 @@ tools:
     provider: 'newsapi'
     # Note: locale is derived from centralized localization.language
     cache_enable: true
+    persisting: true
 
   # Federal Reserve Economic Data (FRED) configuration
   fred:
     api_key: '${FRED_API_KEY}'
     # Note: country is derived from centralized localization.country
     cache_enable: true
+    persisting: true
     series:
       gdp: 'GDP'
       inflation: 'CPIAUCSL'
@@ -181,6 +183,7 @@ tools:
     cache_dir: '/tmp/mosychlos/cache/fmp'
     max_daily: 1000
     cache_enable: true
+    persisting: true
 
   # FMP Analyst Estimates configuration
   fmp_analyst_estimates:
@@ -189,11 +192,13 @@ tools:
     cache_dir: '/tmp/mosychlos/cache/fmp_estimates'
     cache_enable: true
     max_daily: 500
+    persisting: true
 
   # Yahoo Finance data provider (no API key required)
   yfinance:
     base_url: 'https://query1.finance.yahoo.com'
     cache_enable: true
+    persisting: true
     max_daily: 2000
     timeout: 30 # seconds
     max_requests: 100
@@ -203,6 +208,7 @@ tools:
     base_url: 'https://data.sec.gov'
     cache_enable: true
     max_daily: 100
+    persisting: true
 
 # =============================================================================
 # TRADING PLATFORM INTEGRATIONS

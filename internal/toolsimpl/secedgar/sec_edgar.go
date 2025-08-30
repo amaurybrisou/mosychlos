@@ -115,7 +115,7 @@ func (p *SecEdgarTool) Tags() []string {
 }
 
 // Run executes the tool with the given arguments
-func (p *SecEdgarTool) Run(ctx context.Context, args string) (string, error) {
+func (p *SecEdgarTool) Run(ctx context.Context, args any) (any, error) {
 	slog.Debug("Running SEC Edgar tool",
 		"tool", p.Name(),
 		"args", args,
@@ -131,7 +131,7 @@ func (p *SecEdgarTool) Run(ctx context.Context, args string) (string, error) {
 		Count      int    `json:"count,omitempty"`
 	}
 
-	if err := json.Unmarshal([]byte(args), &params); err != nil {
+	if err := json.Unmarshal([]byte(fmt.Sprintf("%v", args)), &params); err != nil {
 		return "", fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
@@ -204,7 +204,7 @@ func (p *SecEdgarTool) Run(ctx context.Context, args string) (string, error) {
 		"response_size", len(responseJSON),
 	)
 
-	return string(responseJSON), nil
+	return result, nil
 }
 
 // getCompanyTickers retrieves company ticker information
